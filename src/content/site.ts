@@ -1,0 +1,119 @@
+export const brand = {
+  name: "Yummi Art",
+  navName: "YUMMI ART",
+  artistName: "Adriana",
+  artistLabel: "ADRIANA · MAKEUP ARTIST",
+  location: "Lebane, Srbija",
+  locationDisplay: "LEBANE, SRBIJA",
+  instagram: "https://www.instagram.com/yuumi__art",
+};
+
+export const hero = {
+  image: "/makeup/transformation/natural.svg",
+  alt: "Stilizovani beauty model u ogledalu",
+  label: brand.artistLabel,
+  headlineTop: "Beauty,",
+  headlineBottom: "but make it yours.",
+  scrollPrompt: "SKROLUJ ZA DALJE",
+};
+
+export const transformationAssets = {
+  natural: "/makeup/transformation/natural.svg",
+  skin: "/makeup/transformation/skin.svg",
+  eyes: "/makeup/transformation/eyes.svg",
+  final: "/makeup/transformation/final.svg",
+};
+
+export const makeupProps = {
+  brush: "/makeup/props/brush.svg",
+  compact: "/makeup/props/compact.svg",
+  lipstick: "/makeup/props/lipstick.svg",
+};
+
+export const detailImages = {
+  lips: {
+    src: "/yummi/details-1.jpg",
+    alt: "Tamni editorial makeup portret sa bisernom ogrlicom",
+    position: { desktop: "52% 38%", mobile: "52% 34%" },
+  },
+  eye: {
+    src: "/yummi/details-2.jpg",
+    alt: "Beauty portret sa crvenim noktima i naglašenim očima",
+    position: { desktop: "50% 42%", mobile: "48% 38%" },
+  },
+  texture: {
+    src: "/yummi/details-3.jpg",
+    alt: "Tamni editorial portret sa crnom rukavicom",
+    position: { desktop: "48% 38%", mobile: "47% 35%" },
+  },
+};
+
+export const artist = {
+  name: brand.artistName.toUpperCase(),
+  intro:
+    "Za mene šminka nije način da sakriješ sebe, već da istakneš ono što te čini posebnom.",
+  bio:
+    "Svakom licu pristupam individualno, sa pažnjom prema detaljima i željom da finalni izgled i dalje bude — ti.",
+  education:
+    "Kroz profesionalno šminkanje i edukacije želim da svaka devojka stekne više sigurnosti, znanja i osećaja za lepotu koja joj prirodno pripada.",
+  image: "/yummi/artist.jpg",
+  alt: "Adriana, makeup artistkinja iza Yummi Art brenda",
+  position: { desktop: "50% 58%", mobile: "50% 52%" },
+};
+
+export const booking = {
+  reflection: "/yummi/booking.jpg",
+  reflectionAlt: "Tamni editorial makeup portret u ogledalu",
+  position: { desktop: "48% 34%", mobile: "48% 30%" },
+};
+
+export const servicesAndEducation = [
+  {
+    name: "PROFESIONALNO ŠMINKANJE",
+    text: "Profesionalno šminkanje prilagođeno licu, stilu i prilici, uz pažnju posvećenu svakom detalju.",
+    frame: "h-[58vh] w-[82vw] md:w-[72vw] self-end mb-[8vh]",
+    title:
+      "left-3 bottom-4 text-[#fff8ef] md:left-[-4vw] md:bottom-[-4vh] md:text-[#241916] md:mix-blend-multiply",
+    image: "/yummi/professional-makeup.jpg",
+    imageAlt: "Profesionalno šminkanje sa bronzanim tenom i naglašenim očima",
+    fit: "cover",
+    position: { desktop: "50% 36%", mobile: "50% 34%" },
+    lightText: false,
+  },
+  {
+    name: "NAŠMINKAJ SE SAMA",
+    text: "Kurs za sve koji žele da nauče kako da samostalno i sigurnije našminkaju sebe.",
+    frame: "h-[74vh] w-[84vw] self-center md:h-[82vh] md:w-[42vw] md:ml-[-8vw]",
+    title: "left-3 bottom-4 text-[#fff8ef] md:left-[68%] md:top-[10vh] md:bottom-auto",
+    image: "/yummi/self-makeup-course.jpg",
+    imageAlt: "Model sa završenim makeup izgledom u svetlom beauty prostoru",
+    fit: "cover",
+    position: { desktop: "50% 38%", mobile: "50% 34%" },
+    lightText: true,
+  },
+  {
+    name: "BAZNI KURS ZA POČETNIKE",
+    text: "Kurs namenjen početnicima koji žele da nauče osnove šminkanja i izgrade dobru bazu za dalji rad.",
+    frame: "h-[78vh] w-[86vw] self-center md:h-[92vh] md:w-[86vw] md:ml-[-4vw]",
+    title: "left-3 bottom-4 text-[#fff8ef] md:left-[5vw] md:bottom-[8vh]",
+    image: "/yummi/basic-course.jpg",
+    imageAlt: "Grupna fotografija tri modela sa završenim makeup izgledima",
+    fit: "contain",
+    position: { desktop: "50% 50%", mobile: "50% 50%" },
+    lightText: true,
+  },
+  {
+    name: "USAVRŠAVANJE ZA ŠMINKERE",
+    text: "Edukacija za šminkere koji žele da unaprede postojeće znanje, tehniku i sigurnost u radu.",
+    frame: "h-[80vh] w-[88vw] self-center md:h-[86vh] md:w-[92vw] md:self-start md:mt-[4vh] md:ml-[-10vw]",
+    title:
+      "left-3 bottom-4 text-[#fff8ef] md:left-auto md:right-[4vw] md:top-[8vh] md:bottom-auto md:text-[#241916] md:mix-blend-multiply",
+    image: "/yummi/advanced-course.jpg",
+    imageAlt: "Dramatičan makeup sa metalik stylingom i naglašenim očima",
+    fit: "cover",
+    position: { desktop: "48% 42%", mobile: "50% 39%" },
+    lightText: true,
+  },
+];
+
+export const primaryServiceImage = servicesAndEducation[0].image;
