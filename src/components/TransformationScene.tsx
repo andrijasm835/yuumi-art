@@ -77,7 +77,7 @@ export function TransformationScene() {
           .to(".stage-copy-0", { autoAlpha: 0, y: -24, duration: 0.18 }, 0.82);
 
         showCopy(1, 1.02);
-        tl.to(".camera", { scale: isMobile ? 1.08 : 1.16, xPercent: isMobile ? -1 : -3, yPercent: isMobile ? -1 : -2, duration: 0.38 }, 0.92)
+        tl.to(".portrait-stage", { scale: isMobile ? 1.03 : 1.05, xPercent: isMobile ? 0 : 3, yPercent: isMobile ? -1 : -1, duration: 0.38 }, 0.92)
           .fromTo(".eye-application", { autoAlpha: 0, scaleX: 0, xPercent: -12 }, { autoAlpha: 0.78, scaleX: 1, xPercent: 4, duration: 0.32 }, 1.14)
           .set(".makeup-eyes", { autoAlpha: 1 }, 1.16)
           .to(".reveal-eye-left", { scaleX: 1, duration: 0.34, ease: "power2.out" }, 1.18)
@@ -86,7 +86,7 @@ export function TransformationScene() {
           .to(".stage-copy-1", { autoAlpha: 0, y: -24, duration: 0.18 }, 1.82);
 
         showCopy(2, 2.02);
-        tl.to(".camera", { scale: isMobile ? 1.06 : 1.1, xPercent: isMobile ? 1 : 3, yPercent: isMobile ? 1 : 2, duration: 0.38 }, 1.92)
+        tl.to(".portrait-stage", { scale: isMobile ? 1.02 : 1.04, xPercent: isMobile ? 0 : 2, yPercent: 0, duration: 0.38 }, 1.92)
           .fromTo(".color-application", { autoAlpha: 0, scale: 0.55 }, { autoAlpha: 0.62, scale: 1.12, duration: 0.34 }, 2.12)
           .set(".makeup-color", { autoAlpha: 1 }, 2.14)
           .to(".reveal-cheek-left", { attr: { rx: 120, ry: 86 }, duration: 0.32, ease: "power2.out" }, 2.16)
@@ -96,7 +96,7 @@ export function TransformationScene() {
           .to(".stage-copy-2", { autoAlpha: 0, y: -24, duration: 0.18 }, 2.82);
 
         showCopy(3, 3.02);
-        tl.to(".camera", { scale: isMobile ? 1 : 1.04, xPercent: 0, yPercent: 0, duration: 0.38 }, 2.92)
+        tl.to(".portrait-stage", { scale: 1, xPercent: 0, yPercent: 0, duration: 0.38 }, 2.92)
           .set(".makeup-final", { autoAlpha: 1 }, 3.1)
           .to(".reveal-final", { scaleY: 1, duration: 0.48, ease: "power2.out" }, 3.12)
           .to(".final-shimmer", { autoAlpha: 0.55, xPercent: 140, duration: 0.45 }, 3.18)
@@ -112,13 +112,15 @@ export function TransformationScene() {
 
   return (
     <section className="scene-overlap relative h-svh overflow-hidden bg-[#201614] text-[#fff7ef] md:h-screen" ref={scope}>
-      <div className="camera absolute inset-0 will-change-transform">
-        <BeautyFace className="h-full w-full" aria-label="Kumulativna beauty transformacija kroz slojeve šminke" />
-        <div className="makeup-application skin-application pointer-events-none absolute left-[20%] top-[18%] h-[66%] w-[58%] rounded-[48%] bg-[linear-gradient(105deg,transparent,rgba(255,247,239,0.52),rgba(244,198,176,0.28),transparent)] opacity-0 blur-xl mix-blend-screen" />
-        <div className="makeup-application eye-application pointer-events-none absolute left-[33%] top-[39%] h-[12%] w-[42%] origin-left rounded-full bg-[linear-gradient(90deg,transparent,rgba(255,247,239,0.62),rgba(111,29,42,0.22),transparent)] opacity-0 blur-md mix-blend-screen" />
-        <div className="makeup-application color-application pointer-events-none absolute left-[36%] top-[48%] h-[30%] w-[34%] rounded-full bg-[radial-gradient(circle_at_50%_70%,rgba(111,29,42,0.28),rgba(244,198,176,0.25),transparent_68%)] opacity-0 blur-lg mix-blend-soft-light" />
-        <div className="makeup-application final-shimmer pointer-events-none absolute inset-y-0 left-[-45%] w-[36%] bg-[linear-gradient(100deg,transparent,rgba(255,248,239,0.36),transparent)] opacity-0 blur-sm mix-blend-screen" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#160f0c]/72 via-transparent to-[#160f0c]/16" />
+      <div className="camera absolute inset-0 flex items-center justify-center px-4 py-[7svh] md:px-10 md:py-[6vh]">
+        <div className="portrait-stage relative z-10 aspect-[2/3] h-[min(82svh,820px)] max-h-[820px] w-auto max-w-[min(76vw,560px)] origin-center overflow-visible will-change-transform md:h-[min(86vh,860px)] md:max-w-[min(44vw,620px)]">
+          <BeautyFace className="h-full w-full" aria-label="Kumulativna beauty transformacija kroz slojeve šminke" />
+          <div className="makeup-application skin-application pointer-events-none absolute left-[18%] top-[18%] h-[52%] w-[66%] rounded-[48%] bg-[linear-gradient(105deg,transparent,rgba(255,247,239,0.58),rgba(244,198,176,0.28),transparent)] opacity-0 blur-xl mix-blend-screen" />
+          <div className="makeup-application eye-application pointer-events-none absolute left-[30%] top-[32%] h-[10%] w-[42%] origin-left rounded-full bg-[linear-gradient(90deg,transparent,rgba(255,247,239,0.72),rgba(111,29,42,0.28),transparent)] opacity-0 blur-md mix-blend-screen" />
+          <div className="makeup-application color-application pointer-events-none absolute left-[30%] top-[42%] h-[25%] w-[42%] rounded-full bg-[radial-gradient(circle_at_50%_70%,rgba(111,29,42,0.34),rgba(244,198,176,0.24),transparent_70%)] opacity-0 blur-lg mix-blend-soft-light" />
+          <div className="makeup-application final-shimmer pointer-events-none absolute inset-y-[12%] left-[-38%] w-[32%] bg-[linear-gradient(100deg,transparent,rgba(255,248,239,0.4),transparent)] opacity-0 blur-sm mix-blend-screen" />
+        </div>
+        <div className="absolute inset-0 z-0 bg-gradient-to-r from-[#160f0c]/72 via-[#160f0c]/12 to-[#160f0c]/24" />
       </div>
 
       <div className="transformation-enter pointer-events-none absolute inset-0 z-20 bg-[#fff7ef]/18 backdrop-blur-[8px]" />

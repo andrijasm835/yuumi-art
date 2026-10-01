@@ -22,7 +22,7 @@ export function BeautyFace(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
       viewBox="0 0 1200 1600"
-      preserveAspectRatio="xMidYMid slice"
+      preserveAspectRatio="xMidYMid meet"
       role="img"
       aria-label="Stilizovana beauty portret ilustracija"
       {...props}
@@ -89,7 +89,7 @@ export function BeautyFace(props: SVGProps<SVGSVGElement>) {
           <ellipse
             className="reveal-shape reveal-eye-left"
             cx="512"
-            cy="548"
+            cy="500"
             rx="126"
             ry="70"
             fill="white"
@@ -98,7 +98,7 @@ export function BeautyFace(props: SVGProps<SVGSVGElement>) {
           <ellipse
             className="reveal-shape reveal-eye-right"
             cx="704"
-            cy="548"
+            cy="500"
             rx="126"
             ry="70"
             fill="white"
@@ -153,16 +153,16 @@ export function BeautyFace(props: SVGProps<SVGSVGElement>) {
       </g>
 
       <g className="makeup-layer makeup-eyes" mask={`url(#${ids.eyeMask})`} opacity="0">
-        <path d="M438 588c62-70 136-78 194-16c-68-22-132-15-194 16z" fill="#6f1d2a" opacity="0.38" filter={`url(#${ids.blur})`} />
-        <path d="M618 572c64-62 138-54 198 18c-68-33-132-40-198-18z" fill="#6f1d2a" opacity="0.38" filter={`url(#${ids.blur})`} />
-        <path d="M438 620c56-46 124-47 180-1" fill="none" stroke="#0d0707" strokeWidth="10" strokeLinecap="round" />
-        <path d="M630 618c56-44 126-42 180 6" fill="none" stroke="#0d0707" strokeWidth="10" strokeLinecap="round" />
-        <path d="M612 618c16 1 31-5 48-18" fill="none" stroke="#0d0707" strokeWidth="8" strokeLinecap="round" />
-        <path d="M636 600c-17 13-32 19-48 18" fill="none" stroke="#0d0707" strokeWidth="8" strokeLinecap="round" />
-        <path d="M452 644c24 22 62 32 108 29" fill="none" stroke="#0d0707" strokeWidth="4" strokeLinecap="round" opacity="0.68" />
-        <path d="M798 646c-26 21-64 31-110 27" fill="none" stroke="#0d0707" strokeWidth="4" strokeLinecap="round" opacity="0.68" />
-        <path d="M458 566c42-19 84-22 132-8" fill="none" stroke="#2a1413" strokeWidth="5" strokeLinecap="round" opacity="0.5" />
-        <path d="M652 556c48-12 92-8 132 13" fill="none" stroke="#2a1413" strokeWidth="5" strokeLinecap="round" opacity="0.5" />
+        <path d="M438 520c62-62 136-70 194-14c-68-22-132-15-194 14z" fill="#6f1d2a" opacity="0.42" filter={`url(#${ids.blur})`} />
+        <path d="M618 506c64-56 138-48 198 16c-68-31-132-38-198-16z" fill="#6f1d2a" opacity="0.42" filter={`url(#${ids.blur})`} />
+        <path d="M438 552c56-38 124-39 180-1" fill="none" stroke="#0d0707" strokeWidth="10" strokeLinecap="round" />
+        <path d="M630 550c56-36 126-34 180 6" fill="none" stroke="#0d0707" strokeWidth="10" strokeLinecap="round" />
+        <path d="M612 550c16 1 31-5 48-18" fill="none" stroke="#0d0707" strokeWidth="8" strokeLinecap="round" />
+        <path d="M636 532c-17 13-32 19-48 18" fill="none" stroke="#0d0707" strokeWidth="8" strokeLinecap="round" />
+        <path d="M452 576c24 22 62 32 108 29" fill="none" stroke="#0d0707" strokeWidth="4" strokeLinecap="round" opacity="0.68" />
+        <path d="M798 578c-26 21-64 31-110 27" fill="none" stroke="#0d0707" strokeWidth="4" strokeLinecap="round" opacity="0.68" />
+        <path d="M458 500c42-19 84-22 132-8" fill="none" stroke="#2a1413" strokeWidth="5" strokeLinecap="round" opacity="0.5" />
+        <path d="M652 490c48-12 92-8 132 13" fill="none" stroke="#2a1413" strokeWidth="5" strokeLinecap="round" opacity="0.5" />
       </g>
 
       <g className="makeup-layer makeup-color" mask={`url(#${ids.colorMask})`} opacity="0">
@@ -177,12 +177,12 @@ export function BeautyFace(props: SVGProps<SVGSVGElement>) {
       <g className="makeup-layer makeup-final" mask={`url(#${ids.finalMask})`} opacity="0">
         <path d="M452 722c42 16 92 14 142-6" fill="none" stroke="#fff8ef" strokeWidth="8" strokeLinecap="round" opacity="0.18" filter={`url(#${ids.blur})`} />
         <path d="M636 714c52 20 102 18 148 0" fill="none" stroke="#fff8ef" strokeWidth="8" strokeLinecap="round" opacity="0.16" filter={`url(#${ids.blur})`} />
-        <circle cx="658" cy="594" r="9" fill="#fff8ef" opacity="0.44" filter={`url(#${ids.blur})`} />
+        <circle cx="658" cy="524" r="9" fill="#fff8ef" opacity="0.44" filter={`url(#${ids.blur})`} />
         <circle cx="500" cy="740" r="18" fill="#fff8ef" opacity="0.2" filter={`url(#${ids.blur})`} />
         <circle cx="742" cy="734" r="16" fill="#fff8ef" opacity="0.18" filter={`url(#${ids.blur})`} />
         <path d="M548 868c38 9 92 9 132 0" stroke="#fff8ef" strokeWidth="5" opacity="0.28" strokeLinecap="round" />
-        <path d="M472 610c12-22 30-36 54-42" stroke="#fff8ef" strokeWidth="4" opacity="0.2" strokeLinecap="round" />
-        <path d="M728 570c24 6 44 20 60 42" stroke="#fff8ef" strokeWidth="4" opacity="0.18" strokeLinecap="round" />
+        <path d="M472 540c12-22 30-36 54-42" stroke="#fff8ef" strokeWidth="4" opacity="0.2" strokeLinecap="round" />
+        <path d="M728 500c24 6 44 20 60 42" stroke="#fff8ef" strokeWidth="4" opacity="0.18" strokeLinecap="round" />
       </g>
 
       <rect width="1200" height="1600" fill="#160d0d" opacity="0.025" />
