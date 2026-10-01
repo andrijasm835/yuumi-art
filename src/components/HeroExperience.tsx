@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import { BeautyFace } from "@/components/BeautyFace";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { hero, makeupProps } from "@/content/site";
 
@@ -65,14 +66,7 @@ export function HeroExperience() {
           <div className="absolute inset-x-[28%] bottom-[5%] h-12 rounded-full bg-[#5d3a2f]/18 blur-2xl" />
           <div className="mirror glass-reflection relative z-20 aspect-[0.74] h-[72vh] max-h-[680px] min-h-[440px] overflow-hidden rounded-[48%_48%_42%_42%] border-[10px] border-[#c5a56d] bg-[#fff8ef] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55),inset_0_0_34px_rgba(38,22,18,0.28),0_50px_150px_rgba(67,43,34,0.24)] before:absolute before:inset-[10px] before:z-30 before:rounded-[inherit] before:border before:border-[#2b1b18]/28 before:content-[''] after:absolute after:inset-[-18px] after:-z-10 after:rounded-[inherit] after:bg-[#f8e8d2]/30 after:blur-2xl after:content-['']">
             <div className="mirror-glow absolute inset-0 z-20 opacity-50 mix-blend-screen bg-[linear-gradient(120deg,transparent_18%,rgba(255,255,255,0.78)_38%,transparent_56%)]" />
-            <Image
-              className="mirror-photo h-full w-full scale-105 object-cover blur-[2px]"
-              src={hero.image}
-              alt={hero.alt}
-              fill
-              priority
-              sizes="(max-width: 768px) 86vw, 520px"
-            />
+            <BeautyFace className="mirror-photo h-full w-full scale-105 blur-[1px]" />
             <div className="absolute inset-0 bg-[#2b211d]/10" />
           </div>
 
@@ -114,13 +108,7 @@ export function HeroExperience() {
       </div>
 
       <div className="hero-handoff-portrait pointer-events-none absolute inset-0 z-[45] scale-110 opacity-0 blur-md">
-        <Image
-          src={hero.image}
-          alt="Portrait emerging through mirror"
-          fill
-          sizes="100vw"
-          className="object-cover"
-        />
+        <BeautyFace className="h-full w-full" aria-label="Stilizovana beauty ilustracija prelazi iz ogledala u transformaciju" />
         <div className="absolute inset-0 bg-[#f6ede4]/10" />
       </div>
       <div className="mirror-plane pointer-events-none absolute inset-0 z-50 scale-95 bg-[#fff7ef]/26 opacity-0" />

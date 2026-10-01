@@ -9,19 +9,10 @@ export const brand = {
 };
 
 export const hero = {
-  image: "/makeup/transformation/natural.svg",
-  alt: "Stilizovani beauty model u ogledalu",
   label: brand.artistLabel,
   headlineTop: "Beauty,",
   headlineBottom: "but make it yours.",
   scrollPrompt: "SKROLUJ ZA DALJE",
-};
-
-export const transformationAssets = {
-  natural: "/makeup/transformation/natural.svg",
-  skin: "/makeup/transformation/skin.svg",
-  eyes: "/makeup/transformation/eyes.svg",
-  final: "/makeup/transformation/final.svg",
 };
 
 export const makeupProps = {

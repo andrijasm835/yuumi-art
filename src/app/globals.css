@@ -127,6 +127,7 @@ button:focus-visible {
   }
 
   .hero-handoff-portrait,
+  .makeup-layer,
   .stage-copy-0,
   .stage-copy-1,
   .stage-copy-2,
@@ -147,10 +148,6 @@ button:focus-visible {
     filter: none !important;
   }
 
-  .stage-skin,
-  .stage-eyes,
-  .stage-color,
-  .stage-final,
   .artist-bridge,
   .looks-detail-bridge,
   .booking-panel {

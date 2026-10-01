@@ -2,37 +2,30 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import { BeautyFace } from "@/components/BeautyFace";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { primaryServiceImage, transformationAssets } from "@/content/site";
+import { primaryServiceImage } from "@/content/site";
 
 const makeupStages = [
   {
     number: "01",
     title: "TEN",
     text: "Ujednačena i pažljivo pripremljena baza.",
-    image: transformationAssets.skin,
-    mask: "stage-skin",
   },
   {
     number: "02",
     title: "OČI",
     text: "Definicija koja ističe pogled.",
-    image: transformationAssets.eyes,
-    mask: "stage-eyes",
   },
   {
     number: "03",
     title: "BOJA",
     text: "Boja, tekstura i završni akcenti.",
-    image: transformationAssets.final,
-    mask: "stage-color",
   },
   {
     number: "04",
     title: "FINALNI LOOK",
     text: "Sve se spaja u celinu.",
-    image: transformationAssets.final,
-    mask: "stage-final",
   },
 ];
 
@@ -65,34 +58,34 @@ export function TransformationScene() {
             .fromTo(`.stage-copy-${index}`, { autoAlpha: 0, y: 26 }, { autoAlpha: 1, y: 0, duration: 0.24 }, at);
         };
 
-        tl.set(".stage-copy", { autoAlpha: 0 })
+        tl.set(".stage-copy", { autoAlpha: 0, y: 20 })
+          .set(".makeup-layer", { autoAlpha: 0 })
           .set(".makeup-application", { autoAlpha: 0 })
-          .set([".stage-skin", ".stage-eyes", ".stage-color", ".stage-final"], { autoAlpha: 1 })
           .fromTo(".transformation-enter", { opacity: 0.88 }, { opacity: 0, duration: 0.36 }, 0);
 
         showCopy(0, 0.08);
         tl.fromTo(".skin-application", { autoAlpha: 0, xPercent: -35, scaleX: 0.45 }, { autoAlpha: 0.72, xPercent: 18, scaleX: 1, duration: 0.34 }, 0.16)
-          .to(".stage-skin", { clipPath: "polygon(18% 12%, 86% 8%, 78% 92%, 20% 96%)", duration: 0.42 }, 0.18)
+          .to(".makeup-skin", { autoAlpha: 1, duration: 0.42 }, 0.18)
           .to(".skin-application", { autoAlpha: 0, duration: 0.18 }, 0.52)
           .to(".stage-copy-0", { autoAlpha: 0, y: -24, duration: 0.18 }, 0.82);
 
         showCopy(1, 1.02);
-        tl.to(".camera", { scale: isMobile ? 1.14 : 1.34, xPercent: isMobile ? -2 : -7, yPercent: isMobile ? -2 : -4, duration: 0.38 }, 0.92)
+        tl.to(".camera", { scale: isMobile ? 1.08 : 1.16, xPercent: isMobile ? -1 : -3, yPercent: isMobile ? -1 : -2, duration: 0.38 }, 0.92)
           .fromTo(".eye-application", { autoAlpha: 0, scaleX: 0, xPercent: -12 }, { autoAlpha: 0.78, scaleX: 1, xPercent: 4, duration: 0.32 }, 1.14)
-          .to(".stage-eyes", { clipPath: "polygon(24% 28%, 94% 22%, 92% 52%, 20% 58%)", duration: 0.38 }, 1.18)
+          .to(".makeup-eyes", { autoAlpha: 1, duration: 0.38 }, 1.18)
           .to(".eye-application", { autoAlpha: 0, duration: 0.18 }, 1.5)
           .to(".stage-copy-1", { autoAlpha: 0, y: -24, duration: 0.18 }, 1.82);
 
         showCopy(2, 2.02);
-        tl.to(".camera", { scale: isMobile ? 1.1 : 1.22, xPercent: isMobile ? 2 : 6, yPercent: isMobile ? 1 : 3, duration: 0.38 }, 1.92)
+        tl.to(".camera", { scale: isMobile ? 1.06 : 1.1, xPercent: isMobile ? 1 : 3, yPercent: isMobile ? 1 : 2, duration: 0.38 }, 1.92)
           .fromTo(".color-application", { autoAlpha: 0, scale: 0.55 }, { autoAlpha: 0.62, scale: 1.12, duration: 0.34 }, 2.12)
-          .to(".stage-color", { clipPath: "circle(38% at 55% 61%)", duration: 0.42 }, 2.16)
+          .to(".makeup-color", { autoAlpha: 1, duration: 0.42 }, 2.16)
           .to(".color-application", { autoAlpha: 0, duration: 0.2 }, 2.52)
           .to(".stage-copy-2", { autoAlpha: 0, y: -24, duration: 0.18 }, 2.82);
 
         showCopy(3, 3.02);
         tl.to(".camera", { scale: isMobile ? 1 : 1.04, xPercent: 0, yPercent: 0, duration: 0.38 }, 2.92)
-          .to(".stage-final", { clipPath: "inset(0% 0% 0% 0%)", duration: 0.42 }, 3.12)
+          .to(".makeup-final", { autoAlpha: 1, duration: 0.42 }, 3.12)
           .to(".final-shimmer", { autoAlpha: 0.55, xPercent: 140, duration: 0.45 }, 3.18)
           .to(".final-shimmer", { autoAlpha: 0, duration: 0.14 }, 3.62)
           .to(".look-handoff", { opacity: 1, scale: 1, duration: 0.32 }, 3.58);
@@ -107,36 +100,7 @@ export function TransformationScene() {
   return (
     <section className="scene-overlap relative h-svh overflow-hidden bg-[#201614] text-[#fff7ef] md:h-screen" ref={scope}>
       <div className="camera absolute inset-0 will-change-transform">
-        <Image
-          src={transformationAssets.natural}
-          alt="Prirodna baza šminke"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        {makeupStages.map((stage) => (
-          <div
-            className={`${stage.mask} editorial-image absolute inset-0 overflow-hidden ${
-              stage.mask === "stage-skin"
-                ? "[clip-path:polygon(0_0,0_0,0_100%,0_100%)]"
-                : stage.mask === "stage-eyes"
-                ? "[clip-path:polygon(48%_38%,49%_38%,49%_39%,48%_39%)]"
-                : stage.mask === "stage-color"
-                  ? "[clip-path:circle(0%_at_64%_58%)]"
-                  : "[clip-path:inset(0%_100%_0%_0%)]"
-            }`}
-            key={stage.title}
-          >
-            <Image
-              src={stage.image}
-              alt={`${stage.title} faza šminkanja`}
-              fill
-              sizes="100vw"
-              className="object-cover"
-            />
-          </div>
-        ))}
+        <BeautyFace className="h-full w-full" aria-label="Kumulativna beauty transformacija kroz slojeve šminke" />
         <div className="makeup-application skin-application pointer-events-none absolute left-[20%] top-[18%] h-[66%] w-[58%] rounded-[48%] bg-[linear-gradient(105deg,transparent,rgba(255,247,239,0.52),rgba(244,198,176,0.28),transparent)] opacity-0 blur-xl mix-blend-screen" />
         <div className="makeup-application eye-application pointer-events-none absolute left-[33%] top-[39%] h-[12%] w-[42%] origin-left rounded-full bg-[linear-gradient(90deg,transparent,rgba(255,247,239,0.62),rgba(111,29,42,0.22),transparent)] opacity-0 blur-md mix-blend-screen" />
         <div className="makeup-application color-application pointer-events-none absolute left-[36%] top-[48%] h-[30%] w-[34%] rounded-full bg-[radial-gradient(circle_at_50%_70%,rgba(111,29,42,0.28),rgba(244,198,176,0.25),transparent_68%)] opacity-0 blur-lg mix-blend-soft-light" />
