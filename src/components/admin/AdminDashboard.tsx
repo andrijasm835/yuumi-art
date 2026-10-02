@@ -28,6 +28,10 @@ function formatAdminDate(date: string) {
   return new Intl.DateTimeFormat("sr-Latn-RS", { day: "2-digit", month: "2-digit" }).format(new Date(`${date}T00:00:00`));
 }
 
+function formatTableDate(date: string) {
+  return new Intl.DateTimeFormat("sr-Latn-RS", { day: "2-digit", month: "2-digit", year: "numeric" }).format(new Date(`${date}T00:00:00`));
+}
+
 function currentAdminDate() {
   return new Intl.DateTimeFormat("sr-Latn-RS", { day: "numeric", month: "long", year: "numeric" }).format(new Date());
 }
@@ -92,8 +96,10 @@ export function AdminDashboard() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [bookings, setBookings] = useState<BookingRecord[]>([]);
+  const [summaryBookings, setSummaryBookings] = useState<BookingRecord[]>([]);
   const [scheduleDays, setScheduleDays] = useState<ScheduleDay[]>([]);
   const [weekStart, setWeekStart] = useState(todayIso());
+  const [busyBookingId, setBusyBookingId] = useState("");
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
@@ -141,6 +147,14 @@ export function AdminDashboard() {
     else setError(data.error || "Booking lista nije dostupna.");
   }
 
+  async function loadSummaryBookings() {
+    if (!token) return;
+    const response = await fetch("/api/admin/bookings", { headers: { Authorization: `Bearer ${token}` } });
+    const data = await response.json();
+    if (response.ok) setSummaryBookings(data.bookings ?? []);
+    else setError(data.error || "Booking lista nije dostupna.");
+  }
+
   async function loadAvailability() {
     if (!token) return;
     const response = await fetch("/api/admin/availability", { headers: { Authorization: `Bearer ${token}` } });
@@ -181,20 +195,38 @@ export function AdminDashboard() {
   }, [token]);
 
   useEffect(() => {
+    const task = window.setTimeout(() => void loadSummaryBookings(), 0);
+    return () => window.clearTimeout(task);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  useEffect(() => {
+    if (!notice) return;
+    const task = window.setTimeout(() => setNotice(""), 3500);
+    return () => window.clearTimeout(task);
+  }, [notice]);
+
+  useEffect(() => {
     const task = window.setTimeout(() => void loadSchedule(), 0);
     return () => window.clearTimeout(task);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, weekStart]);
 
   async function updateStatus(id: string, nextStatus: BookingStatus) {
+    if (busyBookingId) return;
+    setBusyBookingId(id);
+    setError("");
     const response = await fetch(`/api/admin/bookings/${id}/status`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
       body: JSON.stringify({ status: nextStatus }),
     });
     if (!response.ok) setError("Status nije promenjen.");
+    else setNotice("Status termina je promenjen.");
     await loadBookings();
+    await loadSummaryBookings();
     await loadSchedule();
+    setBusyBookingId("");
   }
 
   async function createManual(event: React.FormEvent) {
@@ -206,7 +238,13 @@ export function AdminDashboard() {
     });
     const data = await response.json();
     if (!response.ok) setError(data.error || "Manual booking nije sačuvan.");
+    else {
+      setNotice("Termin je dodat.");
+      setError("");
+      setManual((current) => ({ ...current, fullName: "", phone: "" }));
+    }
     await loadBookings();
+    await loadSummaryBookings();
     await loadSchedule();
   }
 
@@ -222,6 +260,7 @@ export function AdminDashboard() {
     else {
       setNotice("Dostupnost je sačuvana.");
       setError("");
+      setBlock((current) => ({ ...current, reason: "" }));
       await loadSchedule();
     }
   }
@@ -246,14 +285,21 @@ export function AdminDashboard() {
   }
 
   const today = todayIso();
-  const todaysBookings = scheduleDays.find((day) => day.date === today)?.bookings ?? bookings.filter((booking) => booking.booking_date === today);
-  const pendingCount = bookings.filter((booking) => booking.status === "pending").length;
-  const confirmedCount = bookings.filter((booking) => booking.status === "confirmed").length;
-  const nextBooking = [...scheduleDays.flatMap((day) => day.bookings), ...bookings]
+  const nowInBelgrade = new Intl.DateTimeFormat("sr-Latn-RS", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone: "Europe/Belgrade",
+  }).format(new Date());
+  const allSummaryBookings = [...scheduleDays.flatMap((day) => day.bookings), ...summaryBookings]
+    .filter((booking, index, all) => booking.id ? all.findIndex((item) => item.id === booking.id) === index : true);
+  const todaysBookings = allSummaryBookings.filter((booking) => booking.booking_date === today);
+  const pendingCount = allSummaryBookings.filter((booking) => booking.status === "pending").length;
+  const confirmedCount = allSummaryBookings.filter((booking) => booking.status === "confirmed").length;
+  const nextBooking = allSummaryBookings
     .filter((booking) => booking.status === "pending" || booking.status === "confirmed")
-    .filter((booking, index, all) => booking.id ? all.findIndex((item) => item.id === booking.id) === index : true)
     .sort((a, b) => `${a.booking_date} ${a.start_time}`.localeCompare(`${b.booking_date} ${b.start_time}`))
-    .find((booking) => `${booking.booking_date} ${normalizeTime(booking.start_time)}` >= `${today} ${normalizeTime(new Date().toTimeString())}`);
+    .find((booking) => `${booking.booking_date} ${normalizeTime(booking.start_time)}` >= `${today} ${nowInBelgrade}`);
 
   if (!token) {
     return (
@@ -377,6 +423,7 @@ export function AdminDashboard() {
                       {!blockedDay && available.slice(0, 3).map((segment) => (
                         <p className="rounded-sm bg-[#1f6f3f]/5 px-2 py-1 text-[11px] text-[#1f6f3f]/75" key={`${segment.start}-${segment.end}`}>{segment.start}–{segment.end} dostupno</p>
                       ))}
+                      {!blockedDay && available.length > 3 ? <p className="px-2 text-[11px] text-[#6b574e]/70">+ još dostupnosti</p> : null}
                     </div>
                   </div>
                 );
@@ -398,7 +445,7 @@ export function AdminDashboard() {
           {bookings.length === 0 ? <p className="p-5 text-[#6b574e]">Nema termina za izabrane filtere.</p> : null}
           {bookings.map((booking) => (
             <div className="grid gap-3 border-t border-[#d8bd80]/25 px-4 py-4 text-sm lg:grid-cols-[0.9fr_0.8fr_1.4fr_1.3fr_0.9fr_1fr] lg:items-center" key={booking.id}>
-              <span>{booking.booking_date}</span>
+              <span>{formatTableDate(booking.booking_date)}</span>
               <span>{normalizeTime(booking.start_time)}–{normalizeTime(booking.end_time)}</span>
               <span>
                 <strong className="block text-[#241916]">{booking.customer_name}</strong>
@@ -410,12 +457,30 @@ export function AdminDashboard() {
               <span className="flex flex-wrap gap-2">
                 {booking.status === "pending" ? (
                   <>
-                    <button className="border border-[#1f6f3f]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#1f6f3f]" onClick={() => booking.id && updateStatus(booking.id, "confirmed")}>POTVRDI</button>
-                    <button className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a]" onClick={() => booking.id && updateStatus(booking.id, "rejected")}>ODBIJ</button>
+                    <button
+                      className="border border-[#1f6f3f]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#1f6f3f] disabled:cursor-wait disabled:opacity-45"
+                      disabled={busyBookingId === booking.id}
+                      onClick={() => booking.id && updateStatus(booking.id, "confirmed")}
+                    >
+                      {busyBookingId === booking.id ? "..." : "POTVRDI"}
+                    </button>
+                    <button
+                      className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a] disabled:cursor-wait disabled:opacity-45"
+                      disabled={busyBookingId === booking.id}
+                      onClick={() => booking.id && updateStatus(booking.id, "rejected")}
+                    >
+                      {busyBookingId === booking.id ? "..." : "ODBIJ"}
+                    </button>
                   </>
                 ) : null}
                 {booking.status === "confirmed" ? (
-                  <button className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a]" onClick={() => booking.id && updateStatus(booking.id, "cancelled")}>OTKAŽI</button>
+                  <button
+                    className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a] disabled:cursor-wait disabled:opacity-45"
+                    disabled={busyBookingId === booking.id}
+                    onClick={() => booking.id && updateStatus(booking.id, "cancelled")}
+                  >
+                    {busyBookingId === booking.id ? "..." : "OTKAŽI"}
+                  </button>
                 ) : null}
               </span>
             </div>
