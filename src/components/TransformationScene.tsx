@@ -110,7 +110,7 @@ export function TransformationScene() {
   });
 
   return (
-    <section className="scene-overlap relative h-[100svh] overflow-hidden bg-[#201614] text-[#fff7ef] md:h-[100dvh] lg:h-screen" ref={scope}>
+    <section className="scene-overlap relative h-[100dvh] overflow-hidden bg-[#201614] text-[#fff7ef] lg:h-screen" ref={scope}>
       <div className="camera absolute inset-0 overflow-hidden">
         <div className="transformation-frame absolute inset-0 origin-center will-change-transform">
           <BeautyFace className="h-full w-full" aria-label="Kumulativna beauty transformacija kroz realne makeup faze" />

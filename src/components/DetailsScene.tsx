@@ -93,7 +93,7 @@ export function DetailsScene() {
   });
 
   return (
-    <section ref={scope} className="relative h-[100svh] overflow-hidden bg-[#211714] text-[#fff7ef] md:h-[100dvh] lg:h-screen">
+    <section ref={scope} className="relative h-[100dvh] overflow-hidden bg-[#211714] text-[#fff7ef] lg:h-screen">
       <div className="details-entry absolute inset-0 bg-[radial-gradient(circle_at_78%_24%,rgba(118,29,42,0.32),transparent_34%),radial-gradient(circle_at_22%_72%,rgba(199,168,107,0.24),transparent_30%)]" />
       <div className="absolute inset-0 z-10 font-serif text-[clamp(3rem,12vw,6rem)] leading-[0.82] tracking-normal text-[#fff7ef]/24 md:text-[clamp(4.6rem,10vw,8rem)] lg:text-[clamp(3.8rem,16vw,12rem)] lg:leading-[0.78]">
         <span className="details-word-one absolute left-[6vw] top-[11svh] lg:top-[15vh]">BEAUTY</span>

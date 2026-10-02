@@ -79,7 +79,7 @@ export function BookingScene() {
   });
 
   return (
-    <section id="book" ref={scope} className="relative h-[100svh] overflow-hidden bg-[#1b1110] text-[#fff7ef] md:h-[100dvh] lg:h-screen">
+    <section id="book" ref={scope} className="relative h-[100dvh] overflow-hidden bg-[#1b1110] text-[#fff7ef] lg:h-screen">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(244,226,198,0.16),transparent_34%),radial-gradient(circle_at_20%_20%,rgba(111,29,42,0.35),transparent_30%)]" />
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center font-serif text-[clamp(2.7rem,11.5vw,5rem)] leading-[0.86] text-[#fff7ef]/82 md:text-[clamp(4.8rem,10vw,7rem)] lg:text-[clamp(3rem,14vw,9rem)] lg:leading-[0.82]">
         <span className="ready-top">SPREMNA ZA</span>

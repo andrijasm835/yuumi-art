@@ -113,7 +113,7 @@ export function LooksGallery() {
   });
 
   return (
-    <section id="work" ref={scope} className="relative h-[100svh] overflow-hidden bg-[#f5eadf] text-[#241916] md:h-[100dvh] lg:h-screen">
+    <section id="work" ref={scope} className="relative h-[100dvh] overflow-hidden bg-[#f5eadf] text-[#241916] lg:h-screen">
       <div className="absolute left-5 top-[calc(env(safe-area-inset-top)+1.5rem)] z-20 text-xs font-bold tracking-[0.32em] text-[#7f665a] md:left-8 lg:left-12">
         USLUGE & EDUKACIJE
       </div>

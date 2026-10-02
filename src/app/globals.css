@@ -13,20 +13,27 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+html {
+  background: #1b1110;
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  overflow-x: hidden;
 }
 
 * {
   box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-  background: #f7efe8;
 }
 
 ::selection {

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bodoni_Moda, Geist, Geist_Mono } from "next/font/google";
 import { brand } from "@/content/site";
 import "./globals.css";
@@ -48,11 +48,17 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="sr"
-      className={`${geistSans.variable} ${geistMono.variable} ${bodoni.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${bodoni.variable} min-h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {children}

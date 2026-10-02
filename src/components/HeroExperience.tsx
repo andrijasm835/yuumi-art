@@ -58,7 +58,7 @@ export function HeroExperience() {
     <section
       ref={scope}
       id="top"
-      className="hero-experience relative h-[100svh] overflow-hidden bg-[#f6ede4] text-[#241916] md:h-[100dvh]"
+      className="hero-experience relative h-[100dvh] overflow-hidden bg-[#f6ede4] text-[#241916]"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,250,245,0.94),rgba(232,210,190,0.58)_38%,rgba(151,112,88,0.18)_72%,rgba(54,35,31,0.08))]" />
       <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[#fffaf5] to-transparent" />
