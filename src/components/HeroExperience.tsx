@@ -14,16 +14,18 @@ export function HeroExperience() {
 
     mm.add(
       {
-        desktop: "(min-width: 768px)",
+        desktop: "(min-width: 1024px)",
+        tablet: "(min-width: 768px) and (max-width: 1023px)",
         mobile: "(max-width: 767px)",
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        const isTablet = context.conditions?.tablet;
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? "+=140%" : "+=240%",
+            end: isMobile ? "+=120%" : isTablet ? "+=170%" : "+=240%",
             scrub: 1,
             pin: true,
             anticipatePin: 1,
@@ -31,19 +33,19 @@ export function HeroExperience() {
           },
         });
 
-        tl.to(".hero-title-top", { xPercent: isMobile ? -8 : -18, opacity: 0, filter: "blur(10px)" }, 0)
-          .to(".hero-title-bottom", { xPercent: isMobile ? 8 : 18, opacity: 0, filter: "blur(10px)" }, 0)
+        tl.to(".hero-title-top", { xPercent: isMobile ? -6 : isTablet ? -12 : -18, opacity: 0, filter: "blur(10px)" }, 0)
+          .to(".hero-title-bottom", { xPercent: isMobile ? 6 : isTablet ? 12 : 18, opacity: 0, filter: "blur(10px)" }, 0)
           .to(".hero-small", { y: 38, opacity: 0 }, 0)
-          .to(".vanity-object-left", { x: isMobile ? -28 : -86, y: isMobile ? 24 : 64, rotate: -12 }, 0)
-          .to(".vanity-object-right", { x: isMobile ? 28 : 82, y: isMobile ? -20 : -54, rotate: 14 }, 0)
-          .to(".mirror-glow", { opacity: 1, scale: isMobile ? 1.22 : 1.65, xPercent: isMobile ? 10 : 28 }, 0.08)
-          .to(".mirror", { scale: isMobile ? 4.7 : 7.6, yPercent: -1, borderRadius: "0%", ease: "power2.inOut" }, 0.2)
-          .to(".mirror-photo", { scale: isMobile ? 1.16 : 1.32, filter: "blur(0px) saturate(1.12) brightness(1.08)" }, 0.2)
+          .to(".vanity-object-left", { x: isMobile ? -20 : isTablet ? -50 : -86, y: isMobile ? 18 : isTablet ? 40 : 64, rotate: -12 }, 0)
+          .to(".vanity-object-right", { x: isMobile ? 20 : isTablet ? 48 : 82, y: isMobile ? -16 : isTablet ? -32 : -54, rotate: 14 }, 0)
+          .to(".mirror-glow", { opacity: 1, scale: isMobile ? 1.18 : isTablet ? 1.36 : 1.65, xPercent: isMobile ? 7 : isTablet ? 16 : 28 }, 0.08)
+          .to(".mirror", { scale: isMobile ? 4.15 : isTablet ? 5.6 : 7.6, yPercent: isMobile ? 0 : -1, borderRadius: "0%", ease: "power2.inOut" }, 0.2)
+          .to(".mirror-photo", { scale: isMobile ? 1.1 : isTablet ? 1.2 : 1.32, filter: "blur(0px) saturate(1.12) brightness(1.08)" }, 0.2)
           .to(".vanity-object-left", { opacity: 0, filter: "blur(10px)" }, 0.38)
           .to(".vanity-object-right", { opacity: 0, filter: "blur(10px)" }, 0.38)
           .to(".mirror-plane", { opacity: 1, backdropFilter: isMobile ? "blur(4px)" : "blur(10px)", scale: 1 }, 0.46)
           .to(".mirror-plane", { opacity: 0, backdropFilter: "blur(0px)" }, 0.72)
-          .to(".vanity", { scale: isMobile ? 1.08 : 1.28, opacity: 0 }, 0.68);
+          .to(".vanity", { scale: isMobile ? 1.04 : isTablet ? 1.16 : 1.28, opacity: 0 }, 0.68);
 
         return () => tl.kill();
       },
@@ -56,15 +58,15 @@ export function HeroExperience() {
     <section
       ref={scope}
       id="top"
-      className="hero-experience relative h-svh overflow-hidden bg-[#f6ede4] text-[#241916] md:h-screen"
+      className="hero-experience relative h-[100svh] overflow-hidden bg-[#f6ede4] text-[#241916] md:h-[100dvh]"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,250,245,0.94),rgba(232,210,190,0.58)_38%,rgba(151,112,88,0.18)_72%,rgba(54,35,31,0.08))]" />
       <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[#fffaf5] to-transparent" />
 
       <div className="relative z-10 flex h-full items-center justify-center px-5">
-        <div className="vanity relative flex h-[min(76vh,760px)] w-[min(94vw,1120px)] items-center justify-center perspective-[1200px]">
+        <div className="vanity relative flex h-[min(70svh,760px)] w-[min(94vw,1120px)] items-center justify-center perspective-[1200px] sm:h-[min(74svh,760px)] lg:h-[min(76vh,760px)]">
           <div className="absolute inset-x-[28%] bottom-[5%] h-12 rounded-full bg-[#5d3a2f]/18 blur-2xl" />
-          <div className="mirror glass-reflection relative z-20 aspect-[0.74] h-[72vh] max-h-[680px] min-h-[440px] overflow-hidden rounded-[48%_48%_42%_42%] border-[10px] border-[#c5a56d] bg-[#fff8ef] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55),inset_0_0_34px_rgba(38,22,18,0.28),0_50px_150px_rgba(67,43,34,0.24)] before:absolute before:inset-[10px] before:z-30 before:rounded-[inherit] before:border before:border-[#2b1b18]/28 before:content-[''] after:absolute after:inset-[-18px] after:-z-10 after:rounded-[inherit] after:bg-[#f8e8d2]/30 after:blur-2xl after:content-['']">
+          <div className="mirror glass-reflection relative z-20 aspect-[0.74] h-[62svh] max-h-[680px] min-h-[330px] overflow-hidden rounded-[48%_48%_42%_42%] border-[8px] border-[#c5a56d] bg-[#fff8ef] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55),inset_0_0_34px_rgba(38,22,18,0.28),0_50px_150px_rgba(67,43,34,0.24)] before:absolute before:inset-[10px] before:z-30 before:rounded-[inherit] before:border before:border-[#2b1b18]/28 before:content-[''] after:absolute after:inset-[-18px] after:-z-10 after:rounded-[inherit] after:bg-[#f8e8d2]/30 after:blur-2xl after:content-[''] sm:h-[68svh] md:min-h-[430px] lg:h-[72vh] lg:min-h-[440px] lg:border-[10px]">
             <div className="mirror-glow absolute inset-0 z-20 opacity-50 mix-blend-screen bg-[linear-gradient(120deg,transparent_18%,rgba(255,255,255,0.78)_38%,transparent_56%)]" />
             <BeautyFace className="mirror-photo h-full w-full scale-105 blur-[1px]" />
             <div className="absolute inset-0 bg-[#2b211d]/10" />
@@ -75,21 +77,21 @@ export function HeroExperience() {
             alt="Makeup brush"
             width={110}
             height={260}
-            className="vanity-object-left absolute bottom-[10%] left-[9%] z-30 h-[30vh] w-auto rotate-[-24deg] drop-shadow-2xl"
+            className="vanity-object-left absolute bottom-[8%] left-[2%] z-30 h-[22svh] w-auto rotate-[-24deg] drop-shadow-2xl sm:left-[7%] sm:h-[27svh] lg:bottom-[10%] lg:left-[9%] lg:h-[30vh]"
           />
           <Image
             src={makeupProps.compact}
             alt="Compact powder"
             width={170}
             height={170}
-            className="vanity-object-left absolute bottom-[18%] left-[18%] z-20 h-[16vh] w-auto drop-shadow-xl"
+            className="vanity-object-left absolute bottom-[18%] left-[12%] z-20 h-[12svh] w-auto drop-shadow-xl sm:left-[18%] sm:h-[15svh] lg:h-[16vh]"
           />
           <Image
             src={makeupProps.lipstick}
             alt="Lipstick"
             width={95}
             height={190}
-            className="vanity-object-right absolute right-[12%] top-[23%] z-30 h-[24vh] w-auto rotate-[17deg] drop-shadow-2xl"
+            className="vanity-object-right absolute right-[4%] top-[21%] z-30 h-[18svh] w-auto rotate-[17deg] drop-shadow-2xl sm:right-[10%] sm:h-[22svh] lg:right-[12%] lg:top-[23%] lg:h-[24vh]"
           />
         </div>
 
@@ -97,7 +99,7 @@ export function HeroExperience() {
           <p className="hero-title-top text-xs font-bold tracking-[0.55em] text-[#6f1d2a]">
             {hero.label}
           </p>
-          <h1 className="mt-5 font-serif text-[clamp(2.85rem,15vw,12rem)] leading-[0.82] tracking-normal md:text-[clamp(4.4rem,13vw,12rem)] md:leading-[0.78]">
+          <h1 className="mt-4 max-w-[94vw] font-serif text-[clamp(2.55rem,13.2vw,5.4rem)] leading-[0.86] tracking-normal sm:text-[clamp(3.2rem,12vw,7rem)] md:text-[clamp(4rem,10vw,9rem)] md:leading-[0.8] lg:mt-5 lg:text-[clamp(4.4rem,13vw,12rem)] lg:leading-[0.78]">
             <span className="hero-title-top block">{hero.headlineTop}</span>
             <span className="hero-title-bottom block italic">{hero.headlineBottom}</span>
           </h1>

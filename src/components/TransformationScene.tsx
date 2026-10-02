@@ -35,11 +35,13 @@ export function TransformationScene() {
 
     mm.add(
       {
-        desktop: "(min-width: 768px)",
+        desktop: "(min-width: 1024px)",
+        tablet: "(min-width: 768px) and (max-width: 1023px)",
         mobile: "(max-width: 767px)",
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        const isTablet = context.conditions?.tablet;
         const entrance = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -53,7 +55,7 @@ export function TransformationScene() {
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? "+=260%" : "+=360%",
+            end: isMobile ? "+=210%" : isTablet ? "+=280%" : "+=360%",
             scrub: 1.15,
             pin: true,
             anticipatePin: 1,
@@ -63,7 +65,7 @@ export function TransformationScene() {
 
         entrance.fromTo(
           ".transformation-frame",
-          { yPercent: isMobile ? 6 : 8, scale: isMobile ? 1.025 : 1.035, opacity: 0.78 },
+          { yPercent: isMobile ? 4 : isTablet ? 6 : 8, scale: isMobile ? 1.01 : isTablet ? 1.02 : 1.035, opacity: 0.78 },
           { yPercent: 0, scale: 1, opacity: 1, ease: "none" },
           0,
         );
@@ -82,12 +84,12 @@ export function TransformationScene() {
         tl.to(".stage-copy-0", { autoAlpha: 0, y: -24, duration: 0.18 }, 0.82);
 
         showCopy(1, 1.02);
-        tl.to(".transformation-frame", { scale: isMobile ? 1.03 : 1.04, xPercent: isMobile ? 0 : -1, yPercent: isMobile ? -1 : 0, duration: 0.38 }, 0.92)
+        tl.to(".transformation-frame", { scale: isMobile ? 1.012 : isTablet ? 1.025 : 1.04, xPercent: isMobile ? 0 : isTablet ? -0.5 : -1, yPercent: isMobile ? -0.5 : 0, duration: 0.38 }, 0.92)
           .to(".stage-eyes", { autoAlpha: 1, duration: 0.34, ease: "power1.out" }, 1.14)
           .to(".stage-copy-1", { autoAlpha: 0, y: -24, duration: 0.18 }, 1.82);
 
         showCopy(2, 2.02);
-        tl.to(".transformation-frame", { scale: isMobile ? 1.02 : 1.03, xPercent: isMobile ? 0 : 1, yPercent: 0, duration: 0.38 }, 1.92)
+        tl.to(".transformation-frame", { scale: isMobile ? 1.01 : isTablet ? 1.018 : 1.03, xPercent: isMobile ? 0 : isTablet ? 0.5 : 1, yPercent: 0, duration: 0.38 }, 1.92)
           .to(".stage-color", { autoAlpha: 1, duration: 0.34, ease: "power1.out" }, 2.14)
           .to(".stage-copy-2", { autoAlpha: 0, y: -24, duration: 0.18 }, 2.82);
 
@@ -108,7 +110,7 @@ export function TransformationScene() {
   });
 
   return (
-    <section className="scene-overlap relative h-svh overflow-hidden bg-[#201614] text-[#fff7ef] md:h-screen" ref={scope}>
+    <section className="scene-overlap relative h-[100svh] overflow-hidden bg-[#201614] text-[#fff7ef] md:h-[100dvh] lg:h-screen" ref={scope}>
       <div className="camera absolute inset-0 overflow-hidden">
         <div className="transformation-frame absolute inset-0 origin-center will-change-transform">
           <BeautyFace className="h-full w-full" aria-label="Kumulativna beauty transformacija kroz realne makeup faze" />
@@ -118,15 +120,15 @@ export function TransformationScene() {
       </div>
 
       <div className="transformation-enter pointer-events-none absolute inset-0 z-20 bg-[#fff7ef]/18 backdrop-blur-[8px]" />
-      <div className="relative z-30 flex h-full items-end px-5 pb-8 md:px-12 md:pb-20">
-        <div className="relative min-h-52 w-full max-w-4xl md:min-h-64">
+      <div className="relative z-30 flex h-full items-end px-5 pb-[calc(env(safe-area-inset-bottom)+1.75rem)] md:px-10 md:pb-14 lg:px-12 lg:pb-20">
+        <div className="relative min-h-44 w-full max-w-[88vw] sm:min-h-52 md:max-w-2xl lg:min-h-64 lg:max-w-4xl">
           {makeupStages.map((stage, index) => (
             <div
               className={`stage-copy stage-copy-${index} absolute bottom-0 left-0 max-w-[min(88vw,44rem)] opacity-0`}
               key={stage.title}
             >
               <p className="text-sm font-bold tracking-[0.42em] text-[#d2af76]">{stage.number}</p>
-              <h2 className="mt-2 font-serif text-[clamp(3rem,14vw,5.5rem)] leading-[0.86] md:text-[clamp(4rem,9vw,9rem)] md:leading-[0.82]">
+              <h2 className="mt-2 font-serif text-[clamp(2.65rem,11.5vw,4.75rem)] leading-[0.88] md:text-[clamp(3.6rem,8vw,6rem)] md:leading-[0.84] lg:text-[clamp(4rem,9vw,9rem)] lg:leading-[0.82]">
                 {stage.title === "FINALNI LOOK" ? (
                   <>
                     FINALNI
@@ -137,7 +139,7 @@ export function TransformationScene() {
                   stage.title
                 )}
               </h2>
-              <p className="mt-4 max-w-[18rem] text-base leading-7 text-[#f4dfd2] md:mt-5 md:max-w-md md:text-xl md:leading-8">{stage.text}</p>
+              <p className="mt-3 max-w-[17rem] text-sm leading-6 text-[#f4dfd2] sm:text-base sm:leading-7 md:mt-4 md:max-w-sm md:text-lg md:leading-7 lg:mt-5 lg:max-w-md lg:text-xl lg:leading-8">{stage.text}</p>
             </div>
           ))}
         </div>
