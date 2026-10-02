@@ -24,6 +24,29 @@ function normalizeTime(time: string) {
   return time.slice(0, 5);
 }
 
+function formatAdminDate(date: string) {
+  return new Intl.DateTimeFormat("sr-Latn-RS", { day: "2-digit", month: "2-digit" }).format(new Date(`${date}T00:00:00`));
+}
+
+function currentAdminDate() {
+  return new Intl.DateTimeFormat("sr-Latn-RS", { day: "numeric", month: "long", year: "numeric" }).format(new Date());
+}
+
+function statusClass(status: BookingStatus) {
+  if (status === "confirmed") return "border-[#1f6f3f]/25 bg-[#1f6f3f]/10 text-[#1f6f3f]";
+  if (status === "pending") return "border-[#b88a45]/30 bg-[#b88a45]/15 text-[#8a5a09]";
+  if (status === "rejected") return "border-[#6f1d2a]/20 bg-[#6f1d2a]/8 text-[#6f1d2a]";
+  return "border-[#6b574e]/20 bg-[#6b574e]/10 text-[#6b574e]";
+}
+
+function fieldClass() {
+  return "w-full border border-[#d8bd80]/45 bg-[#fffaf4] px-3 py-2.5 text-sm outline-none transition focus:border-[#6f1d2a] focus:ring-2 focus:ring-[#6f1d2a]/15";
+}
+
+function labelClass() {
+  return "grid gap-1.5 text-[10px] font-bold tracking-[0.18em] text-[#8f6d5a]";
+}
+
 function intervalsAreValid(intervals: WeekInterval[]) {
   const sorted = intervals
     .filter((interval) => interval.startTime && interval.endTime)
@@ -222,212 +245,301 @@ export function AdminDashboard() {
     await loadSchedule();
   }
 
+  const today = todayIso();
+  const todaysBookings = scheduleDays.find((day) => day.date === today)?.bookings ?? bookings.filter((booking) => booking.booking_date === today);
+  const pendingCount = bookings.filter((booking) => booking.status === "pending").length;
+  const confirmedCount = bookings.filter((booking) => booking.status === "confirmed").length;
+  const nextBooking = [...scheduleDays.flatMap((day) => day.bookings), ...bookings]
+    .filter((booking) => booking.status === "pending" || booking.status === "confirmed")
+    .filter((booking, index, all) => booking.id ? all.findIndex((item) => item.id === booking.id) === index : true)
+    .sort((a, b) => `${a.booking_date} ${a.start_time}`.localeCompare(`${b.booking_date} ${b.start_time}`))
+    .find((booking) => `${booking.booking_date} ${normalizeTime(booking.start_time)}` >= `${today} ${normalizeTime(new Date().toTimeString())}`);
+
   if (!token) {
     return (
       <main className="grid min-h-svh place-items-center bg-[#1b1110] p-5 text-[#fff7ef]">
-        <form className="w-full max-w-md border border-[#d8bd80]/35 bg-[#fff7ef] p-8 text-[#241916]" onSubmit={login}>
-          <p className="text-xs font-bold tracking-[0.35em] text-[#8f6d5a]">YUMMI ART ADMIN</p>
+        <form className="w-full max-w-md border border-[#d8bd80]/35 bg-[#fff7ef] p-8 text-[#241916] shadow-[0_30px_120px_rgba(0,0,0,0.35)]" onSubmit={login}>
+          <p className="text-xs font-bold tracking-[0.35em] text-[#8f6d5a]">YUUMI ART ADMIN</p>
           <h1 className="mt-4 font-serif text-5xl text-[#6f1d2a]">Prijava</h1>
-          {error ? <p className="mt-4 text-sm text-[#6f1d2a]">{error}</p> : null}
+          {error ? <p className="mt-4 border border-[#6f1d2a]/20 bg-[#6f1d2a]/8 p-3 text-sm text-[#6f1d2a]">• {error}</p> : null}
           <label className="mt-8 grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]">
             EMAIL
-            <input className="border px-4 py-3" value={email} onChange={(event) => setEmail(event.target.value)} />
+            <input className={fieldClass()} value={email} onChange={(event) => setEmail(event.target.value)} />
           </label>
           <label className="mt-4 grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]">
             LOZINKA
-            <input className="border px-4 py-3" type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+            <input className={fieldClass()} type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
           </label>
-          <button className="mt-6 w-full bg-[#6f1d2a] px-5 py-3 font-bold text-white">ULOGUJ SE</button>
+          <button className="mt-6 w-full bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.22em] text-white">ULOGUJ SE</button>
         </form>
       </main>
     );
   }
 
   return (
-    <main className="min-h-svh bg-[#f7efe8] p-5 text-[#241916] md:p-8">
-      <div className="mx-auto max-w-7xl">
+    <main className="min-h-svh overflow-x-hidden bg-[#f7efe8] p-4 text-[#241916] md:p-8">
+      <div className="mx-auto grid max-w-[1500px] gap-6">
         <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[#d8bd80]/45 pb-6">
           <div>
-            <p className="text-xs font-bold tracking-[0.35em] text-[#8f6d5a]">YUMMI ART ADMIN</p>
-            <h1 className="mt-2 font-serif text-6xl text-[#6f1d2a]">Zakazivanja</h1>
+            <p className="text-xs font-bold tracking-[0.35em] text-[#8f6d5a]">YUUMI ART ADMIN</p>
+            <h1 className="mt-2 font-serif text-5xl text-[#6f1d2a] md:text-6xl">Zakazivanja</h1>
           </div>
-          <button className="text-xs font-bold tracking-[0.3em]" onClick={() => setToken("")}>ODJAVA</button>
+          <div className="flex items-center gap-5 text-right">
+            <p className="hidden text-sm text-[#6b574e] sm:block">{currentAdminDate()}</p>
+            <button className="text-xs font-bold tracking-[0.3em] text-[#6f1d2a]" onClick={() => setToken("")}>ODJAVA</button>
+          </div>
         </header>
 
-        {error ? <p className="mt-5 bg-[#6f1d2a]/10 p-3 text-[#6f1d2a]">{error}</p> : null}
-        {notice ? <p className="mt-5 bg-[#1f6f3f]/10 p-3 text-[#1f6f3f]">{notice}</p> : null}
+        {error ? <p className="border border-[#6f1d2a]/20 bg-[#6f1d2a]/8 p-3 text-sm text-[#6f1d2a]">• {error}</p> : null}
+        {notice ? <p className="border border-[#1f6f3f]/20 bg-[#1f6f3f]/10 p-3 text-sm text-[#1f6f3f]">• {notice}</p> : null}
 
-        <section className="mt-6 grid gap-4 md:grid-cols-4">
-          <label className="grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]">
-            STATUS
-            <select className="border bg-transparent px-3 py-3" value={status} onChange={(event) => setStatus(event.target.value)}>
-              <option value="">Svi</option>
-              <option value="pending">PENDING</option>
-              <option value="confirmed">CONFIRMED</option>
-              <option value="rejected">REJECTED</option>
-              <option value="cancelled">CANCELLED</option>
-            </select>
-          </label>
-          <label className="grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]">
-            DATUM
-            <input className="border bg-transparent px-3 py-3" type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-          </label>
+        <section className="grid gap-3 md:grid-cols-4">
+          {[
+            ["DANAS", `${todaysBookings.length} ${todaysBookings.length === 1 ? "termin" : "termina"}`],
+            ["ČEKA POTVRDU", `${pendingCount} ${pendingCount === 1 ? "zahtev" : "zahteva"}`],
+            ["POTVRĐENO", String(confirmedCount)],
+            ["SLEDEĆI TERMIN", nextBooking ? `${normalizeTime(nextBooking.start_time)} · ${nextBooking.customer_name ?? ""}` : "Nema"],
+          ].map(([label, value]) => (
+            <div className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4" key={label}>
+              <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">{label}</p>
+              <p className="mt-2 font-serif text-2xl text-[#6f1d2a]">{value}</p>
+            </div>
+          ))}
         </section>
 
-        <section className="mt-8 grid gap-5 lg:grid-cols-[1fr_0.38fr]">
-          <div className="grid gap-5">
-          <div className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-serif text-3xl text-[#6f1d2a]">Week view</h2>
-              <div className="flex gap-2 text-xs font-bold tracking-[0.18em] text-[#6f1d2a]">
-                <button onClick={() => setWeekStart(addDays(weekStart, -7))}>PRETHODNA</button>
-                <button onClick={() => setWeekStart(todayIso())}>DANAS</button>
-                <button onClick={() => setWeekStart(addDays(weekStart, 7))}>SLEDEĆA</button>
-              </div>
+        <section className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4">
+          <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+            <label className={labelClass()}>
+              STATUS
+              <select className={fieldClass()} value={status} onChange={(event) => setStatus(event.target.value)}>
+                <option value="">Svi statusi</option>
+                <option value="pending">PENDING</option>
+                <option value="confirmed">CONFIRMED</option>
+                <option value="rejected">REJECTED</option>
+                <option value="cancelled">CANCELLED</option>
+              </select>
+            </label>
+            <label className={labelClass()}>
+              DATUM
+              <input className={fieldClass()} type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+            </label>
+            <button className="border border-[#d8bd80]/50 px-4 py-3 text-xs font-bold tracking-[0.2em] text-[#6f1d2a]" onClick={() => { setStatus(""); setDate(""); }}>
+              RESET
+            </button>
+          </div>
+        </section>
+
+        <section className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">KALENDAR</p>
+              <h2 className="font-serif text-3xl text-[#6f1d2a]">Nedelja</h2>
             </div>
-            <div className="mt-4 grid gap-3 md:grid-cols-7">
+            <div className="flex overflow-hidden border border-[#d8bd80]/45 text-[10px] font-bold tracking-[0.18em] text-[#6f1d2a]">
+              <button className="border-r border-[#d8bd80]/45 px-3 py-2" onClick={() => setWeekStart(addDays(weekStart, -7))}>PRETHODNA</button>
+              <button className="border-r border-[#d8bd80]/45 bg-[#6f1d2a]/8 px-3 py-2" onClick={() => setWeekStart(todayIso())}>DANAS</button>
+              <button className="px-3 py-2" onClick={() => setWeekStart(addDays(weekStart, 7))}>SLEDEĆA</button>
+            </div>
+          </div>
+
+          <div className="mt-4 overflow-x-auto pb-2">
+            <div className="grid min-w-[980px] grid-cols-7 gap-2">
               {scheduleDays.map((day) => {
                 const working = dayWorkingIntervals(day);
                 const available = availableSegments(day);
                 const blockedDay = day.exceptions.some((exception) => exception.type === "blocked_day");
                 return (
-                  <div className="min-h-48 border border-[#d8bd80]/35 p-3" key={day.date}>
-                    <p className="text-xs font-bold tracking-[0.18em] text-[#8f6d5a]">{weekdays[day.weekday].toUpperCase()}</p>
-                    <p className="mt-1 font-serif text-2xl text-[#6f1d2a]">{day.date.slice(5)}</p>
-                    {blockedDay ? <p className="mt-3 text-xs font-bold text-[#6f1d2a]">BLOCKED / NEDOSTUPNO</p> : null}
-                    {!blockedDay && working.length === 0 ? <p className="mt-3 text-xs font-bold text-[#6b574e]">CLOSED</p> : null}
+                  <div className="min-h-56 border border-[#d8bd80]/35 bg-[#fffaf4] p-3" key={day.date}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-[10px] font-bold tracking-[0.18em] text-[#8f6d5a]">{weekdays[day.weekday].toUpperCase()}</p>
+                        <p className="font-serif text-2xl text-[#6f1d2a]">{formatAdminDate(day.date)}</p>
+                      </div>
+                      {blockedDay ? <span className="border border-[#6f1d2a]/25 bg-[#6f1d2a]/10 px-2 py-1 text-[9px] font-bold text-[#6f1d2a]">BLOCKED</span> : null}
+                    </div>
+                    {!blockedDay && working.length === 0 ? <p className="mt-10 text-center text-xs font-bold tracking-[0.18em] text-[#8f6d5a]/70">NEDOSTUPNO</p> : null}
                     {!blockedDay && working.map((interval) => (
-                      <p className="mt-2 text-xs font-bold text-[#8f6d5a]" key={`${interval.start}-${interval.end}`}>{interval.start}–{interval.end}</p>
+                      <p className="mt-2 text-[11px] font-bold text-[#8f6d5a]" key={`${interval.start}-${interval.end}`}>{interval.start}–{interval.end}</p>
                     ))}
-                    {day.bookings.map((booking) => (
-                      <p className={`mt-2 text-xs font-bold ${booking.status === "confirmed" ? "text-[#1f6f3f]" : "text-[#9b6a10]"}`} key={booking.id}>
-                        {normalizeTime(booking.start_time)} {booking.status.toUpperCase()}
-                      </p>
-                    ))}
-                    {day.exceptions.filter((exception) => exception.type === "blocked_interval").map((exception) => (
-                      <p className="mt-2 text-xs font-bold text-[#6f1d2a]" key={exception.id}>
-                        {normalizeTime(exception.start_time || "")}–{normalizeTime(exception.end_time || "")} BLOCKED
-                      </p>
-                    ))}
-                    {!blockedDay && available.map((segment) => (
-                      <p className="mt-2 text-xs text-[#1f6f3f]" key={`${segment.start}-${segment.end}`}>{segment.start}–{segment.end} AVAILABLE</p>
-                    ))}
+                    <div className="mt-3 grid gap-2">
+                      {day.bookings.map((booking) => (
+                        <div className={`border p-2 text-xs ${statusClass(booking.status)}`} key={booking.id}>
+                          <p className="font-bold">{normalizeTime(booking.start_time)} · {booking.customer_name ?? "Klijent"}</p>
+                          <p className="mt-1 text-[10px] font-bold tracking-[0.16em]">{booking.status.toUpperCase()}</p>
+                        </div>
+                      ))}
+                      {day.exceptions.filter((exception) => exception.type === "blocked_interval").map((exception) => (
+                        <div className="border border-[#6f1d2a]/25 bg-[#6f1d2a]/8 p-2 text-xs text-[#6f1d2a]" key={exception.id}>
+                          <p className="font-bold">{normalizeTime(exception.start_time || "")}–{normalizeTime(exception.end_time || "")}</p>
+                          <p className="mt-1 text-[10px] font-bold tracking-[0.16em]">NEDOSTUPNO</p>
+                        </div>
+                      ))}
+                      {!blockedDay && available.slice(0, 3).map((segment) => (
+                        <p className="rounded-sm bg-[#1f6f3f]/5 px-2 py-1 text-[11px] text-[#1f6f3f]/75" key={`${segment.start}-${segment.end}`}>{segment.start}–{segment.end} dostupno</p>
+                      ))}
+                    </div>
                   </div>
                 );
               })}
             </div>
           </div>
-          <div className="overflow-hidden border border-[#d8bd80]/45 bg-[#fff7ef]">
-            <div className="grid grid-cols-7 bg-[#241916] px-4 py-3 text-xs font-bold tracking-[0.18em] text-[#fff7ef]">
-              <span>DATUM</span><span>VREME</span><span className="col-span-2">KLIJENT</span><span>USLUGA</span><span>STATUS</span><span>AKCIJE</span>
-            </div>
-            {bookings.length === 0 ? <p className="p-5 text-[#6b574e]">Nema termina za izabrane filtere.</p> : null}
-            {bookings.map((booking) => (
-              <div className="grid grid-cols-7 items-center gap-2 border-t border-[#d8bd80]/25 px-4 py-3 text-sm" key={booking.id}>
-                <span>{booking.booking_date}</span>
-                <span>{booking.start_time.slice(0, 5)}–{booking.end_time.slice(0, 5)}</span>
-                <span className="col-span-2">{booking.customer_name}<br /><small>{booking.phone}</small></span>
-                <span>{bookingServices.find((service) => service.id === booking.service_id)?.name}</span>
-                <span className="font-bold">{booking.status.toUpperCase()}</span>
-                <span className="flex flex-wrap gap-2">
-                  <button onClick={() => booking.id && updateStatus(booking.id, "confirmed")}>CONFIRM</button>
-                  <button onClick={() => booking.id && updateStatus(booking.id, "rejected")}>REJECT</button>
-                  <button onClick={() => booking.id && updateStatus(booking.id, "cancelled")}>CANCEL</button>
-                </span>
-              </div>
-            ))}
-          </div>
-          </div>
+        </section>
 
-          <div className="grid gap-5">
-            <div className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5">
-              <h2 className="font-serif text-3xl text-[#6f1d2a]">Radno vreme</h2>
-              <div className="mt-4 grid gap-4">
-                {weekdays.map((label, weekday) => {
-                  const intervals = weeklyDraft[weekday] ?? [];
-                  return (
-                    <div
-                      className="grid gap-2 border-t border-[#d8bd80]/25 pt-3"
-                      key={label}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-bold">{label}</p>
-                        <button className="text-xs font-bold text-[#6f1d2a]" onClick={() => void saveWeekday(weekday, intervals)}>SAVE</button>
+        <section className="overflow-hidden border border-[#d8bd80]/45 bg-[#fff7ef]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d8bd80]/35 px-4 py-4">
+            <div>
+              <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">BOOKINGS</p>
+              <h2 className="font-serif text-3xl text-[#6f1d2a]">Termini</h2>
+            </div>
+          </div>
+          <div className="hidden grid-cols-[0.9fr_0.8fr_1.4fr_1.3fr_0.9fr_1fr] bg-[#241916] px-4 py-3 text-xs font-bold tracking-[0.16em] text-[#fff7ef] lg:grid">
+            <span>DATUM</span><span>VREME</span><span>KLIJENT</span><span>USLUGA</span><span>STATUS</span><span>AKCIJE</span>
+          </div>
+          {bookings.length === 0 ? <p className="p-5 text-[#6b574e]">Nema termina za izabrane filtere.</p> : null}
+          {bookings.map((booking) => (
+            <div className="grid gap-3 border-t border-[#d8bd80]/25 px-4 py-4 text-sm lg:grid-cols-[0.9fr_0.8fr_1.4fr_1.3fr_0.9fr_1fr] lg:items-center" key={booking.id}>
+              <span>{booking.booking_date}</span>
+              <span>{normalizeTime(booking.start_time)}–{normalizeTime(booking.end_time)}</span>
+              <span>
+                <strong className="block text-[#241916]">{booking.customer_name}</strong>
+                <small className="block text-[#6b574e]">{booking.phone}</small>
+                {booking.email ? <small className="block text-[#6b574e]">{booking.email}</small> : null}
+              </span>
+              <span>{bookingServices.find((service) => service.id === booking.service_id)?.name}</span>
+              <span className={`w-fit border px-2 py-1 text-[10px] font-bold tracking-[0.16em] ${statusClass(booking.status)}`}>{booking.status.toUpperCase()}</span>
+              <span className="flex flex-wrap gap-2">
+                {booking.status === "pending" ? (
+                  <>
+                    <button className="border border-[#1f6f3f]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#1f6f3f]" onClick={() => booking.id && updateStatus(booking.id, "confirmed")}>POTVRDI</button>
+                    <button className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a]" onClick={() => booking.id && updateStatus(booking.id, "rejected")}>ODBIJ</button>
+                  </>
+                ) : null}
+                {booking.status === "confirmed" ? (
+                  <button className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a]" onClick={() => booking.id && updateStatus(booking.id, "cancelled")}>OTKAŽI</button>
+                ) : null}
+              </span>
+            </div>
+          ))}
+        </section>
+
+        <section className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4">
+          <div className="mb-3">
+            <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">DOSTUPNOST</p>
+            <h2 className="font-serif text-3xl text-[#6f1d2a]">Radno vreme</h2>
+          </div>
+          <div className="grid gap-2">
+            {weekdays.map((label, weekday) => {
+              const intervals = weeklyDraft[weekday] ?? [];
+              return (
+                <div className="grid gap-2 border-t border-[#d8bd80]/25 py-3 lg:grid-cols-[150px_1fr_auto_auto] lg:items-start" key={label}>
+                  <p className="text-sm font-bold">{label}</p>
+                  <div className="grid gap-2">
+                    {intervals.length === 0 ? <p className="text-xs font-bold tracking-[0.14em] text-[#8f6d5a]/70">NEDOSTUPNO</p> : null}
+                    {intervals.map((interval, index) => (
+                      <div className="grid max-w-md grid-cols-[1fr_auto_1fr_auto] items-center gap-2" key={`${weekday}-${index}`}>
+                        <input
+                          className={fieldClass()}
+                          type="time"
+                          value={interval.startTime}
+                          onChange={(event) => setWeeklyDraft((current) => ({
+                            ...current,
+                            [weekday]: current[weekday].map((item, itemIndex) => itemIndex === index ? { ...item, startTime: event.target.value } : item),
+                          }))}
+                        />
+                        <span className="text-[#8f6d5a]">—</span>
+                        <input
+                          className={fieldClass()}
+                          type="time"
+                          value={interval.endTime}
+                          onChange={(event) => setWeeklyDraft((current) => ({
+                            ...current,
+                            [weekday]: current[weekday].map((item, itemIndex) => itemIndex === index ? { ...item, endTime: event.target.value } : item),
+                          }))}
+                        />
+                        <button
+                          className="text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a]"
+                          onClick={() => setWeeklyDraft((current) => ({
+                            ...current,
+                            [weekday]: current[weekday].filter((_, itemIndex) => itemIndex !== index),
+                          }))}
+                        >
+                          UKLONI
+                        </button>
                       </div>
-                      {intervals.length === 0 ? <p className="text-xs text-[#6b574e]">Nedostupno</p> : null}
-                      {intervals.map((interval, index) => (
-                        <div className="grid grid-cols-[1fr_1fr_auto] gap-2" key={`${weekday}-${index}`}>
-                          <input
-                            className="border bg-transparent p-2"
-                            value={interval.startTime}
-                            onChange={(event) => setWeeklyDraft((current) => ({
-                              ...current,
-                              [weekday]: current[weekday].map((item, itemIndex) => itemIndex === index ? { ...item, startTime: event.target.value } : item),
-                            }))}
-                          />
-                          <input
-                            className="border bg-transparent p-2"
-                            value={interval.endTime}
-                            onChange={(event) => setWeeklyDraft((current) => ({
-                              ...current,
-                              [weekday]: current[weekday].map((item, itemIndex) => itemIndex === index ? { ...item, endTime: event.target.value } : item),
-                            }))}
-                          />
-                          <button
-                            className="text-xs font-bold text-[#6f1d2a]"
-                            onClick={() => setWeeklyDraft((current) => ({
-                              ...current,
-                              [weekday]: current[weekday].filter((_, itemIndex) => itemIndex !== index),
-                            }))}
-                          >
-                            UKLONI
-                          </button>
-                        </div>
-                      ))}
-                      <button
-                        className="text-left text-xs font-bold tracking-[0.18em] text-[#6f1d2a]"
-                        onClick={() => setWeeklyDraft((current) => ({
-                          ...current,
-                          [weekday]: [...(current[weekday] ?? []), { startTime: "10:00", endTime: "18:00" }],
-                        }))}
-                      >
-                        DODAJ INTERVAL
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <form className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5" onSubmit={createManual}>
-              <h2 className="font-serif text-3xl text-[#6f1d2a]">Manual booking</h2>
-              <select className="mt-4 w-full border bg-transparent p-3" value={manual.serviceId} onChange={(event) => setManual((current) => ({ ...current, serviceId: event.target.value }))}>
-                {bookingServices.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
-              </select>
-              <input className="mt-3 w-full border bg-transparent p-3" type="date" value={manual.date} onChange={(event) => setManual((current) => ({ ...current, date: event.target.value }))} />
-              <input className="mt-3 w-full border bg-transparent p-3" value={manual.startTime} onChange={(event) => setManual((current) => ({ ...current, startTime: event.target.value }))} />
-              <input className="mt-3 w-full border bg-transparent p-3" placeholder="Ime" value={manual.fullName} onChange={(event) => setManual((current) => ({ ...current, fullName: event.target.value }))} />
-              <input className="mt-3 w-full border bg-transparent p-3" placeholder="Telefon" value={manual.phone} onChange={(event) => setManual((current) => ({ ...current, phone: event.target.value }))} />
-              <button className="mt-4 w-full bg-[#6f1d2a] p-3 font-bold text-white">SAČUVAJ</button>
-            </form>
+                    ))}
+                  </div>
+                  <button
+                    className="text-left text-[10px] font-bold tracking-[0.16em] text-[#6f1d2a]"
+                    onClick={() => setWeeklyDraft((current) => ({
+                      ...current,
+                      [weekday]: [...(current[weekday] ?? []), { startTime: "10:00", endTime: "18:00" }],
+                    }))}
+                  >
+                    + INTERVAL
+                  </button>
+                  <button className="bg-[#6f1d2a] px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-white" onClick={() => void saveWeekday(weekday, intervals)}>SAČUVAJ</button>
+                </div>
+              );
+            })}
+          </div>
+        </section>
 
-            <form className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5" onSubmit={createBlock}>
-              <h2 className="font-serif text-3xl text-[#6f1d2a]">Blokiraj termin</h2>
-              <select className="mt-4 w-full border bg-transparent p-3" value={block.type} onChange={(event) => setBlock((current) => ({ ...current, type: event.target.value }))}>
-                <option value="blocked_interval">Blokiraj interval</option>
-                <option value="blocked_day">Blokiraj ceo dan</option>
-                <option value="custom_availability">Custom dostupnost</option>
-              </select>
-              <input className="mt-3 w-full border bg-transparent p-3" type="date" value={block.date} onChange={(event) => setBlock((current) => ({ ...current, date: event.target.value }))} />
+        <section className="grid gap-5 xl:grid-cols-2">
+          <form className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5" onSubmit={createManual}>
+            <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">BRZE AKCIJE</p>
+            <h2 className="font-serif text-3xl text-[#6f1d2a]">Dodaj termin</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className={`${labelClass()} sm:col-span-2`}>Usluga
+                <select className={fieldClass()} value={manual.serviceId} onChange={(event) => setManual((current) => ({ ...current, serviceId: event.target.value }))}>
+                  {bookingServices.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
+                </select>
+              </label>
+              <label className={labelClass()}>Datum
+                <input className={fieldClass()} type="date" value={manual.date} onChange={(event) => setManual((current) => ({ ...current, date: event.target.value }))} />
+              </label>
+              <label className={labelClass()}>Vreme
+                <input className={fieldClass()} type="time" value={manual.startTime} onChange={(event) => setManual((current) => ({ ...current, startTime: event.target.value }))} />
+              </label>
+              <label className={labelClass()}>Ime i prezime
+                <input className={fieldClass()} value={manual.fullName} onChange={(event) => setManual((current) => ({ ...current, fullName: event.target.value }))} />
+              </label>
+              <label className={labelClass()}>Telefon
+                <input className={fieldClass()} value={manual.phone} onChange={(event) => setManual((current) => ({ ...current, phone: event.target.value }))} />
+              </label>
+            </div>
+            <button className="mt-4 bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.18em] text-white">DODAJ TERMIN</button>
+          </form>
+
+          <form className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5" onSubmit={createBlock}>
+            <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">BRZE AKCIJE</p>
+            <h2 className="font-serif text-3xl text-[#6f1d2a]">Blokiraj dostupnost</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label className={`${labelClass()} sm:col-span-2`}>Tip
+                <select className={fieldClass()} value={block.type} onChange={(event) => setBlock((current) => ({ ...current, type: event.target.value }))}>
+                  <option value="blocked_interval">Blokiraj interval</option>
+                  <option value="blocked_day">Blokiraj ceo dan</option>
+                  <option value="custom_availability">Posebna dostupnost</option>
+                </select>
+              </label>
+              <label className={labelClass()}>Datum
+                <input className={fieldClass()} type="date" value={block.date} onChange={(event) => setBlock((current) => ({ ...current, date: event.target.value }))} />
+              </label>
               {block.type !== "blocked_day" ? (
                 <>
-                  <input className="mt-3 w-full border bg-transparent p-3" value={block.startTime} onChange={(event) => setBlock((current) => ({ ...current, startTime: event.target.value }))} />
-                  <input className="mt-3 w-full border bg-transparent p-3" value={block.endTime} onChange={(event) => setBlock((current) => ({ ...current, endTime: event.target.value }))} />
+                  <label className={labelClass()}>Od
+                    <input className={fieldClass()} type="time" value={block.startTime} onChange={(event) => setBlock((current) => ({ ...current, startTime: event.target.value }))} />
+                  </label>
+                  <label className={labelClass()}>Do
+                    <input className={fieldClass()} type="time" value={block.endTime} onChange={(event) => setBlock((current) => ({ ...current, endTime: event.target.value }))} />
+                  </label>
                 </>
               ) : null}
-              <input className="mt-3 w-full border bg-transparent p-3" placeholder="Razlog" value={block.reason} onChange={(event) => setBlock((current) => ({ ...current, reason: event.target.value }))} />
-              <button className="mt-4 w-full bg-[#6f1d2a] p-3 font-bold text-white">SAČUVAJ</button>
-            </form>
-          </div>
+              <label className={`${labelClass()} sm:col-span-2`}>Razlog
+                <input className={fieldClass()} value={block.reason} onChange={(event) => setBlock((current) => ({ ...current, reason: event.target.value }))} />
+              </label>
+            </div>
+            <button className="mt-4 bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.18em] text-white">SAČUVAJ DOSTUPNOST</button>
+          </form>
         </section>
       </div>
     </main>
