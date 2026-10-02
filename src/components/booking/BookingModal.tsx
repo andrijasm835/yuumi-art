@@ -3,15 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BookingService } from "@/lib/booking/types";
 import { addDays, belgradeDate } from "@/lib/booking/time";
+import { stepsForSchedulingMode } from "@/lib/booking/flow";
 
-type Step = 0 | 1 | 2 | 3 | 4;
+type Step = number;
 
 type BookingModalProps = {
   open: boolean;
   onClose: () => void;
 };
-
-const steps = ["USLUGA", "DATUM", "VREME", "PODACI", "POTVRDA"];
 
 function nextDays(count = 45) {
   const start = belgradeDate();
@@ -50,10 +49,13 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState<{ service: string; date: string; time: string } | null>(null);
+  const [success, setSuccess] = useState<{ service: string; date?: string; time?: string; duration?: string; mode: "appointment" | "inquiry" } | null>(null);
   const [details, setDetails] = useState({ fullName: "", phone: "", email: "", instagram: "", note: "" });
 
   const selectedService = services.find((service) => service.id === serviceId);
+  const isInquiry = selectedService?.schedulingMode === "inquiry";
+  const activeSteps = stepsForSchedulingMode(selectedService?.schedulingMode);
+  const currentStep = activeSteps[step] ?? "USLUGA";
   const days = useMemo(() => nextDays(), []);
   const groupedDays = useMemo(() => {
     return days.reduce<Array<{ month: string; dates: string[] }>>((groups, item) => {
@@ -109,7 +111,9 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
   }, [open]);
 
   useEffect(() => {
-    if (!open || !serviceId) return;
+    if (!open || !serviceId || isInquiry) {
+      return;
+    }
     const task = window.setTimeout(() => {
       fetch(`/api/bookable-dates?serviceId=${encodeURIComponent(serviceId)}`)
         .then(async (response) => {
@@ -125,10 +129,12 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
         .catch((err: Error) => setError(err.message));
     }, 0);
     return () => window.clearTimeout(task);
-  }, [open, serviceId, date]);
+  }, [open, serviceId, date, isInquiry]);
 
   useEffect(() => {
-    if (!open || !serviceId || !date) return;
+    if (!open || !serviceId || !date || isInquiry) {
+      return;
+    }
     const task = window.setTimeout(() => {
       setLoadingSlots(true);
       setError("");
@@ -146,15 +152,15 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
         .finally(() => setLoadingSlots(false));
     }, 0);
     return () => window.clearTimeout(task);
-  }, [open, serviceId, date]);
+  }, [open, serviceId, date, isInquiry]);
 
   if (!open) return null;
 
   const canContinue =
-    (step === 0 && serviceId) ||
-    (step === 1 && date) ||
-    (step === 2 && startTime) ||
-    (step === 3 && details.fullName.trim() && details.phone.trim());
+    (currentStep === "USLUGA" && serviceId) ||
+    (currentStep === "DATUM" && date) ||
+    (currentStep === "VREME" && startTime) ||
+    (currentStep === "PODACI" && details.fullName.trim() && details.phone.trim());
 
   async function submit() {
     if (submitting) return;
@@ -164,15 +170,21 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
       const response = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ serviceId, date, startTime, ...details }),
+        body: JSON.stringify(isInquiry ? { serviceId, ...details } : { serviceId, date, startTime, ...details }),
       });
       const data = await response.json();
       if (!response.ok) {
         setError(data.error || "Termin nije moguće poslati.");
         return;
       }
-      setSuccess({ service: selectedService?.name ?? "", date, time: startTime });
-      setStep(4);
+      setSuccess({
+        service: selectedService?.name ?? "",
+        date: isInquiry ? undefined : date,
+        time: isInquiry ? undefined : startTime,
+        duration: selectedService?.durationLabel,
+        mode: isInquiry ? "inquiry" : "appointment",
+      });
+      setStep(activeSteps.length - 1);
     } finally {
       setSubmitting(false);
     }
@@ -205,14 +217,14 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
               TERMIN
             </h2>
             <div className="mt-7 grid gap-2 md:mt-10">
-              {steps.map((item, index) => (
+              {activeSteps.map((item, index) => (
                 <button
                   key={item}
                   className={`group flex items-center gap-3 py-1.5 text-left text-[11px] font-bold tracking-[0.24em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#6f1d2a] ${
                     index === step ? "text-[#6f1d2a]" : "text-[#8f6d5a]/65"
                   }`}
                   disabled={index > step}
-                  onClick={() => setStep(index as Step)}
+                  onClick={() => setStep(index)}
                 >
                   <span className={`h-1.5 w-1.5 rounded-full ${index === step ? "bg-[#6f1d2a]" : "bg-[#d8bd80]/55"}`} />
                   <span className={`h-px w-7 ${index === step ? "bg-[#6f1d2a]" : "bg-[#d8bd80]/35"}`} />
@@ -225,7 +237,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
           <main className="min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-5 [touch-action:pan-y] md:p-8 lg:p-10">
             {error ? <p className="mb-5 border border-[#6f1d2a]/20 bg-[#6f1d2a]/8 p-3 text-sm text-[#6f1d2a]">{error}</p> : null}
 
-            {step === 0 ? (
+            {currentStep === "USLUGA" ? (
               <div className="grid min-w-0 max-w-full gap-3 2xl:grid-cols-2">
                 {services.map((service) => (
                   <button
@@ -236,6 +248,12 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
                     onClick={() => {
                       setServiceId(service.id);
                       setStartTime("");
+                      if (service.schedulingMode === "inquiry") {
+                        setDate(belgradeDate());
+                        setBookableDates({});
+                        setSlots([]);
+                      }
+                      setStep(0);
                     }}
                   >
                     <span className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
@@ -243,13 +261,13 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
                       {serviceId === service.id ? <span className="w-fit text-[10px] font-bold tracking-[0.22em] text-[#6f1d2a]">IZABRANO</span> : null}
                     </span>
                     <span className="mt-4 block text-sm leading-6 text-[#6b574e]">{service.description}</span>
-                    <span className="mt-5 block text-[11px] font-bold tracking-[0.25em] text-[#8f6d5a]">{service.durationMinutes} MIN</span>
+                    <span className="mt-5 block text-[11px] font-bold tracking-[0.25em] text-[#8f6d5a]">{service.durationLabel}</span>
                   </button>
                 ))}
               </div>
             ) : null}
 
-            {step === 1 ? (
+            {currentStep === "DATUM" ? (
               <div className="grid min-w-0 max-w-full gap-7">
                 {groupedDays.map((group) => (
                   <section className="min-w-0 max-w-full" key={group.month}>
@@ -276,7 +294,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
               </div>
             ) : null}
 
-            {step === 2 ? (
+            {currentStep === "VREME" ? (
               <div className="min-w-0 max-w-full">
                 <p className="text-[11px] font-bold tracking-[0.26em] text-[#8f6d5a]">DOSTUPNI TERMINI</p>
                 <div className="mt-3 border-l border-[#d8bd80]/55 pl-4">
@@ -301,7 +319,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
               </div>
             ) : null}
 
-            {step === 3 ? (
+            {currentStep === "PODACI" ? (
               <div className="grid min-w-0 max-w-full gap-5 md:grid-cols-2">
                 {[
                   ["fullName", "Ime i prezime *"],
@@ -319,7 +337,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
                   </label>
                 ))}
                 <label className="grid min-w-0 gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a] md:col-span-2">
-                  Napomena
+                  {isInquiry ? "Napomena / željeni period" : "Napomena"}
                   <textarea
                     className="min-h-32 min-w-0 w-full border border-[#d8bd80]/45 bg-[#fffaf4] px-4 py-4 text-base font-normal tracking-normal text-[#241916] outline-none transition focus:border-[#6f1d2a] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
                     value={details.note}
@@ -329,16 +347,20 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
               </div>
             ) : null}
 
-            {step === 4 && success ? (
+            {currentStep === "POTVRDA" && success ? (
               <div className="max-w-2xl">
-                <h3 className="font-serif text-[clamp(3.6rem,7vw,6.2rem)] leading-[0.86] text-[#6f1d2a]">ZAHTEV JE POSLAT.</h3>
+                <h3 className="font-serif text-[clamp(3.6rem,7vw,6.2rem)] leading-[0.86] text-[#6f1d2a]">{success.mode === "inquiry" ? "UPIT JE POSLAT." : "ZAHTEV JE POSLAT."}</h3>
                 <div className="mt-8 grid gap-5 border-l border-[#d8bd80]/65 pl-5 sm:grid-cols-2">
-                  {[
+                  {(success.mode === "inquiry" ? [
                     ["USLUGA", success.service],
-                    ["DATUM", formatFullDate(success.date)],
-                    ["VREME", success.time],
+                    ["TRAJANJE", success.duration ?? ""],
+                    ["STATUS", "Čeka odgovor"],
+                  ] : [
+                    ["USLUGA", success.service],
+                    ["DATUM", success.date ? formatFullDate(success.date) : ""],
+                    ["VREME", success.time ?? ""],
                     ["STATUS", "Čeka potvrdu"],
-                  ].map(([label, value]) => (
+                  ]).map(([label, value]) => (
                     <div key={label}>
                       <p className="text-[10px] font-bold tracking-[0.24em] text-[#8f6d5a]">{label}</p>
                       <p className="mt-1 text-lg text-[#241916]">{value}</p>
@@ -346,27 +368,33 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
                   ))}
                 </div>
                 <p className="mt-8 text-[#6b574e]">
-                  {details.email.trim() ? "Dobićeš email kada termin bude potvrđen." : "Adriana će potvrditi ili odbiti termin u skladu sa dostupnošću."}
+                  {success.mode === "inquiry"
+                    ? details.email.trim()
+                      ? "Adriana će te kontaktirati radi dogovora termina i organizacije kursa. Dobićeš email kada upit bude obrađen."
+                      : "Adriana će te kontaktirati radi dogovora termina i organizacije kursa."
+                    : details.email.trim()
+                      ? "Dobićeš email kada termin bude potvrđen."
+                      : "Adriana će potvrditi ili odbiti termin u skladu sa dostupnošću."}
                 </p>
               </div>
             ) : null}
           </main>
         </div>
 
-        {step < 4 ? (
+        {currentStep !== "POTVRDA" ? (
           <div className="flex shrink-0 justify-between border-t border-[#d8bd80]/35 bg-[#fff7ef] px-5 py-4 md:px-8">
-            <button className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/35 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1) as Step)}>
+            <button className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/35 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1))}>
               NAZAD
             </button>
             <button
               className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/40 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
               disabled={!canContinue || submitting}
               onClick={() => {
-                if (step === 3) void submit();
-                else setStep((current) => Math.min(4, current + 1) as Step);
+                if (currentStep === "PODACI") void submit();
+                else setStep((current) => Math.min(activeSteps.length - 1, current + 1));
               }}
             >
-              {step === 3 ? (submitting ? "SLANJE..." : "POŠALJI ZAHTEV") : "DALJE"}
+              {currentStep === "PODACI" ? (submitting ? "SLANJE..." : "POŠALJI ZAHTEV") : "DALJE"}
             </button>
           </div>
         ) : null}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/app/api/admin/_auth";
 import { createBookingRequest } from "@/lib/booking/server";
-import { getAllBookings } from "@/lib/booking/repository";
+import { getAdminBookingItems } from "@/lib/booking/repository";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -11,7 +11,7 @@ export async function GET(request: Request) {
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const url = new URL(request.url);
-  const bookings = await getAllBookings({
+  const bookings = await getAdminBookingItems({
     status: url.searchParams.get("status") || undefined,
     serviceId: url.searchParams.get("serviceId") || undefined,
     date: url.searchParams.get("date") || undefined,

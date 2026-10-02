@@ -1,15 +1,24 @@
 import { availableTimeSlots, blockingIntervals, intervalIsAvailable, workingIntervalsForDate } from "@/lib/booking/availability";
 import { getBookingService } from "@/lib/booking/services";
-import type { BookingRecord, CustomerDetails } from "@/lib/booking/types";
+import type { BookingInquiryRecord, BookingRecord, CustomerDetails } from "@/lib/booking/types";
 import { addMinutes } from "@/lib/booking/time";
 import { validateCustomerDetails, hasValidationErrors } from "@/lib/booking/validation";
 import { getBookingsForDate, getBookingsForDates, getExceptionsForDate, getExceptionsForDates, getWeeklyAvailability } from "@/lib/booking/repository";
-import { notifyNewBookingRequest } from "@/lib/booking/notifications";
+import { notifyNewBookingRequest, notifyNewInquiryRequest } from "@/lib/booking/notifications";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { addDays, belgradeDate } from "@/lib/booking/time";
 
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 const timePattern = /^\d{2}:\d{2}$/;
+
+export function validateBookingRequestShape(input: { serviceId: string; date?: string; startTime?: string }) {
+  const service = getBookingService(input.serviceId);
+  if (!service) return "Izabrana usluga nije dostupna.";
+  if (service.schedulingMode === "appointment" && (!input.date || !input.startTime || !validDate(input.date) || !validTime(input.startTime))) {
+    return "Izabrani datum ili vreme nisu ispravni.";
+  }
+  return "";
+}
 
 function validDate(value: string) {
   if (!datePattern.test(value)) return false;
@@ -25,6 +34,8 @@ function validTime(value: string) {
 }
 
 export async function getAvailability(serviceId: string, date: string) {
+  const service = getBookingService(serviceId);
+  if (!service || service.schedulingMode !== "appointment") return [];
   const [weeklyAvailability, exceptions, bookings] = await Promise.all([
     getWeeklyAvailability(),
     getExceptionsForDate(date),
@@ -40,6 +51,8 @@ export function isDatabaseOverlapError(error: unknown) {
 }
 
 export async function getBookableDates(serviceId: string, count = 45) {
+  const service = getBookingService(serviceId);
+  if (!service || service.schedulingMode !== "appointment") return [];
   const start = belgradeDate();
   const dates = Array.from({ length: count }, (_, index) => addDays(start, index));
   const [weeklyAvailability, exceptions, bookings] = await Promise.all([
@@ -63,14 +76,15 @@ export async function getBookableDates(serviceId: string, count = 45) {
 
 export async function createBookingRequest(input: {
   serviceId: string;
-  date: string;
-  startTime: string;
+  date?: string;
+  startTime?: string;
   customer: CustomerDetails;
   status?: "pending" | "confirmed";
 }) {
   const service = getBookingService(input.serviceId);
   if (!service) throw new Error("Izabrana usluga nije dostupna.");
-  if (!validDate(input.date) || !validTime(input.startTime)) throw new Error("Izabrani datum ili vreme nisu ispravni.");
+  const shapeError = validateBookingRequestShape(input);
+  if (shapeError) throw new Error(shapeError);
 
   const errors = validateCustomerDetails(input.customer);
   if (hasValidationErrors(errors)) {
@@ -79,16 +93,33 @@ export async function createBookingRequest(input: {
     throw error;
   }
 
-  const endTime = addMinutes(input.startTime, service.durationMinutes);
+  if (service.schedulingMode === "inquiry") {
+    const payload = {
+      service_id: service.id,
+      customer_name: input.customer.fullName.trim(),
+      phone: input.customer.phone.trim(),
+      email: input.customer.email?.trim() || null,
+      instagram: input.customer.instagram?.trim() || null,
+      note: input.customer.note?.trim() || null,
+      status: input.status ?? "pending",
+    };
+    const [inquiry] = await supabaseAdmin.insert<BookingInquiryRecord>("booking_inquiries", payload);
+    if (inquiry.status === "pending") {
+      await notifyNewInquiryRequest(inquiry);
+    }
+    return { ...inquiry, recordType: "inquiry" as const };
+  }
+
+  const endTime = addMinutes(input.startTime as string, service.durationMinutes);
   const [weeklyAvailability, exceptions, bookings] = await Promise.all([
     getWeeklyAvailability(),
-    getExceptionsForDate(input.date),
-    getBookingsForDate(input.date),
+    getExceptionsForDate(input.date as string),
+    getBookingsForDate(input.date as string),
   ]);
 
-  const working = workingIntervalsForDate(input.date, weeklyAvailability, exceptions);
+  const working = workingIntervalsForDate(input.date as string, weeklyAvailability, exceptions);
   const blocked = blockingIntervals(bookings, exceptions);
-  const requested = { start: input.startTime, end: endTime };
+  const requested = { start: input.startTime as string, end: endTime };
 
   if (!intervalIsAvailable(requested, working, blocked)) {
     throw new Error("Izabrani termin je u međuvremenu zauzet. Izaberi drugi termin.");
@@ -101,8 +132,8 @@ export async function createBookingRequest(input: {
     email: input.customer.email?.trim() || null,
     instagram: input.customer.instagram?.trim() || null,
     note: input.customer.note?.trim() || null,
-    booking_date: input.date,
-    start_time: input.startTime,
+    booking_date: input.date as string,
+    start_time: input.startTime as string,
     end_time: endTime,
     status: input.status ?? "pending",
   };
@@ -119,5 +150,5 @@ export async function createBookingRequest(input: {
   if (booking.status === "pending") {
     await notifyNewBookingRequest(booking);
   }
-  return booking;
+  return { ...booking, recordType: "appointment" as const };
 }

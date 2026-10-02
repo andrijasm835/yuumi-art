@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { bookingServices } from "@/lib/booking/services";
-import type { AvailabilityException, BookingRecord, BookingStatus, WeeklyAvailability } from "@/lib/booking/types";
+import type { AdminBookingItem, AvailabilityException, BookingRecord, BookingStatus, WeeklyAvailability } from "@/lib/booking/types";
 import { addDays, belgradeDate, intervalsOverlap, timeToMinutes } from "@/lib/booking/time";
 
 function todayIso() {
@@ -10,6 +10,7 @@ function todayIso() {
 }
 
 const weekdays = ["Nedelja", "Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota"];
+const appointmentServices = bookingServices.filter((service) => service.schedulingMode === "appointment");
 
 type WeekInterval = { startTime: string; endTime: string };
 type ScheduleDay = {
@@ -22,6 +23,10 @@ type ScheduleDay = {
 
 function normalizeTime(time: string) {
   return time.slice(0, 5);
+}
+
+function isAppointment(item: AdminBookingItem): item is BookingRecord & { recordType: "appointment" } {
+  return item.recordType !== "inquiry";
 }
 
 function formatAdminDate(date: string) {
@@ -95,8 +100,8 @@ export function AdminDashboard() {
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [bookings, setBookings] = useState<BookingRecord[]>([]);
-  const [summaryBookings, setSummaryBookings] = useState<BookingRecord[]>([]);
+  const [bookings, setBookings] = useState<AdminBookingItem[]>([]);
+  const [summaryBookings, setSummaryBookings] = useState<AdminBookingItem[]>([]);
   const [scheduleDays, setScheduleDays] = useState<ScheduleDay[]>([]);
   const [weekStart, setWeekStart] = useState(todayIso());
   const [busyBookingId, setBusyBookingId] = useState("");
@@ -106,7 +111,7 @@ export function AdminDashboard() {
   const [notice, setNotice] = useState("");
   const [weeklyDraft, setWeeklyDraft] = useState<Record<number, WeekInterval[]>>({});
   const [manual, setManual] = useState({
-    serviceId: bookingServices[0].id,
+    serviceId: appointmentServices[0]?.id ?? bookingServices[0].id,
     date: todayIso(),
     startTime: "10:00",
     fullName: "",
@@ -212,14 +217,14 @@ export function AdminDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, weekStart]);
 
-  async function updateStatus(id: string, nextStatus: BookingStatus) {
+  async function updateStatus(id: string, nextStatus: BookingStatus, recordType: AdminBookingItem["recordType"] = "appointment") {
     if (busyBookingId) return;
     setBusyBookingId(id);
     setError("");
     const response = await fetch(`/api/admin/bookings/${id}/status`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ status: nextStatus }),
+      body: JSON.stringify({ status: nextStatus, recordType }),
     });
     if (!response.ok) setError("Status nije promenjen.");
     else setNotice("Status termina je promenjen.");
@@ -291,13 +296,13 @@ export function AdminDashboard() {
     hour12: false,
     timeZone: "Europe/Belgrade",
   }).format(new Date());
-  const allSummaryBookings = [...scheduleDays.flatMap((day) => day.bookings), ...summaryBookings]
+  const allSummaryBookings = [...scheduleDays.flatMap((day) => day.bookings.map((booking) => ({ ...booking, recordType: "appointment" as const }))), ...summaryBookings]
     .filter((booking, index, all) => booking.id ? all.findIndex((item) => item.id === booking.id) === index : true);
-  const todaysBookings = allSummaryBookings.filter((booking) => booking.booking_date === today);
+  const todaysBookings = allSummaryBookings.filter((booking) => booking.recordType === "appointment" && booking.booking_date === today);
   const pendingCount = allSummaryBookings.filter((booking) => booking.status === "pending").length;
   const confirmedCount = allSummaryBookings.filter((booking) => booking.status === "confirmed").length;
   const nextBooking = allSummaryBookings
-    .filter((booking) => booking.status === "pending" || booking.status === "confirmed")
+    .filter((booking): booking is BookingRecord & { recordType: "appointment" } => isAppointment(booking) && (booking.status === "pending" || booking.status === "confirmed"))
     .sort((a, b) => `${a.booking_date} ${a.start_time}`.localeCompare(`${b.booking_date} ${b.start_time}`))
     .find((booking) => `${booking.booking_date} ${normalizeTime(booking.start_time)}` >= `${today} ${nowInBelgrade}`);
 
@@ -440,13 +445,16 @@ export function AdminDashboard() {
             </div>
           </div>
           <div className="hidden grid-cols-[0.9fr_0.8fr_1.4fr_1.3fr_0.9fr_1fr] bg-[#241916] px-4 py-3 text-xs font-bold tracking-[0.16em] text-[#fff7ef] lg:grid">
-            <span>DATUM</span><span>VREME</span><span>KLIJENT</span><span>USLUGA</span><span>STATUS</span><span>AKCIJE</span>
+              <span>TIP / DATUM</span><span>VREME</span><span>KLIJENT</span><span>USLUGA</span><span>STATUS</span><span>AKCIJE</span>
           </div>
           {bookings.length === 0 ? <p className="p-5 text-[#6b574e]">Nema termina za izabrane filtere.</p> : null}
-          {bookings.map((booking) => (
+          {bookings.map((booking: AdminBookingItem) => (
             <div className="grid gap-3 border-t border-[#d8bd80]/25 px-4 py-4 text-sm lg:grid-cols-[0.9fr_0.8fr_1.4fr_1.3fr_0.9fr_1fr] lg:items-center" key={booking.id}>
-              <span>{formatTableDate(booking.booking_date)}</span>
-              <span>{normalizeTime(booking.start_time)}–{normalizeTime(booking.end_time)}</span>
+              <span>
+                <small className="mb-1 block w-fit border border-[#d8bd80]/45 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-[#8f6d5a]">{booking.recordType === "inquiry" ? "UPIT" : "TERMIN"}</small>
+                {!isAppointment(booking) ? (booking.created_at ? formatTableDate(booking.created_at.slice(0, 10)) : "Upit") : formatTableDate(booking.booking_date)}
+              </span>
+              <span>{!isAppointment(booking) ? "Dogovor" : `${normalizeTime(booking.start_time)}–${normalizeTime(booking.end_time)}`}</span>
               <span>
                 <strong className="block text-[#241916]">{booking.customer_name}</strong>
                 <small className="block text-[#6b574e]">{booking.phone}</small>
@@ -460,14 +468,14 @@ export function AdminDashboard() {
                     <button
                       className="border border-[#1f6f3f]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#1f6f3f] disabled:cursor-wait disabled:opacity-45"
                       disabled={busyBookingId === booking.id}
-                      onClick={() => booking.id && updateStatus(booking.id, "confirmed")}
+                      onClick={() => booking.id && updateStatus(booking.id, "confirmed", booking.recordType)}
                     >
                       {busyBookingId === booking.id ? "..." : "POTVRDI"}
                     </button>
                     <button
                       className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a] disabled:cursor-wait disabled:opacity-45"
                       disabled={busyBookingId === booking.id}
-                      onClick={() => booking.id && updateStatus(booking.id, "rejected")}
+                      onClick={() => booking.id && updateStatus(booking.id, "rejected", booking.recordType)}
                     >
                       {busyBookingId === booking.id ? "..." : "ODBIJ"}
                     </button>
@@ -477,7 +485,7 @@ export function AdminDashboard() {
                   <button
                     className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a] disabled:cursor-wait disabled:opacity-45"
                     disabled={busyBookingId === booking.id}
-                    onClick={() => booking.id && updateStatus(booking.id, "cancelled")}
+                    onClick={() => booking.id && updateStatus(booking.id, "cancelled", booking.recordType)}
                   >
                     {busyBookingId === booking.id ? "..." : "OTKAŽI"}
                   </button>
@@ -556,7 +564,7 @@ export function AdminDashboard() {
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className={`${labelClass()} sm:col-span-2`}>Usluga
                 <select className={fieldClass()} value={manual.serviceId} onChange={(event) => setManual((current) => ({ ...current, serviceId: event.target.value }))}>
-                  {bookingServices.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
+                  {appointmentServices.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
                 </select>
               </label>
               <label className={labelClass()}>Datum

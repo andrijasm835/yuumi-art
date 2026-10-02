@@ -2,9 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { availableTimeSlots, blockingIntervals, dateHasAvailableSlot } from "@/lib/booking/availability";
 import { belgradeDate, intervalsOverlap } from "@/lib/booking/time";
-import { isDatabaseOverlapError } from "@/lib/booking/server";
+import { isDatabaseOverlapError, validateBookingRequestShape } from "@/lib/booking/server";
 import { validateCustomerDetails } from "@/lib/booking/validation";
 import { isAuthorizedAdmin } from "@/lib/supabase/server";
+import { bookingServices, getBookingService } from "@/lib/booking/services";
+import { nextSelectionState, stepsForSchedulingMode } from "@/lib/booking/flow";
 import type { AvailabilityException, BookingRecord, WeeklyAvailability } from "@/lib/booking/types";
 
 const weekly: WeeklyAvailability[] = [{ weekday: 1, start_time: "10:00", end_time: "18:00", active: true }];
@@ -45,9 +47,46 @@ test("blocked interval removes affected times", () => {
 });
 
 test("service duration is respected", () => {
-  const slots = availableTimeSlots({ serviceId: "basic-course", date: monday, weeklyAvailability: weekly, exceptions: [], bookings: [] });
-  assert.equal(slots.includes("15:30"), false);
-  assert.equal(slots.includes("15:00"), true);
+  const slots = availableTimeSlots({ serviceId: "professional-makeup", date: monday, weeklyAvailability: weekly, exceptions: [], bookings: [] });
+  assert.equal(slots.includes("17:00"), true);
+  assert.equal(slots.includes("17:30"), false);
+});
+
+test("professional makeup duration is 60 minutes and uses appointment scheduling", () => {
+  const service = getBookingService("professional-makeup");
+  assert.equal(service?.durationMinutes, 60);
+  assert.equal(service?.durationLabel, "60 MIN");
+  assert.equal(service?.schedulingMode, "appointment");
+});
+
+test("education services use inquiry scheduling and natural duration labels", () => {
+  assert.deepEqual(
+    bookingServices.filter((service) => service.schedulingMode === "inquiry").map((service) => [service.id, service.durationMinutes, service.durationLabel]),
+    [
+      ["self-makeup-course", 180, "3 ČASA"],
+      ["basic-course", 420, "7 ČASOVA"],
+      ["advanced-training", 180, "3 ČASA"],
+    ],
+  );
+});
+
+test("booking modal flow adapts to service scheduling mode", () => {
+  assert.deepEqual([...stepsForSchedulingMode("appointment")], ["USLUGA", "DATUM", "VREME", "PODACI", "POTVRDA"]);
+  assert.deepEqual([...stepsForSchedulingMode("inquiry")], ["USLUGA", "PODACI", "POTVRDA"]);
+});
+
+test("switching appointment to inquiry resets irrelevant step state", () => {
+  assert.deepEqual(nextSelectionState("appointment", "inquiry"), { shouldClearAppointmentFields: true, step: 0 });
+  assert.deepEqual(nextSelectionState("inquiry", "appointment"), { shouldClearAppointmentFields: false, step: 0 });
+});
+
+test("professional makeup requires date and time", () => {
+  assert.equal(validateBookingRequestShape({ serviceId: "professional-makeup" }), "Izabrani datum ili vreme nisu ispravni.");
+  assert.equal(validateBookingRequestShape({ serviceId: "professional-makeup", date: monday, startTime: "10:00" }), "");
+});
+
+test("education inquiry does not require date or time", () => {
+  assert.equal(validateBookingRequestShape({ serviceId: "basic-course" }), "");
 });
 
 test("custom date availability overrides weekly schedule", () => {

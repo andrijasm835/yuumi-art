@@ -1,15 +1,19 @@
 export type BookingStatus = "pending" | "confirmed" | "rejected" | "cancelled";
+export type BookingSchedulingMode = "appointment" | "inquiry";
 
 export type BookingService = {
   id: string;
   name: string;
   durationMinutes: number;
+  durationLabel: string;
+  schedulingMode: BookingSchedulingMode;
   active: boolean;
   description?: string;
   price?: number;
 };
 
 export type BookingRecord = {
+  recordType?: "appointment";
   id?: string;
   service_id: string;
   booking_date: string;
@@ -24,6 +28,22 @@ export type BookingRecord = {
   created_at?: string;
   updated_at?: string;
 };
+
+export type BookingInquiryRecord = {
+  recordType?: "inquiry";
+  id?: string;
+  service_id: string;
+  status: BookingStatus;
+  customer_name?: string;
+  phone?: string;
+  email?: string | null;
+  instagram?: string | null;
+  note?: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type AdminBookingItem = BookingRecord | BookingInquiryRecord;
 
 export type WeeklyAvailability = {
   id?: string;

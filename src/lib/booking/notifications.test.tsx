@@ -2,10 +2,12 @@ import test, { afterEach, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import type { SendEmailInput } from "@/lib/email/client";
 import { setEmailSenderForTests } from "@/lib/email/client";
-import type { BookingRecord } from "@/lib/booking/types";
+import type { BookingInquiryRecord, BookingRecord } from "@/lib/booking/types";
 import {
   notifyBookingStatusTransition,
+  notifyInquiryStatusTransition,
   notifyNewBookingRequest,
+  notifyNewInquiryRequest,
 } from "@/lib/booking/notifications";
 
 const booking: BookingRecord = {
@@ -13,13 +15,24 @@ const booking: BookingRecord = {
   service_id: "professional-makeup",
   booking_date: "2026-10-05",
   start_time: "10:00",
-  end_time: "11:30",
+  end_time: "11:00",
   status: "pending",
   customer_name: "Ana Markovic",
   phone: "+38160111222",
   email: "ana@example.com",
   instagram: "@ana",
   note: "Test note",
+};
+
+const inquiry: BookingInquiryRecord = {
+  id: "inquiry-123",
+  service_id: "basic-course",
+  status: "pending",
+  customer_name: "Mila Petrovic",
+  phone: "+38160111223",
+  email: "mila@example.com",
+  instagram: "@mila",
+  note: "Želim termin tokom novembra.",
 };
 
 let sent: SendEmailInput[] = [];
@@ -125,4 +138,36 @@ test("deterministic idempotency keys are used for all email types", async () => 
     "booking-rejected/booking-123",
     "booking-cancelled/booking-123",
   ]);
+});
+
+test("new education inquiry uses inquiry email copy path", async () => {
+  await notifyNewInquiryRequest(inquiry);
+
+  assert.equal(sent.length, 2);
+  assert.equal(sent[0].subject, "Novi upit za edukaciju - Yuumi Art");
+  assert.equal(sent[0].idempotencyKey, "new-inquiry/inquiry-123");
+  assert.equal(sent[1].subject, "Primili smo tvoj upit - Yuumi Art");
+  assert.equal(sent[1].idempotencyKey, "inquiry-received/inquiry-123");
+});
+
+test("pending education inquiry to confirmed triggers accepted email", async () => {
+  await notifyInquiryStatusTransition("pending", { ...inquiry, status: "confirmed" });
+
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].subject, "Upit je prihvaćen - Yuumi Art");
+  assert.equal(sent[0].idempotencyKey, "inquiry-confirmed/inquiry-123");
+});
+
+test("pending education inquiry to rejected triggers rejected email", async () => {
+  await notifyInquiryStatusTransition("pending", { ...inquiry, status: "rejected" });
+
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].subject, "Upit nije prihvaćen - Yuumi Art");
+  assert.equal(sent[0].idempotencyKey, "inquiry-rejected/inquiry-123");
+});
+
+test("confirmed education inquiry to cancelled does not send appointment cancellation email", async () => {
+  await notifyInquiryStatusTransition("confirmed", { ...inquiry, status: "cancelled" });
+
+  assert.equal(sent.length, 0);
 });
