@@ -126,7 +126,6 @@ button:focus-visible {
     transition-duration: 0.01ms !important;
   }
 
-  .stage-skin,
   .stage-eyes,
   .stage-color,
   .stage-final,
@@ -157,7 +156,6 @@ button:focus-visible {
     display: none !important;
   }
 
-  .reveal-skin,
   .reveal-eye-left,
   .reveal-eye-right,
   .reveal-lips,

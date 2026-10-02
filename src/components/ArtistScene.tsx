@@ -91,21 +91,21 @@ export function ArtistScene() {
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-[#f7efe8]/0 via-[#f7efe8]/20 to-[#f7efe8]/86" />
       <div className="artist-darken pointer-events-none absolute inset-0 z-40 bg-[radial-gradient(circle_at_50%_46%,rgba(244,226,198,0.14),transparent_30%),linear-gradient(180deg,rgba(27,17,16,0.12),rgba(27,17,16,0.86))] opacity-0" />
-      <div className="artist-word-meet absolute left-[5vw] top-[8svh] z-20 font-serif text-[clamp(4.6rem,20vw,15rem)] leading-[0.72] text-[#241916] mix-blend-multiply md:top-[10vh]">
+      <div className="artist-word-meet absolute left-[5vw] top-[8svh] z-20 font-serif text-[clamp(3.8rem,16vw,8rem)] leading-[0.78] text-[#241916] mix-blend-multiply md:top-[10vh] md:text-[clamp(5rem,12vw,12rem)]">
         MEET
       </div>
-      <div className="artist-word-name absolute bottom-[13svh] right-[5vw] z-20 font-serif text-[clamp(5.2rem,22vw,16rem)] leading-[0.72] text-[#6f1d2a] mix-blend-multiply md:bottom-[8vh]">
+      <div className="artist-word-name absolute bottom-[13svh] right-[5vw] z-20 font-serif text-[clamp(4.2rem,17vw,8.5rem)] leading-[0.78] text-[#6f1d2a] mix-blend-multiply md:bottom-[8vh] md:text-[clamp(5.8rem,12vw,13rem)]">
         {artist.name}
       </div>
       <div className="relative z-30 flex h-full w-full items-end justify-between px-5 pb-10 md:px-12 md:pb-16">
-        <div className="artist-copy mb-[3svh] max-w-[18rem] md:mb-[8vh] md:max-w-md">
-          <p className="mt-8 text-2xl leading-10 text-[#3c2d27]">
+        <div className="artist-copy mb-[2svh] max-w-[21rem] md:mb-[8vh] md:max-w-md">
+          <p className="mt-5 text-xl leading-8 text-[#3c2d27] md:mt-8 md:text-2xl md:leading-10">
             {artist.intro}
           </p>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[#6b574e]">
+          <p className="mt-4 max-w-xl text-base leading-7 text-[#6b574e] md:mt-6 md:text-lg md:leading-8">
             {artist.bio}
           </p>
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[#6b574e]">
+          <p className="mt-4 max-w-xl text-base leading-7 text-[#6b574e] md:mt-6 md:text-lg md:leading-8">
             {artist.education}
           </p>
         </div>

@@ -77,7 +77,7 @@ export function BookingScene() {
   return (
     <section id="book" ref={scope} className="relative h-svh overflow-hidden bg-[#1b1110] text-[#fff7ef] md:h-screen">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(244,226,198,0.16),transparent_34%),radial-gradient(circle_at_20%_20%,rgba(111,29,42,0.35),transparent_30%)]" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center text-center font-serif text-[clamp(3.5rem,18vw,12rem)] leading-[0.78]">
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center font-serif text-[clamp(3rem,14vw,9rem)] leading-[0.82] text-[#fff7ef]/82">
         <span className="ready-top">SPREMNA ZA</span>
         <span className="ready-bottom italic">SVOJ LOOK?</span>
       </div>
@@ -100,7 +100,7 @@ export function BookingScene() {
               href={brand.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="block font-serif text-[clamp(3.6rem,17vw,8.8rem)] leading-[0.78] tracking-normal text-[#fff7ef] outline-none transition hover:text-[#f0d7a1] focus-visible:text-[#f0d7a1]"
+              className="block font-serif text-[clamp(2.7rem,12vw,6.4rem)] leading-[0.82] tracking-normal text-[#fff7ef] outline-none transition hover:text-[#f0d7a1] focus-visible:text-[#f0d7a1] md:text-[clamp(3.2rem,6.6vw,6.6rem)]"
             >
               ZAKAŽI
               <br />

@@ -34,6 +34,9 @@ export function DetailsScene() {
           clipPath: "inset(0 100% 0 0)",
         });
         gsap.set(".details-word-one", { yPercent: isMobile ? 7 : 12 });
+        gsap.set(".details-word-two", { xPercent: isMobile ? 3 : 8, yPercent: isMobile ? 6 : 10, opacity: 0.24 });
+        gsap.set(".details-word-three", { xPercent: isMobile ? -2 : -5, yPercent: isMobile ? 8 : 16, opacity: 0.22 });
+        gsap.set(".detail-front", { opacity: 0, yPercent: 0 });
 
         const entrance = gsap.timeline({
           scrollTrigger: {
@@ -90,7 +93,7 @@ export function DetailsScene() {
   return (
     <section ref={scope} className="relative h-svh overflow-hidden bg-[#211714] text-[#fff7ef] md:h-screen">
       <div className="details-entry absolute inset-0 bg-[radial-gradient(circle_at_78%_24%,rgba(118,29,42,0.32),transparent_34%),radial-gradient(circle_at_22%_72%,rgba(199,168,107,0.24),transparent_30%)]" />
-      <div className="absolute inset-0 z-10 font-serif text-[clamp(4.2rem,18vw,14rem)] leading-[0.75] tracking-normal text-[#fff7ef]/34">
+      <div className="absolute inset-0 z-10 font-serif text-[clamp(3.8rem,16vw,12rem)] leading-[0.78] tracking-normal text-[#fff7ef]/26">
         <span className="details-word-one absolute left-[6vw] top-[15vh]">BEAUTY</span>
         <span className="details-word-two absolute right-[8vw] top-[38vh]">IS IN</span>
         <span className="details-word-three absolute bottom-[10vh] left-[18vw]">THE DETAILS.</span>
@@ -106,7 +109,7 @@ export function DetailsScene() {
           <Image src={details[2].src} alt={details[2].alt} fill sizes="30vw" className="responsive-image detail-img h-full w-full object-cover" style={imagePositionStyle(details[2].position)} />
         </div>
       </div>
-      <div className="detail-front pointer-events-none absolute left-[10vw] top-[34vh] z-30 max-w-[80vw] opacity-0 font-serif text-[clamp(4rem,13vw,12rem)] leading-[0.78] text-[#fff7ef] mix-blend-difference">
+      <div className="detail-front pointer-events-none absolute left-[10vw] top-[34vh] z-30 max-w-[80vw] opacity-0 font-serif text-[clamp(3.5rem,11vw,9rem)] leading-[0.82] text-[#fff7ef] mix-blend-difference">
         DETAILS.
       </div>
       <div className="details-light pointer-events-none absolute inset-0 z-40 bg-[#f7efe8]/72 opacity-0" />

@@ -74,40 +74,26 @@ export function TransformationScene() {
         };
 
         tl.set(".stage-copy", { autoAlpha: 0, y: 20 })
-          .set(".stage-skin, .stage-eyes, .stage-color, .stage-final", { autoAlpha: 0 })
+          .set(".stage-eyes, .stage-color, .stage-final", { autoAlpha: 0 })
           .set(".final-shimmer", { autoAlpha: 0 })
-          .set(".reveal-skin", { scaleX: 0, transformOrigin: "0% 50%" })
-          .set(".reveal-eye-left", { scaleX: 0, transformOrigin: "100% 50%" })
-          .set(".reveal-eye-right", { scaleX: 0, transformOrigin: "0% 50%" })
-          .set(".reveal-lips", { attr: { rx: 0, ry: 0 } })
-          .set(".reveal-cheek-left, .reveal-cheek-right", { attr: { rx: 0, ry: 0 } })
-          .set(".reveal-final", { scaleY: 0, transformOrigin: "50% 0%" })
           .fromTo(".transformation-enter", { opacity: 0.88 }, { opacity: 0, duration: 0.36 }, 0);
 
         showCopy(0, 0.08);
-        tl.set(".stage-skin", { autoAlpha: 1 }, 0.18)
-          .to(".reveal-skin", { scaleX: 1, duration: 0.74, ease: "power2.out" }, 0.18)
-          .to(".stage-copy-0", { autoAlpha: 0, y: -24, duration: 0.18 }, 0.82);
+        tl.to(".stage-copy-0", { autoAlpha: 0, y: -24, duration: 0.18 }, 0.82);
 
         showCopy(1, 1.02);
         tl.to(".transformation-frame", { scale: isMobile ? 1.03 : 1.04, xPercent: isMobile ? 0 : -1, yPercent: isMobile ? -1 : 0, duration: 0.38 }, 0.92)
-          .set(".stage-eyes", { autoAlpha: 1 }, 1.16)
-          .to(".reveal-eye-left", { scaleX: 1, duration: 0.46, ease: "power2.out" }, 1.18)
-          .to(".reveal-eye-right", { scaleX: 1, duration: 0.46, ease: "power2.out" }, 1.3)
+          .to(".stage-eyes", { autoAlpha: 1, duration: 0.34, ease: "power1.out" }, 1.14)
           .to(".stage-copy-1", { autoAlpha: 0, y: -24, duration: 0.18 }, 1.82);
 
         showCopy(2, 2.02);
         tl.to(".transformation-frame", { scale: isMobile ? 1.02 : 1.03, xPercent: isMobile ? 0 : 1, yPercent: 0, duration: 0.38 }, 1.92)
-          .set(".stage-color", { autoAlpha: 1 }, 2.14)
-          .to(".reveal-cheek-left", { attr: { rx: 155, ry: 105 }, duration: 0.46, ease: "power2.out" }, 2.16)
-          .to(".reveal-cheek-right", { attr: { rx: 155, ry: 105 }, duration: 0.46, ease: "power2.out" }, 2.26)
-          .to(".reveal-lips", { attr: { rx: 120, ry: 58 }, duration: 0.46, ease: "power2.out" }, 2.38)
+          .to(".stage-color", { autoAlpha: 1, duration: 0.34, ease: "power1.out" }, 2.14)
           .to(".stage-copy-2", { autoAlpha: 0, y: -24, duration: 0.18 }, 2.82);
 
         showCopy(3, 3.02);
         tl.to(".transformation-frame", { scale: 1, xPercent: 0, yPercent: 0, duration: 0.38 }, 2.92)
-          .set(".stage-final", { autoAlpha: 1 }, 3.1)
-          .to(".reveal-final", { scaleY: 1, duration: 0.48, ease: "power2.out" }, 3.12)
+          .to(".stage-final", { autoAlpha: 1, duration: 0.38, ease: "power1.out" }, 3.08)
           .to(".final-shimmer", { autoAlpha: 0.55, xPercent: 140, duration: 0.45 }, 3.18)
           .to(".final-shimmer", { autoAlpha: 0, duration: 0.14 }, 3.62);
 
@@ -136,12 +122,20 @@ export function TransformationScene() {
         <div className="relative min-h-52 w-full max-w-4xl md:min-h-64">
           {makeupStages.map((stage, index) => (
             <div
-              className={`stage-copy stage-copy-${index} absolute bottom-0 left-0 max-w-3xl opacity-0`}
+              className={`stage-copy stage-copy-${index} absolute bottom-0 left-0 max-w-[min(88vw,44rem)] opacity-0`}
               key={stage.title}
             >
               <p className="text-sm font-bold tracking-[0.42em] text-[#d2af76]">{stage.number}</p>
-              <h2 className="mt-2 font-serif text-[clamp(3.6rem,18vw,12rem)] leading-[0.78]">
-                {stage.title}
+              <h2 className="mt-2 font-serif text-[clamp(3rem,14vw,5.5rem)] leading-[0.86] md:text-[clamp(4rem,9vw,9rem)] md:leading-[0.82]">
+                {stage.title === "FINALNI LOOK" ? (
+                  <>
+                    FINALNI
+                    <br />
+                    LOOK
+                  </>
+                ) : (
+                  stage.title
+                )}
               </h2>
               <p className="mt-4 max-w-[18rem] text-base leading-7 text-[#f4dfd2] md:mt-5 md:max-w-md md:text-xl md:leading-8">{stage.text}</p>
             </div>

@@ -97,9 +97,8 @@ export function LooksGallery() {
         timeline
           .to(track, { x: () => -distance(), ease: "none", duration: 3 }, 0)
           .to(".look-image:not(.no-service-zoom)", { scale: isMobile ? 1.025 : 1.055, xPercent: isMobile ? -0.5 : -1.5, stagger: 0.06, duration: 3 }, 0)
-          .to(".service-item", { xPercent: isMobile ? -0.5 : -1.5, stagger: 0.06, duration: 3 }, 0)
           .to(scope.current, { backgroundColor: "#211714", ease: "none", duration: 0.78 }, 2.36)
-          .to(".service-final-image", { scale: isMobile ? 1.08 : 1.18, xPercent: isMobile ? -1 : -3, yPercent: isMobile ? 1 : 2, filter: isMobile ? "contrast(1.02)" : "contrast(1.04) saturate(1.04)", duration: 0.82 }, 2.38);
+          .to(".service-final-image", { scale: isMobile ? 1.05 : 1.09, xPercent: isMobile ? -0.5 : -1.5, yPercent: isMobile ? 0.5 : 1, filter: isMobile ? "contrast(1.02)" : "contrast(1.03) saturate(1.03)", duration: 0.82 }, 2.38);
 
         return () => {
           entrance.kill();
