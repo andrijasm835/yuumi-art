@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Image from "next/image";
+import { BookingModal } from "@/components/booking/BookingModal";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { booking, brand } from "@/content/site";
+import { booking } from "@/content/site";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -15,6 +16,7 @@ function imagePositionStyle(position: { desktop: string; mobile: string }) {
 
 export function BookingScene() {
   const scope = useRef<HTMLElement>(null);
+  const [bookingOpen, setBookingOpen] = useState(false);
 
   useGsapScene(scope, () => {
     const mm = gsap.matchMedia();
@@ -95,28 +97,27 @@ export function BookingScene() {
         <div className="final-shine absolute inset-y-0 left-[-45%] w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
         <div className="booking-panel relative z-10 grid h-full place-items-center p-8 text-center text-[#fff7ef] drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)]">
           <div>
-            <a
+            <button
               data-cursor="DM"
-              href={brand.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
               className="block font-serif text-[clamp(2.7rem,12vw,6.4rem)] leading-[0.82] tracking-normal text-[#fff7ef] outline-none transition hover:text-[#f0d7a1] focus-visible:text-[#f0d7a1] md:text-[clamp(3.2rem,6.6vw,6.6rem)]"
+              onClick={() => setBookingOpen(true)}
             >
               ZAKAŽI
               <br />
-              PREKO
+              SVOJ
               <br />
-              INSTAGRAMA ↗
-            </a>
-            <div className="mt-8 flex justify-center text-[10px] font-bold tracking-[0.26em] text-[#fff7ef] md:mt-9 md:text-[11px] md:tracking-[0.3em]">
-              <a href={brand.instagram} target="_blank" rel="noopener noreferrer" data-cursor="VIEW">
-                INSTAGRAM
-              </a>
+              TERMIN
+            </button>
+            <div className="mt-8 flex justify-center text-center text-[10px] font-bold tracking-[0.26em] text-[#fff7ef] md:mt-9 md:text-[11px] md:tracking-[0.3em]">
+              <button onClick={() => setBookingOpen(true)} data-cursor="VIEW">
+                IZABERI USLUGU, DATUM I VREME →
+              </button>
             </div>
           </div>
         </div>
       </div>
       <div className="lipstick-stroke absolute bottom-[18vh] left-1/2 h-3 w-[min(72vw,620px)] origin-left -translate-x-1/2 rotate-[-2deg] rounded-full bg-[#7d1f2d]" />
+      <BookingModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
     </section>
   );
 }

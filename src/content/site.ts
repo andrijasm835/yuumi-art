@@ -1,3 +1,5 @@
+import { bookingServices } from "@/lib/booking/services";
+
 export const brand = {
   name: "Yummi Art",
   navName: "YUMMI ART",
@@ -60,9 +62,10 @@ export const booking = {
 
 export const servicesAndEducation = [
   {
-    name: "PROFESIONALNO ŠMINKANJE",
+    id: bookingServices[0].id,
+    name: bookingServices[0].name.toUpperCase(),
     nameLines: ["PROFESIONALNO", "ŠMINKANJE"],
-    text: "Profesionalno šminkanje prilagođeno licu, stilu i prilici, uz pažnju posvećenu svakom detalju.",
+    text: bookingServices[0].description,
     frame: "h-[58vh] w-[82vw] md:w-[72vw] self-end mb-[8vh]",
     layout: "bottom-left",
     image: "/yummi/professional-makeup.jpg",
@@ -71,9 +74,10 @@ export const servicesAndEducation = [
     position: { desktop: "50% 36%", mobile: "50% 34%" },
   },
   {
-    name: "NAŠMINKAJ SE SAMA",
+    id: bookingServices[1].id,
+    name: bookingServices[1].name.toUpperCase(),
     nameLines: ["NAŠMINKAJ SE", "SAMA"],
-    text: "Kurs za sve koji žele da nauče kako da samostalno i sigurnije našminkaju sebe.",
+    text: bookingServices[1].description,
     frame: "h-[74vh] w-[84vw] self-center md:h-[82vh] md:w-[42vw] md:ml-[-8vw]",
     layout: "top-right",
     image: "/yummi/self-makeup-course.jpg",
@@ -82,9 +86,10 @@ export const servicesAndEducation = [
     position: { desktop: "50% 38%", mobile: "50% 34%" },
   },
   {
-    name: "BAZNI KURS ZA POČETNIKE",
+    id: bookingServices[2].id,
+    name: bookingServices[2].name.toUpperCase(),
     nameLines: ["BAZNI KURS ZA", "POČETNIKE"],
-    text: "Kurs namenjen početnicima koji žele da nauče osnove šminkanja i izgrade dobru bazu za dalji rad.",
+    text: bookingServices[2].description,
     frame: "h-[78vh] w-[86vw] self-center md:h-[92vh] md:w-[86vw] md:ml-[-4vw]",
     layout: "bottom-left",
     image: "/yummi/basic-course.jpg",
@@ -93,9 +98,10 @@ export const servicesAndEducation = [
     position: { desktop: "50% 50%", mobile: "50% 50%" },
   },
   {
-    name: "USAVRŠAVANJE ZA ŠMINKERE",
+    id: bookingServices[3].id,
+    name: bookingServices[3].name.toUpperCase(),
     nameLines: ["USAVRŠAVANJE", "ZA ŠMINKERE"],
-    text: "Edukacija za šminkere koji žele da unaprede postojeće znanje, tehniku i sigurnost u radu.",
+    text: bookingServices[3].description,
     frame: "h-[80vh] w-[88vw] self-center md:h-[86vh] md:w-[92vw] md:self-start md:mt-[4vh] md:ml-[-10vw]",
     layout: "top-right",
     image: "/yummi/advanced-course.jpg",
