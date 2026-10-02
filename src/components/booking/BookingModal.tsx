@@ -197,9 +197,9 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
           </button>
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[0.32fr_0.68fr] md:grid-rows-none">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[minmax(250px,0.32fr)_minmax(0,0.68fr)] md:grid-rows-none">
           <aside className="shrink-0 border-b border-[#d8bd80]/25 p-5 md:border-b-0 md:border-r md:p-8 lg:p-10">
-            <h2 className="font-serif text-[clamp(3.1rem,6vw,5.85rem)] leading-[0.86] text-[#6f1d2a]">
+            <h2 className="max-w-full overflow-hidden font-serif text-[clamp(3.1rem,4.6vw,4.9rem)] leading-[0.88] text-[#6f1d2a]">
               ZAKAŽI
               <br />
               TERMIN
@@ -222,15 +222,15 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
             </div>
           </aside>
 
-          <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 [touch-action:pan-y] md:p-8 lg:p-10">
+          <main className="min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-5 [touch-action:pan-y] md:p-8 lg:p-10">
             {error ? <p className="mb-5 border border-[#6f1d2a]/20 bg-[#6f1d2a]/8 p-3 text-sm text-[#6f1d2a]">{error}</p> : null}
 
             {step === 0 ? (
-              <div className="grid gap-3 lg:grid-cols-2">
+              <div className="grid min-w-0 max-w-full gap-3 2xl:grid-cols-2">
                 {services.map((service) => (
                   <button
                     key={service.id}
-                    className={`relative min-h-[160px] border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6f1d2a] ${
+                    className={`min-w-0 border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6f1d2a] ${
                       serviceId === service.id ? "border-[#6f1d2a] bg-[#6f1d2a]/7" : "border-[#d8bd80]/45 hover:border-[#b88a45]/70"
                     }`}
                     onClick={() => {
@@ -238,8 +238,10 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
                       setStartTime("");
                     }}
                   >
-                    {serviceId === service.id ? <span className="absolute right-4 top-4 text-[10px] font-bold tracking-[0.22em] text-[#6f1d2a]">IZABRANO</span> : null}
-                    <span className="block pr-24 font-serif text-[clamp(1.55rem,2.3vw,2.35rem)] leading-none text-[#6f1d2a]">{service.name}</span>
+                    <span className="grid min-w-0 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+                      <span className="min-w-0 font-serif text-[clamp(1.65rem,2.2vw,2.35rem)] leading-none text-[#6f1d2a]">{service.name}</span>
+                      {serviceId === service.id ? <span className="w-fit text-[10px] font-bold tracking-[0.22em] text-[#6f1d2a]">IZABRANO</span> : null}
+                    </span>
                     <span className="mt-4 block text-sm leading-6 text-[#6b574e]">{service.description}</span>
                     <span className="mt-5 block text-[11px] font-bold tracking-[0.25em] text-[#8f6d5a]">{service.durationMinutes} MIN</span>
                   </button>
@@ -248,11 +250,11 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
             ) : null}
 
             {step === 1 ? (
-              <div className="grid gap-7">
+              <div className="grid min-w-0 max-w-full gap-7">
                 {groupedDays.map((group) => (
-                  <section key={group.month}>
+                  <section className="min-w-0 max-w-full" key={group.month}>
                     <h3 className="mb-3 text-[11px] font-bold tracking-[0.26em] text-[#8f6d5a]">{formatMonthYear(`${group.month}-01`)}</h3>
-                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-7 xl:grid-cols-9">
+                    <div className="grid min-w-0 grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-7 xl:grid-cols-9">
                       {group.dates.map((item) => (
                         <button
                           key={item}
@@ -275,7 +277,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
             ) : null}
 
             {step === 2 ? (
-              <div>
+              <div className="min-w-0 max-w-full">
                 <p className="text-[11px] font-bold tracking-[0.26em] text-[#8f6d5a]">DOSTUPNI TERMINI</p>
                 <div className="mt-3 border-l border-[#d8bd80]/55 pl-4">
                   <p className="font-serif text-3xl text-[#6f1d2a]">{selectedService?.name}</p>
@@ -283,7 +285,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
                 </div>
                 {loadingSlots ? <p className="mt-8 text-[#6b574e]">Učitavanje termina...</p> : null}
                 {!loadingSlots && slots.length === 0 ? <p className="mt-8 text-[#6b574e]">Nema dostupnih termina za izabrani datum.</p> : null}
-                <div className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+                <div className="mt-8 grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                   {slots.map((slot) => (
                     <button
                       key={slot}
@@ -300,26 +302,26 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
             ) : null}
 
             {step === 3 ? (
-              <div className="grid gap-5 md:grid-cols-2">
+              <div className="grid min-w-0 max-w-full gap-5 md:grid-cols-2">
                 {[
                   ["fullName", "Ime i prezime *"],
                   ["phone", "Telefon *"],
                   ["email", "Email"],
                   ["instagram", "Instagram"],
                 ].map(([key, label]) => (
-                  <label className="grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]" key={key}>
+                  <label className="grid min-w-0 gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]" key={key}>
                     {label}
                     <input
-                      className="border border-[#d8bd80]/45 bg-[#fffaf4] px-4 py-4 text-base font-normal tracking-normal text-[#241916] outline-none transition focus:border-[#6f1d2a] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
+                      className="min-w-0 w-full border border-[#d8bd80]/45 bg-[#fffaf4] px-4 py-4 text-base font-normal tracking-normal text-[#241916] outline-none transition focus:border-[#6f1d2a] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
                       value={details[key as keyof typeof details]}
                       onChange={(event) => setDetails((current) => ({ ...current, [key]: event.target.value }))}
                     />
                   </label>
                 ))}
-                <label className="grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a] md:col-span-2">
+                <label className="grid min-w-0 gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a] md:col-span-2">
                   Napomena
                   <textarea
-                    className="min-h-32 border border-[#d8bd80]/45 bg-[#fffaf4] px-4 py-4 text-base font-normal tracking-normal text-[#241916] outline-none transition focus:border-[#6f1d2a] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
+                    className="min-h-32 min-w-0 w-full border border-[#d8bd80]/45 bg-[#fffaf4] px-4 py-4 text-base font-normal tracking-normal text-[#241916] outline-none transition focus:border-[#6f1d2a] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
                     value={details.note}
                     onChange={(event) => setDetails((current) => ({ ...current, note: event.target.value }))}
                   />
