@@ -1,4 +1,4 @@
-import type { BookingRecord } from "@/lib/booking/types";
+import type { BookingRecord, BookingStatus } from "@/lib/booking/types";
 import { adminUrl, bookingAdminEmail, bookingSiteUrl, sendTransactionalEmail } from "@/lib/email/client";
 import { BookingCancelledEmail } from "@/lib/email/templates/BookingCancelledEmail";
 import { BookingConfirmedEmail } from "@/lib/email/templates/BookingConfirmedEmail";
@@ -63,6 +63,19 @@ export async function notifyBookingCancelled(booking: BookingRecord) {
       idempotencyKey: `booking-cancelled/${booking.id}`,
     }),
   );
+}
+
+export async function notifyBookingStatusTransition(previousStatus: BookingStatus, booking: BookingRecord) {
+  if (previousStatus === booking.status) return;
+  if (previousStatus === "pending" && booking.status === "confirmed") {
+    await notifyBookingConfirmed(booking);
+  }
+  if (previousStatus === "pending" && booking.status === "rejected") {
+    await notifyBookingRejected(booking);
+  }
+  if (previousStatus === "confirmed" && booking.status === "cancelled") {
+    await notifyBookingCancelled(booking);
+  }
 }
 
 async function safelySend(label: string, send: () => Promise<void>) {

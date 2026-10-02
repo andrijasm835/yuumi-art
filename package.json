@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test --import tsx src/lib/booking/availability.test.ts"
+    "test": "node --test --import tsx $(find src/lib -name '*.test.ts' -o -name '*.test.tsx')"
   },
   "dependencies": {
     "@react-email/render": "^2.1.0",

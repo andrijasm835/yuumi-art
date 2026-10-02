@@ -2,34 +2,42 @@ import type { ReactNode } from "react";
 import { Resend } from "resend";
 
 const apiKey = process.env.RESEND_API_KEY;
-const from = process.env.BOOKING_FROM_EMAIL;
-const adminEmail = process.env.BOOKING_ADMIN_EMAIL;
-const publicSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
-const siteUrl = publicSiteUrl ?? vercelUrl;
 
 const resend = apiKey ? new Resend(apiKey) : null;
 
 export function bookingAdminEmail() {
-  return adminEmail;
+  return process.env.BOOKING_ADMIN_EMAIL;
 }
 
 export function bookingSiteUrl() {
-  return siteUrl;
+  return process.env.NEXT_PUBLIC_SITE_URL ?? (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
 }
 
 export function adminUrl() {
+  const siteUrl = bookingSiteUrl();
   return siteUrl ? `${siteUrl.replace(/\/$/, "")}/admin` : "/admin";
 }
 
-type SendEmailInput = {
+export type SendEmailInput = {
   to: string;
   subject: string;
   react: ReactNode;
   idempotencyKey: string;
 };
 
+let testSender: ((input: SendEmailInput) => Promise<void>) | undefined;
+
+export function setEmailSenderForTests(sender?: (input: SendEmailInput) => Promise<void>) {
+  testSender = sender;
+}
+
 export async function sendTransactionalEmail(input: SendEmailInput) {
+  if (testSender) {
+    await testSender(input);
+    return;
+  }
+
+  const from = process.env.BOOKING_FROM_EMAIL;
   if (!resend || !from) {
     console.warn("Booking email skipped: RESEND_API_KEY or BOOKING_FROM_EMAIL is not configured.");
     return;
