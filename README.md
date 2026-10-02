@@ -11,6 +11,9 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 SUPABASE_SECRET_KEY=...
 ADMIN_EMAIL_ALLOWLIST=adriana@example.com
+RESEND_API_KEY=...
+BOOKING_ADMIN_EMAIL=adriana@example.com
+BOOKING_FROM_EMAIL=Yummi Art <booking@yourdomain.com>
 ```
 
 Legacy fallback names still work during migration:
@@ -48,4 +51,14 @@ Public booking flow:
 
 Pending and confirmed bookings reserve their interval. Rejected and cancelled bookings release it. Server routes recompute duration and availability before insert; PostgreSQL exclusion constraint prevents overlapping active bookings.
 
-Notification hooks are prepared in `src/lib/booking/notifications.ts`; configure an email/SMS provider later before claiming delivery.
+Booking email notifications are sent server-side with Resend. `RESEND_API_KEY`, `BOOKING_ADMIN_EMAIL` and `BOOKING_FROM_EMAIL` must stay server-only and must not use the `NEXT_PUBLIC_` prefix.
+
+Transactional emails:
+
+- new pending request to Adriana
+- optional request-received email to the customer when email is provided
+- confirmation email for `pending -> confirmed`
+- rejection email for `pending -> rejected`
+- cancellation email for `confirmed -> cancelled`
+
+Email failures are logged server-side and do not roll back booking persistence or admin status updates.

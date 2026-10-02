@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/app/api/admin/_auth";
-import type { BookingStatus } from "@/lib/booking/types";
+import type { BookingRecord, BookingStatus } from "@/lib/booking/types";
+import { notifyBookingCancelled, notifyBookingConfirmed, notifyBookingRejected } from "@/lib/booking/notifications";
 import { supabaseAdmin } from "@/lib/supabase/server";
 
 const allowed = new Set<BookingStatus>(["pending", "confirmed", "rejected", "cancelled"]);
@@ -14,6 +15,21 @@ export async function PATCH(request: Request, context: RouteContext<"/api/admin/
   const status = String(body.status) as BookingStatus;
   if (!allowed.has(status)) return NextResponse.json({ error: "Status nije ispravan." }, { status: 400 });
 
-  const [booking] = await supabaseAdmin.update("bookings", { status }, { id: `eq.${id}` });
+  const [previousBooking] = await supabaseAdmin.select<BookingRecord>("bookings", { id: `eq.${id}`, limit: 1 });
+  if (!previousBooking) return NextResponse.json({ error: "Termin nije pronađen." }, { status: 404 });
+
+  const [booking] = await supabaseAdmin.update<BookingRecord>("bookings", { status }, { id: `eq.${id}` });
+  if (previousBooking.status !== booking.status) {
+    if (previousBooking.status === "pending" && booking.status === "confirmed") {
+      await notifyBookingConfirmed(booking);
+    }
+    if (previousBooking.status === "pending" && booking.status === "rejected") {
+      await notifyBookingRejected(booking);
+    }
+    if (previousBooking.status === "confirmed" && booking.status === "cancelled") {
+      await notifyBookingCancelled(booking);
+    }
+  }
+
   return NextResponse.json({ booking });
 }

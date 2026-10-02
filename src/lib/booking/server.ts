@@ -99,6 +99,8 @@ export async function createBookingRequest(input: {
     }
     throw error;
   }
-  await notifyNewBookingRequest(booking);
+  if (booking.status === "pending") {
+    await notifyNewBookingRequest(booking);
+  }
   return booking;
 }
