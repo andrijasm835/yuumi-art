@@ -62,7 +62,7 @@ export function ArtistScene() {
           });
 
           mobileIntro
-            .to(".artist-photo", { scale: 1, width: "84vw", height: "55dvh", x: "8vw", y: "10dvh" }, 0)
+            .to(".artist-photo", { scale: 1.01, width: "92vw", height: "58dvh", x: "-3vw", y: "9dvh" }, 0)
             .fromTo(".artist-word-meet", { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0 }, 0.04)
             .fromTo(".artist-word-name", { opacity: 0, xPercent: 12 }, { opacity: 1, xPercent: 0 }, 0.18);
 

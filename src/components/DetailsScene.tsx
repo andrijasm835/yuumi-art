@@ -101,13 +101,13 @@ export function DetailsScene() {
         <span className="details-word-three absolute bottom-[12svh] left-[8vw] max-w-[86vw] lg:bottom-[10vh] lg:left-[18vw]">THE DETAILS.</span>
       </div>
       <div className="absolute inset-0 z-20">
-        <div className="detail-a absolute inset-0 overflow-hidden md:inset-auto md:left-[5vw] md:top-[14svh] md:h-[34svh] md:w-[54vw] lg:top-[12vh] lg:h-[38vh] lg:w-[42vw] lg:min-w-64">
+        <div className="detail-a absolute left-[4vw] top-[15dvh] h-[29dvh] w-[68vw] overflow-hidden md:left-[5vw] md:top-[14svh] md:h-[34svh] md:w-[54vw] lg:top-[12vh] lg:h-[38vh] lg:w-[42vw] lg:min-w-64">
           <Image src={details[0].src} alt={details[0].alt} fill sizes="34vw" className="responsive-image detail-img h-full w-full object-cover" style={imagePositionStyle(details[0].position)} />
         </div>
-        <div className="detail-b absolute -right-[18vw] top-[9dvh] h-[58dvh] w-[86vw] overflow-hidden md:right-[7vw] md:top-[10svh] md:h-[52svh] md:w-[34vw] lg:top-[5vh] lg:h-[64vh] lg:w-[28vw] lg:min-w-64">
+        <div className="detail-b absolute right-[4vw] top-[31dvh] h-[38dvh] w-[48vw] overflow-hidden md:right-[7vw] md:top-[10svh] md:h-[52svh] md:w-[34vw] lg:top-[5vh] lg:h-[64vh] lg:w-[28vw] lg:min-w-64">
           <Image src={details[1].src} alt={details[1].alt} fill sizes="30vw" className="responsive-image detail-img h-full w-full object-cover" style={imagePositionStyle(details[1].position)} />
         </div>
-        <div className="detail-c absolute -left-[13vw] bottom-[-3dvh] h-[48dvh] w-[112vw] overflow-hidden md:bottom-[8svh] md:left-[26vw] md:h-[34svh] md:w-[42vw] lg:bottom-[7vh] lg:left-[31vw] lg:h-[42vh] lg:w-[34vw] lg:min-w-72">
+        <div className="detail-c absolute bottom-[7dvh] left-[15vw] h-[32dvh] w-[72vw] overflow-hidden md:bottom-[8svh] md:left-[26vw] md:h-[34svh] md:w-[42vw] lg:bottom-[7vh] lg:left-[31vw] lg:h-[42vh] lg:w-[34vw] lg:min-w-72">
           <Image src={details[2].src} alt={details[2].alt} fill sizes="30vw" className="responsive-image detail-img h-full w-full object-cover" style={imagePositionStyle(details[2].position)} />
         </div>
       </div>
