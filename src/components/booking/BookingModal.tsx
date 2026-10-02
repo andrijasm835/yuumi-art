@@ -160,7 +160,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
     (currentStep === "USLUGA" && serviceId) ||
     (currentStep === "DATUM" && date) ||
     (currentStep === "VREME" && startTime) ||
-    (currentStep === "PODACI" && details.fullName.trim() && details.phone.trim());
+    (currentStep === "PODACI" && details.fullName.trim() && details.email.trim());
 
   async function submit() {
     if (submitting) return;
@@ -323,8 +323,8 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
               <div className="grid min-w-0 max-w-full gap-5 md:grid-cols-2">
                 {[
                   ["fullName", "Ime i prezime *"],
-                  ["phone", "Telefon *"],
-                  ["email", "Email"],
+                  ["phone", "Telefon"],
+                  ["email", "Email *"],
                   ["instagram", "Instagram"],
                 ].map(([key, label]) => (
                   <label className="grid min-w-0 gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]" key={key}>

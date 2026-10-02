@@ -97,8 +97,8 @@ export async function createBookingRequest(input: {
     const payload = {
       service_id: service.id,
       customer_name: input.customer.fullName.trim(),
-      phone: input.customer.phone.trim(),
-      email: input.customer.email?.trim() || null,
+      phone: input.customer.phone?.trim() || null,
+      email: input.customer.email.trim(),
       instagram: input.customer.instagram?.trim() || null,
       note: input.customer.note?.trim() || null,
       status: input.status ?? "pending",
@@ -128,8 +128,8 @@ export async function createBookingRequest(input: {
   const payload = {
     service_id: service.id,
     customer_name: input.customer.fullName.trim(),
-    phone: input.customer.phone.trim(),
-    email: input.customer.email?.trim() || null,
+    phone: input.customer.phone?.trim() || null,
+    email: input.customer.email.trim(),
     instagram: input.customer.instagram?.trim() || null,
     note: input.customer.note?.trim() || null,
     booking_date: input.date as string,

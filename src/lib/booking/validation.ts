@@ -3,15 +3,15 @@ import type { CustomerDetails } from "@/lib/booking/types";
 export function validateCustomerDetails(details: CustomerDetails) {
   const errors: Partial<Record<keyof CustomerDetails, string>> = {};
   const fullName = details.fullName.trim();
-  const phone = details.phone.trim();
-  const email = details.email?.trim() ?? "";
+  const phone = details.phone?.trim() ?? "";
+  const email = details.email.trim();
   const instagram = details.instagram?.trim() ?? "";
   const note = details.note?.trim() ?? "";
 
   if (!fullName) errors.fullName = "Ime i prezime je obavezno.";
   if (fullName.length > 120) errors.fullName = "Ime je predugačko.";
-  if (!phone) errors.phone = "Telefon je obavezan.";
   if (phone && !/^[+()\d\s-]{6,24}$/.test(phone)) errors.phone = "Unesi ispravan broj telefona.";
+  if (!email) errors.email = "Email je obavezan.";
   if (email.length > 160) errors.email = "Email je predugačak.";
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Unesi ispravnu email adresu.";
   if (instagram.length > 80) errors.instagram = "Instagram korisničko ime je predugačko.";

@@ -142,11 +142,18 @@ test("customer validation rejects oversized optional fields", () => {
   assert.equal(Boolean(errors.note), true);
 });
 
-test("customer validation keeps email optional", () => {
+test("customer validation requires email and keeps phone optional", () => {
+  const missingEmailErrors = validateCustomerDetails({
+    fullName: "Ana Markovic",
+    phone: "",
+    email: "",
+  });
+  assert.equal(Boolean(missingEmailErrors.email), true);
+
   const errors = validateCustomerDetails({
     fullName: "Ana Markovic",
-    phone: "+38160111222",
-    email: "",
+    phone: "",
+    email: "ana@example.com",
   });
   assert.equal(Object.values(errors).some(Boolean), false);
 });

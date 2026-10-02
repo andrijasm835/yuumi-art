@@ -21,7 +21,7 @@ export type BookingRecord = {
   end_time: string;
   status: BookingStatus;
   customer_name?: string;
-  phone?: string;
+  phone?: string | null;
   email?: string | null;
   instagram?: string | null;
   note?: string | null;
@@ -35,7 +35,7 @@ export type BookingInquiryRecord = {
   service_id: string;
   status: BookingStatus;
   customer_name?: string;
-  phone?: string;
+  phone?: string | null;
   email?: string | null;
   instagram?: string | null;
   note?: string | null;
@@ -71,8 +71,8 @@ export type TimeInterval = {
 
 export type CustomerDetails = {
   fullName: string;
-  phone: string;
-  email?: string;
+  phone?: string;
+  email: string;
   instagram?: string;
   note?: string;
 };

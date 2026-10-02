@@ -32,8 +32,8 @@ export async function POST(request: Request) {
       status: "confirmed",
       customer: {
         fullName: String(body.fullName ?? "Manual booking"),
-        phone: String(body.phone ?? "-"),
-        email: body.email ? String(body.email) : "",
+        phone: body.phone ? String(body.phone) : "",
+        email: String(body.email ?? ""),
         instagram: body.instagram ? String(body.instagram) : "",
         note: body.note ? String(body.note) : "",
       },

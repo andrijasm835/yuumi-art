@@ -116,6 +116,7 @@ export function AdminDashboard() {
     startTime: "10:00",
     fullName: "",
     phone: "",
+    email: "",
   });
   const [block, setBlock] = useState({
     date: todayIso(),
@@ -246,7 +247,7 @@ export function AdminDashboard() {
     else {
       setNotice("Termin je dodat.");
       setError("");
-      setManual((current) => ({ ...current, fullName: "", phone: "" }));
+      setManual((current) => ({ ...current, fullName: "", phone: "", email: "" }));
     }
     await loadBookings();
     await loadSummaryBookings();
@@ -578,6 +579,9 @@ export function AdminDashboard() {
               </label>
               <label className={labelClass()}>Telefon
                 <input className={fieldClass()} value={manual.phone} onChange={(event) => setManual((current) => ({ ...current, phone: event.target.value }))} />
+              </label>
+              <label className={labelClass()}>Email *
+                <input className={fieldClass()} value={manual.email} onChange={(event) => setManual((current) => ({ ...current, email: event.target.value }))} />
               </label>
             </div>
             <button className="mt-4 bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.18em] text-white">DODAJ TERMIN</button>
