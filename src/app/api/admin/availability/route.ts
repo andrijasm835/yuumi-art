@@ -2,6 +2,19 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/app/api/admin/_auth";
 import { getWeeklyAvailability } from "@/lib/booking/repository";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { intervalsOverlap, timeToMinutes } from "@/lib/booking/time";
+
+function intervalsAreValid(intervals: { startTime: string; endTime: string }[]) {
+  const sorted = intervals
+    .filter((interval) => interval.startTime && interval.endTime)
+    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+  if (sorted.length !== intervals.length) return false;
+  if (sorted.some((interval) => timeToMinutes(interval.startTime) >= timeToMinutes(interval.endTime))) return false;
+  return sorted.every((interval, index) => index === 0 || !intervalsOverlap(
+    { start: sorted[index - 1].startTime, end: sorted[index - 1].endTime },
+    { start: interval.startTime, end: interval.endTime },
+  ));
+}
 
 export async function GET(request: Request) {
   const admin = await requireAdmin(request);
@@ -45,6 +58,9 @@ export async function PUT(request: Request) {
   const intervals = Array.isArray(body.intervals) ? body.intervals : [];
   const active = Boolean(body.active);
   if (!active || intervals.length === 0) return NextResponse.json({ result: [] });
+  if (!intervalsAreValid(intervals)) {
+    return NextResponse.json({ error: "Intervali nisu ispravni." }, { status: 400 });
+  }
 
   const result = await supabaseAdmin.insert(
     "weekly_availability",
