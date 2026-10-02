@@ -26,6 +26,10 @@ export function BookingScene() {
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        gsap.set(".final-mirror", { scale: 0.82, opacity: 0.72, rotate: 0, filter: "blur(2px)" });
+        gsap.set(".booking-reflection", { opacity: 0, scale: 1.08 });
+        gsap.set(".ready-top, .ready-bottom", { yPercent: 10, opacity: 0.76 });
+
         const entrance = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -48,14 +52,13 @@ export function BookingScene() {
         });
 
         entrance
-          .fromTo(".final-mirror", { scale: 0.82, opacity: 0.72 }, { scale: 0.92, opacity: 1, ease: "none" }, 0)
-          .fromTo(".booking-reflection", { opacity: 0.34, scale: 1.14 }, { opacity: 0, scale: 1.08, ease: "none" }, 0)
-          .fromTo(".ready-top", { yPercent: 10, opacity: 0.76 }, { yPercent: 0, opacity: 1, ease: "none" }, 0)
-          .fromTo(".ready-bottom", { yPercent: 10, opacity: 0.76 }, { yPercent: 0, opacity: 1, ease: "none" }, 0);
+          .to(".final-mirror", { scale: 0.92, opacity: 1, ease: "none" }, 0)
+          .to(".booking-reflection", { opacity: 0.25, scale: 1.04, ease: "none" }, 0)
+          .to(".ready-top, .ready-bottom", { yPercent: 0, opacity: 1, ease: "none" }, 0);
 
-        tl.fromTo(".final-mirror", { scale: 0.92, rotate: 0, filter: "blur(2px)" }, { scale: isMobile ? 0.98 : 1.05, rotate: 0, filter: "blur(0px)" }, 0)
+        tl.to(".final-mirror", { scale: isMobile ? 0.98 : 1.05, rotate: 0, filter: "blur(0px)" }, 0)
           .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1 }, 0.2)
-          .fromTo(".booking-reflection", { opacity: 0, scale: 1.08 }, { opacity: 0.72, scale: 1 }, 0.18)
+          .to(".booking-reflection", { opacity: 0.72, scale: 1 }, 0.18)
           .fromTo(".booking-panel", { clipPath: "circle(0% at 50% 50%)", opacity: 0 }, { clipPath: "circle(84% at 50% 50%)", opacity: 1 }, 0.38)
           .to(".final-shine", { xPercent: 130 }, 0.42)
           .to(".ready-top", { xPercent: isMobile ? -3 : -9 }, 0)

@@ -43,7 +43,6 @@ export function HeroExperience() {
           .to(".vanity-object-right", { opacity: 0, filter: "blur(10px)" }, 0.38)
           .to(".mirror-plane", { opacity: 1, backdropFilter: isMobile ? "blur(4px)" : "blur(10px)", scale: 1 }, 0.46)
           .to(".mirror-plane", { opacity: 0, backdropFilter: "blur(0px)" }, 0.72)
-          .to(".hero-handoff-portrait", { opacity: 1, scale: 1, filter: "blur(0px)" }, 0.58)
           .to(".vanity", { scale: isMobile ? 1.08 : 1.28, opacity: 0 }, 0.68);
 
         return () => tl.kill();
@@ -108,10 +107,6 @@ export function HeroExperience() {
         </div>
       </div>
 
-      <div className="hero-handoff-portrait pointer-events-none absolute inset-0 z-[45] scale-110 opacity-0 blur-md">
-        <BeautyFace className="h-full w-full" aria-label="Stilizovana beauty ilustracija prelazi iz ogledala u transformaciju" />
-        <div className="absolute inset-0 bg-[#f6ede4]/10" />
-      </div>
       <div className="mirror-plane pointer-events-none absolute inset-0 z-50 scale-95 bg-[#fff7ef]/26 opacity-0" />
     </section>
   );

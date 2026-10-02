@@ -126,7 +126,6 @@ button:focus-visible {
     transition-duration: 0.01ms !important;
   }
 
-  .hero-handoff-portrait,
   .stage-skin,
   .stage-eyes,
   .stage-color,
@@ -138,19 +137,16 @@ button:focus-visible {
   .stage-copy-3,
   .detail-front,
   .details-light,
-  .artist-bridge,
   .artist-word-meet,
   .artist-word-name,
   .artist-copy,
   .artist-meta,
-  .artist-reflection-bridge,
   .booking-reflection,
   .booking-panel {
     opacity: 1 !important;
     filter: none !important;
   }
 
-  .artist-bridge,
   .booking-panel {
     clip-path: none !important;
   }

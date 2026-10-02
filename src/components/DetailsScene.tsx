@@ -4,7 +4,7 @@ import { useRef } from "react";
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { artist, detailImages } from "@/content/site";
+import { detailImages } from "@/content/site";
 
 const details = [detailImages.lips, detailImages.eye, detailImages.texture];
 
@@ -28,6 +28,13 @@ export function DetailsScene() {
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        gsap.set(".detail-a", {
+          xPercent: isMobile ? -38 : -72,
+          yPercent: isMobile ? 24 : 38,
+          clipPath: "inset(0 100% 0 0)",
+        });
+        gsap.set(".details-word-one", { yPercent: isMobile ? 7 : 12 });
+
         const entrance = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -51,10 +58,15 @@ export function DetailsScene() {
 
         entrance
           .fromTo(".details-entry", { opacity: 0.82 }, { opacity: 1, ease: "none" }, 0)
-          .fromTo(".detail-a", { yPercent: isMobile ? 24 : 38 }, { yPercent: isMobile ? 16 : 28, ease: "none" }, 0)
-          .fromTo(".details-word-one", { yPercent: isMobile ? 7 : 12 }, { yPercent: 0, ease: "none" }, 0);
+          .to(".detail-a", {
+            xPercent: isMobile ? -22 : -44,
+            yPercent: isMobile ? 16 : 28,
+            clipPath: "inset(0 58% 0 0)",
+            ease: "none",
+          }, 0)
+          .to(".details-word-one", { yPercent: 0, ease: "none" }, 0);
 
-        tl.fromTo(".detail-a", { xPercent: isMobile ? -38 : -72, yPercent: isMobile ? 16 : 28, clipPath: "inset(0 100% 0 0)" }, { xPercent: 0, yPercent: 0, clipPath: "inset(0 0% 0 0)" }, 0)
+        tl.to(".detail-a", { xPercent: 0, yPercent: 0, clipPath: "inset(0 0% 0 0)" }, 0)
           .to(".details-word-one", { xPercent: isMobile ? -8 : -28, yPercent: isMobile ? -6 : -12 }, 0)
           .fromTo(".detail-b", { xPercent: isMobile ? 30 : 58, yPercent: isMobile ? -12 : -26, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }, { xPercent: 0, yPercent: 0, clipPath: "polygon(0 0, 100% 0, 88% 100%, 8% 100%)" }, 0.9)
           .to(".details-word-two", { xPercent: isMobile ? 6 : 22, yPercent: isMobile ? 8 : 16, opacity: 0.5 }, 0.85)
@@ -63,8 +75,7 @@ export function DetailsScene() {
           .to(".detail-front", { opacity: 1, yPercent: -8 }, 1.95)
           .to(".detail-img", { filter: isMobile ? "contrast(1.02)" : "contrast(1.04) saturate(1.03)", scale: isMobile ? 1.02 : 1.05 }, 2.05)
           .to(".detail-c", { scale: isMobile ? 1.04 : 1.12, xPercent: isMobile ? -1 : -3, yPercent: isMobile ? -2 : -6 }, 2.45)
-          .to(".details-light", { opacity: 1 }, 2.55)
-          .to(".artist-bridge", { opacity: 1, clipPath: "inset(0% 0% 0% 0%)" }, 2.72);
+          .to(".details-light", { opacity: 1 }, 2.55);
 
         return () => {
           entrance.kill();
@@ -99,17 +110,6 @@ export function DetailsScene() {
         DETAILS.
       </div>
       <div className="details-light pointer-events-none absolute inset-0 z-40 bg-[#f7efe8]/72 opacity-0" />
-      <div className="artist-bridge pointer-events-none absolute inset-0 z-50 opacity-0 [clip-path:inset(100%_0%_0%_0%)]">
-        <Image
-          src={artist.image}
-          alt="Artist portrait transition"
-          fill
-          sizes="100vw"
-          className="responsive-image object-cover"
-          style={imagePositionStyle(artist.position)}
-        />
-        <div className="absolute inset-0 bg-[#f7efe8]/24" />
-      </div>
     </section>
   );
 }
