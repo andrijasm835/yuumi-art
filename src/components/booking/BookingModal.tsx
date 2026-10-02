@@ -18,8 +18,23 @@ function nextDays(count = 45) {
   return Array.from({ length: count }, (_, index) => addDays(start, index));
 }
 
-function formatDate(date: string) {
-  return new Intl.DateTimeFormat("sr-Latn-RS", { day: "numeric", month: "long" }).format(new Date(`${date}T00:00:00`));
+function formatFullDate(date: string) {
+  return new Intl.DateTimeFormat("sr-Latn-RS", { day: "numeric", month: "long", year: "numeric" }).format(new Date(`${date}T00:00:00`));
+}
+
+function formatWeekday(date: string) {
+  return new Intl.DateTimeFormat("sr-Latn-RS", { weekday: "short" })
+    .format(new Date(`${date}T00:00:00`))
+    .replace(".", "")
+    .toUpperCase();
+}
+
+function formatMonthYear(date: string) {
+  return new Intl.DateTimeFormat("sr-Latn-RS", { month: "long", year: "numeric" }).format(new Date(`${date}T00:00:00`)).toUpperCase();
+}
+
+function monthKey(date: string) {
+  return date.slice(0, 7);
 }
 
 export function BookingModal({ open, onClose }: BookingModalProps) {
@@ -40,12 +55,22 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
 
   const selectedService = services.find((service) => service.id === serviceId);
   const days = useMemo(() => nextDays(), []);
+  const groupedDays = useMemo(() => {
+    return days.reduce<Array<{ month: string; dates: string[] }>>((groups, item) => {
+      const month = monthKey(item);
+      const current = groups.at(-1);
+      if (current?.month === month) current.dates.push(item);
+      else groups.push({ month, dates: [item] });
+      return groups;
+    }, []);
+  }, [days]);
 
   useEffect(() => {
     if (!open) return;
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    window.__yummiLenis?.stop();
     panelRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
@@ -66,6 +91,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = previous;
+      window.__yummiLenis?.start();
       window.removeEventListener("keydown", onKey);
       previouslyFocused.current?.focus();
     };
@@ -157,88 +183,113 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
       aria-modal="true"
       role="dialog"
       aria-label="Zakazivanje termina"
-      className="fixed inset-0 z-[110] bg-[#160f0c]/82 p-3 text-[#241916] backdrop-blur-md md:p-8"
+      className="fixed inset-0 z-[110] grid place-items-center bg-[#160f0c]/84 text-[#241916] backdrop-blur-md md:p-8"
     >
       <div
         ref={panelRef}
         tabIndex={-1}
-        className="mx-auto flex h-full max-w-6xl flex-col overflow-hidden bg-[#fff7ef] shadow-[0_40px_160px_rgba(0,0,0,0.45)] outline-none"
+        className="flex h-[100svh] w-full flex-col overflow-hidden bg-[#fff7ef] shadow-[0_40px_160px_rgba(0,0,0,0.45)] outline-none md:h-[min(89svh,860px)] md:w-[82vw] md:max-w-[1220px] md:rounded-[10px]"
       >
-        <div className="flex items-center justify-between border-b border-[#d8bd80]/35 px-5 py-4 md:px-8">
-          <div className="text-[10px] font-bold tracking-[0.35em] text-[#8f6d5a]">YUMMI ART BOOKING</div>
-          <button className="text-xs font-bold tracking-[0.3em] outline-none focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" onClick={onClose}>
+        <div className="flex shrink-0 items-center justify-between border-b border-[#d8bd80]/35 px-5 py-4 md:px-8">
+          <div className="text-[10px] font-bold tracking-[0.35em] text-[#8f6d5a]">YUUMI ART BOOKING</div>
+          <button className="px-2 py-1 text-[10px] font-bold tracking-[0.28em] text-[#6f1d2a] outline-none transition hover:text-[#241916] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" onClick={onClose}>
             ZATVORI
           </button>
         </div>
 
-        <div className="grid flex-1 overflow-y-auto md:grid-cols-[0.34fr_0.66fr]">
-          <aside className="border-b border-[#d8bd80]/25 p-5 md:border-b-0 md:border-r md:p-8">
-            <h2 className="font-serif text-[clamp(3rem,8vw,6.8rem)] leading-[0.84] text-[#6f1d2a]">
+        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[0.32fr_0.68fr] md:grid-rows-none">
+          <aside className="shrink-0 border-b border-[#d8bd80]/25 p-5 md:border-b-0 md:border-r md:p-8 lg:p-10">
+            <h2 className="font-serif text-[clamp(3.1rem,6vw,5.85rem)] leading-[0.86] text-[#6f1d2a]">
               ZAKAŽI
               <br />
               TERMIN
             </h2>
-            <div className="mt-8 grid gap-3">
+            <div className="mt-7 grid gap-2 md:mt-10">
               {steps.map((item, index) => (
                 <button
                   key={item}
-                  className={`text-left text-xs font-bold tracking-[0.28em] ${index === step ? "text-[#6f1d2a]" : "text-[#8f6d5a]/60"}`}
+                  className={`group flex items-center gap-3 py-1.5 text-left text-[11px] font-bold tracking-[0.24em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#6f1d2a] ${
+                    index === step ? "text-[#6f1d2a]" : "text-[#8f6d5a]/65"
+                  }`}
                   disabled={index > step}
                   onClick={() => setStep(index as Step)}
                 >
-                  {String(index + 1).padStart(2, "0")} {item}
+                  <span className={`h-1.5 w-1.5 rounded-full ${index === step ? "bg-[#6f1d2a]" : "bg-[#d8bd80]/55"}`} />
+                  <span className={`h-px w-7 ${index === step ? "bg-[#6f1d2a]" : "bg-[#d8bd80]/35"}`} />
+                  <span>{String(index + 1).padStart(2, "0")} {item}</span>
                 </button>
               ))}
             </div>
           </aside>
 
-          <main className="p-5 md:p-10">
-            {error ? <p className="mb-5 bg-[#6f1d2a]/10 p-3 text-sm text-[#6f1d2a]">{error}</p> : null}
+          <main className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 [touch-action:pan-y] md:p-8 lg:p-10">
+            {error ? <p className="mb-5 border border-[#6f1d2a]/20 bg-[#6f1d2a]/8 p-3 text-sm text-[#6f1d2a]">{error}</p> : null}
 
             {step === 0 ? (
-              <div className="grid gap-4">
+              <div className="grid gap-3 lg:grid-cols-2">
                 {services.map((service) => (
                   <button
                     key={service.id}
-                    className={`border p-5 text-left transition ${serviceId === service.id ? "border-[#6f1d2a] bg-[#6f1d2a]/8" : "border-[#d8bd80]/40"}`}
+                    className={`relative min-h-[160px] border p-5 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6f1d2a] ${
+                      serviceId === service.id ? "border-[#6f1d2a] bg-[#6f1d2a]/7" : "border-[#d8bd80]/45 hover:border-[#b88a45]/70"
+                    }`}
                     onClick={() => {
                       setServiceId(service.id);
                       setStartTime("");
                     }}
                   >
-                    <span className="font-serif text-3xl text-[#6f1d2a]">{service.name}</span>
-                    <span className="mt-2 block text-sm text-[#6b574e]">{service.description}</span>
-                    <span className="mt-3 block text-xs font-bold tracking-[0.25em] text-[#8f6d5a]">{service.durationMinutes} MIN</span>
+                    {serviceId === service.id ? <span className="absolute right-4 top-4 text-[10px] font-bold tracking-[0.22em] text-[#6f1d2a]">IZABRANO</span> : null}
+                    <span className="block pr-24 font-serif text-[clamp(1.55rem,2.3vw,2.35rem)] leading-none text-[#6f1d2a]">{service.name}</span>
+                    <span className="mt-4 block text-sm leading-6 text-[#6b574e]">{service.description}</span>
+                    <span className="mt-5 block text-[11px] font-bold tracking-[0.25em] text-[#8f6d5a]">{service.durationMinutes} MIN</span>
                   </button>
                 ))}
               </div>
             ) : null}
 
             {step === 1 ? (
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-                {days.map((item) => (
-                  <button
-                    key={item}
-                    disabled={!bookableDates[item]}
-                    className={`border p-4 text-left disabled:cursor-not-allowed disabled:opacity-35 ${date === item ? "border-[#6f1d2a] bg-[#6f1d2a]/8" : "border-[#d8bd80]/40"}`}
-                    onClick={() => setDate(item)}
-                  >
-                    <span className="block font-serif text-2xl">{new Date(`${item}T00:00:00`).getDate()}</span>
-                    <span className="text-xs font-bold tracking-[0.22em] text-[#8f6d5a]">{formatDate(item)}</span>
-                  </button>
+              <div className="grid gap-7">
+                {groupedDays.map((group) => (
+                  <section key={group.month}>
+                    <h3 className="mb-3 text-[11px] font-bold tracking-[0.26em] text-[#8f6d5a]">{formatMonthYear(`${group.month}-01`)}</h3>
+                    <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-7 xl:grid-cols-9">
+                      {group.dates.map((item) => (
+                        <button
+                          key={item}
+                          disabled={!bookableDates[item]}
+                          className={`aspect-[1/0.92] border p-2 text-center transition disabled:cursor-not-allowed disabled:border-[#d8bd80]/20 disabled:bg-[#e8ddd1]/35 disabled:text-[#8f6d5a]/35 ${
+                            date === item
+                              ? "border-[#6f1d2a] bg-[#6f1d2a] text-[#fff7ef]"
+                              : "border-[#d8bd80]/45 text-[#241916] hover:border-[#b88a45]"
+                          }`}
+                          onClick={() => setDate(item)}
+                        >
+                          <span className={`block text-[10px] font-bold tracking-[0.18em] ${date === item ? "text-[#f3d99b]" : "text-[#8f6d5a]"}`}>{formatWeekday(item)}</span>
+                          <span className="mt-1 block font-serif text-3xl leading-none">{new Date(`${item}T00:00:00`).getDate()}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </section>
                 ))}
               </div>
             ) : null}
 
             {step === 2 ? (
               <div>
-                {loadingSlots ? <p>Učitavanje termina...</p> : null}
-                {!loadingSlots && slots.length === 0 ? <p>Nema dostupnih termina za izabrani datum.</p> : null}
-                <div className="grid grid-cols-3 gap-3 md:grid-cols-6">
+                <p className="text-[11px] font-bold tracking-[0.26em] text-[#8f6d5a]">DOSTUPNI TERMINI</p>
+                <div className="mt-3 border-l border-[#d8bd80]/55 pl-4">
+                  <p className="font-serif text-3xl text-[#6f1d2a]">{selectedService?.name}</p>
+                  <p className="mt-1 text-sm text-[#6b574e]">{formatFullDate(date)}</p>
+                </div>
+                {loadingSlots ? <p className="mt-8 text-[#6b574e]">Učitavanje termina...</p> : null}
+                {!loadingSlots && slots.length === 0 ? <p className="mt-8 text-[#6b574e]">Nema dostupnih termina za izabrani datum.</p> : null}
+                <div className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
                   {slots.map((slot) => (
                     <button
                       key={slot}
-                      className={`border px-4 py-3 font-bold ${startTime === slot ? "border-[#6f1d2a] bg-[#6f1d2a]/8" : "border-[#d8bd80]/40"}`}
+                      className={`border px-4 py-3 text-sm font-bold tracking-[0.16em] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6f1d2a] ${
+                        startTime === slot ? "border-[#6f1d2a] bg-[#6f1d2a] text-[#fff7ef]" : "border-[#d8bd80]/45 text-[#6f1d2a] hover:border-[#b88a45]"
+                      }`}
                       onClick={() => setStartTime(slot)}
                     >
                       {slot}
@@ -249,7 +300,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
             ) : null}
 
             {step === 3 ? (
-              <div className="grid gap-4">
+              <div className="grid gap-5 md:grid-cols-2">
                 {[
                   ["fullName", "Ime i prezime *"],
                   ["phone", "Telefon *"],
@@ -259,16 +310,16 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
                   <label className="grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]" key={key}>
                     {label}
                     <input
-                      className="border border-[#d8bd80]/50 bg-transparent px-4 py-3 text-base font-normal tracking-normal text-[#241916] outline-none focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
+                      className="border border-[#d8bd80]/45 bg-[#fffaf4] px-4 py-4 text-base font-normal tracking-normal text-[#241916] outline-none transition focus:border-[#6f1d2a] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
                       value={details[key as keyof typeof details]}
                       onChange={(event) => setDetails((current) => ({ ...current, [key]: event.target.value }))}
                     />
                   </label>
                 ))}
-                <label className="grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]">
+                <label className="grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a] md:col-span-2">
                   Napomena
                   <textarea
-                    className="min-h-28 border border-[#d8bd80]/50 bg-transparent px-4 py-3 text-base font-normal tracking-normal text-[#241916] outline-none focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
+                    className="min-h-32 border border-[#d8bd80]/45 bg-[#fffaf4] px-4 py-4 text-base font-normal tracking-normal text-[#241916] outline-none transition focus:border-[#6f1d2a] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
                     value={details.note}
                     onChange={(event) => setDetails((current) => ({ ...current, note: event.target.value }))}
                   />
@@ -277,23 +328,36 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
             ) : null}
 
             {step === 4 && success ? (
-              <div className="max-w-xl">
-                <h3 className="font-serif text-6xl leading-[0.9] text-[#6f1d2a]">ZAHTEV JE POSLAT.</h3>
-                <p className="mt-6 text-lg leading-8">Termin: {formatDate(success.date)} · {success.time}</p>
-                <p className="mt-2 text-lg leading-8">Usluga: {success.service}</p>
-                <p className="mt-6 text-[#6b574e]">Tvoj termin čeka potvrdu.</p>
+              <div className="max-w-2xl">
+                <h3 className="font-serif text-[clamp(3.6rem,7vw,6.2rem)] leading-[0.86] text-[#6f1d2a]">ZAHTEV JE POSLAT.</h3>
+                <div className="mt-8 grid gap-5 border-l border-[#d8bd80]/65 pl-5 sm:grid-cols-2">
+                  {[
+                    ["USLUGA", success.service],
+                    ["DATUM", formatFullDate(success.date)],
+                    ["VREME", success.time],
+                    ["STATUS", "Čeka potvrdu"],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <p className="text-[10px] font-bold tracking-[0.24em] text-[#8f6d5a]">{label}</p>
+                      <p className="mt-1 text-lg text-[#241916]">{value}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-8 text-[#6b574e]">
+                  {details.email.trim() ? "Dobićeš email kada termin bude potvrđen." : "Adriana će potvrditi ili odbiti termin u skladu sa dostupnošću."}
+                </p>
               </div>
             ) : null}
           </main>
         </div>
 
         {step < 4 ? (
-          <div className="flex justify-between border-t border-[#d8bd80]/35 px-5 py-4 md:px-8">
-            <button disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1) as Step)}>
+          <div className="flex shrink-0 justify-between border-t border-[#d8bd80]/35 bg-[#fff7ef] px-5 py-4 md:px-8">
+            <button className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/35 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1) as Step)}>
               NAZAD
             </button>
             <button
-              className="font-bold text-[#6f1d2a] disabled:text-[#8f6d5a]/40"
+              className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/40 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
               disabled={!canContinue || submitting}
               onClick={() => {
                 if (step === 3) void submit();
