@@ -104,26 +104,28 @@ export function ArtistScene() {
   });
 
   return (
-    <section id="about" ref={scope} className="relative min-h-[100dvh] overflow-visible bg-[#f7efe8] text-[#241916] md:h-[100dvh] md:min-h-0 md:overflow-hidden lg:h-screen">
-      <div className="artist-photo absolute left-0 top-0 h-[100dvh] w-screen overflow-hidden lg:h-screen">
-        <Image
-          src={artist.image}
-          alt={artist.alt}
-          fill
-          sizes="(max-width: 768px) 100vw, 42vw"
-          className="responsive-image h-full w-full object-cover"
-          style={imagePositionStyle(artist.position)}
-        />
+    <section id="about" ref={scope} className="scene-overlap relative min-h-[100dvh] overflow-visible bg-[#f7efe8] text-[#241916] md:h-[100dvh] md:min-h-0 md:overflow-hidden lg:h-screen">
+      <div className="artist-mobile-visual relative min-h-[86dvh] overflow-hidden md:contents">
+        <div className="artist-photo absolute left-0 top-0 h-[100dvh] w-screen overflow-hidden lg:h-screen">
+          <Image
+            src={artist.image}
+            alt={artist.alt}
+            fill
+            sizes="(max-width: 768px) 100vw, 42vw"
+            className="responsive-image h-full w-full object-cover"
+            style={imagePositionStyle(artist.position)}
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-[#f7efe8]/0 via-[#f7efe8]/20 to-[#f7efe8]/86" />
+        <div className="artist-darken pointer-events-none absolute inset-0 z-40 bg-[radial-gradient(circle_at_50%_46%,rgba(244,226,198,0.14),transparent_30%),linear-gradient(180deg,rgba(27,17,16,0.12),rgba(27,17,16,0.86))] opacity-0" />
+        <div className="artist-word-meet absolute left-[5vw] top-[calc(env(safe-area-inset-top)+1.5rem)] z-20 font-serif text-[clamp(3.1rem,12vw,5rem)] leading-[0.84] text-[#241916] mix-blend-multiply md:top-[9vh] md:text-[clamp(5rem,10vw,8.5rem)] lg:top-[10vh] lg:text-[clamp(5rem,12vw,12rem)] lg:leading-[0.78]">
+          MEET
+        </div>
+        <div className="artist-word-name absolute top-[63dvh] right-[5vw] z-20 font-serif text-[clamp(3.2rem,12.5vw,5.4rem)] leading-[0.84] text-[#6f1d2a] mix-blend-multiply md:top-auto md:bottom-[10vh] md:text-[clamp(5.5rem,10vw,9rem)] lg:bottom-[8vh] lg:text-[clamp(5.8rem,12vw,13rem)] lg:leading-[0.78]">
+          {artist.name}
+        </div>
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-[#f7efe8]/0 via-[#f7efe8]/20 to-[#f7efe8]/86" />
-      <div className="artist-darken pointer-events-none absolute inset-0 z-40 bg-[radial-gradient(circle_at_50%_46%,rgba(244,226,198,0.14),transparent_30%),linear-gradient(180deg,rgba(27,17,16,0.12),rgba(27,17,16,0.86))] opacity-0" />
-      <div className="artist-word-meet absolute left-[5vw] top-[calc(env(safe-area-inset-top)+1.5rem)] z-20 font-serif text-[clamp(3.1rem,12vw,5rem)] leading-[0.84] text-[#241916] mix-blend-multiply md:top-[9vh] md:text-[clamp(5rem,10vw,8.5rem)] lg:top-[10vh] lg:text-[clamp(5rem,12vw,12rem)] lg:leading-[0.78]">
-        MEET
-      </div>
-      <div className="artist-word-name absolute top-[63dvh] right-[5vw] z-20 font-serif text-[clamp(3.2rem,12.5vw,5.4rem)] leading-[0.84] text-[#6f1d2a] mix-blend-multiply md:top-auto md:bottom-[10vh] md:text-[clamp(5.5rem,10vw,9rem)] lg:bottom-[8vh] lg:text-[clamp(5.8rem,12vw,13rem)] lg:leading-[0.78]">
-        {artist.name}
-      </div>
-      <div className="relative z-30 block w-full px-5 pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-[calc(100dvh+1.75rem)] md:flex md:h-full md:items-end md:justify-between md:px-10 md:pb-12 md:pt-0 lg:px-12 lg:pb-16">
+      <div className="artist-mobile-copy relative z-30 block w-full px-5 pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-6 md:flex md:h-full md:items-end md:justify-between md:px-10 md:pb-12 md:pt-0 lg:px-12 lg:pb-16">
         <div className="artist-copy max-w-[32rem] rounded-sm bg-[#f7efe8]/92 py-4 backdrop-blur-[2px] md:mb-[5vh] md:max-w-md md:bg-transparent md:py-0 md:backdrop-blur-0 lg:mb-[8vh]">
           <p className="text-lg leading-7 text-[#3c2d27] md:mt-8 md:text-xl md:leading-8 lg:text-2xl lg:leading-10">
             {artist.intro}

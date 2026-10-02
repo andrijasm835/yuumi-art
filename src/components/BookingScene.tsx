@@ -43,22 +43,48 @@ export function BookingScene() {
             invalidateOnRefresh: true,
           },
         });
+        entrance
+          .to(".final-mirror", { scale: 0.92, opacity: 1, ease: "none" }, 0)
+          .to(".booking-reflection", { opacity: 0.25, scale: 1.04, ease: "none" }, 0)
+          .to(".ready-top, .ready-bottom", { yPercent: 0, opacity: 1, ease: "none" }, 0);
+
+        if (isMobile) {
+          const mobileTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: scope.current,
+              start: "top 82%",
+              end: "center center",
+              scrub: 0.8,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          mobileTl
+            .to(".final-mirror", { scale: 0.94, rotate: 0, filter: "blur(0px)" }, 0)
+            .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1 }, 0.18)
+            .to(".booking-reflection", { opacity: 0.72, scale: 1 }, 0.16)
+            .fromTo(".booking-panel", { clipPath: "circle(0% at 50% 50%)", opacity: 0 }, { clipPath: "circle(84% at 50% 50%)", opacity: 1 }, 0.32)
+            .to(".final-shine", { xPercent: 130 }, 0.38)
+            .to(".ready-top", { xPercent: -2 }, 0)
+            .to(".ready-bottom", { xPercent: 2 }, 0);
+
+          return () => {
+            entrance.kill();
+            mobileTl.kill();
+          };
+        }
+
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? "+=115%" : isTablet ? "+=150%" : "+=180%",
+            end: isTablet ? "+=150%" : "+=180%",
             scrub: 1,
             pin: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
-
-        entrance
-          .to(".final-mirror", { scale: 0.92, opacity: 1, ease: "none" }, 0)
-          .to(".booking-reflection", { opacity: 0.25, scale: 1.04, ease: "none" }, 0)
-          .to(".ready-top, .ready-bottom", { yPercent: 0, opacity: 1, ease: "none" }, 0);
 
         tl.to(".final-mirror", { scale: isMobile ? 0.94 : isTablet ? 1 : 1.05, rotate: 0, filter: "blur(0px)" }, 0)
           .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1 }, 0.2)

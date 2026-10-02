@@ -70,8 +70,18 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
   useEffect(() => {
     if (!open) return;
     previouslyFocused.current = document.activeElement as HTMLElement | null;
-    const previous = document.body.style.overflow;
+    const previousOverflow = document.body.style.overflow;
+    const previousPosition = document.body.style.position;
+    const previousTop = document.body.style.top;
+    const previousWidth = document.body.style.width;
+    const scrollY = window.scrollY;
+    const lockBodyPosition = window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(max-width: 767px)").matches;
     document.body.style.overflow = "hidden";
+    if (lockBodyPosition) {
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+    }
     window.__yummiLenis?.stop();
     panelRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
@@ -92,7 +102,11 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
     };
     window.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow = previousOverflow;
+      document.body.style.position = previousPosition;
+      document.body.style.top = previousTop;
+      document.body.style.width = previousWidth;
+      if (lockBodyPosition) window.scrollTo(0, scrollY);
       window.__yummiLenis?.start();
       window.removeEventListener("keydown", onKey);
       previouslyFocused.current?.focus();
@@ -195,46 +209,46 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
       aria-modal="true"
       role="dialog"
       aria-label="Zakazivanje termina"
-      className="fixed inset-0 z-[110] grid place-items-center bg-[#160f0c]/84 text-[#241916] backdrop-blur-md md:p-8"
+      className="fixed inset-0 z-[110] flex h-[100dvh] items-stretch justify-stretch overflow-hidden bg-[#160f0c]/84 text-[#241916] backdrop-blur-md md:grid md:place-items-center md:p-8"
     >
       <div
         ref={panelRef}
         tabIndex={-1}
-        className="flex h-[100svh] w-full flex-col overflow-hidden bg-[#fff7ef] shadow-[0_40px_160px_rgba(0,0,0,0.45)] outline-none md:h-[min(89svh,860px)] md:w-[82vw] md:max-w-[1220px] md:rounded-[10px]"
+        className="flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-hidden bg-[#fff7ef] shadow-[0_40px_160px_rgba(0,0,0,0.45)] outline-none md:h-[min(89svh,860px)] md:w-[82vw] md:max-w-[1220px] md:rounded-[10px]"
       >
-        <div className="flex shrink-0 items-center justify-between border-b border-[#d8bd80]/35 px-5 py-4 md:px-8">
+        <div className="flex shrink-0 items-center justify-between border-b border-[#d8bd80]/35 px-5 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:px-8 md:py-4">
           <div className="text-[10px] font-bold tracking-[0.35em] text-[#8f6d5a]">YUUMI ART BOOKING</div>
           <button className="px-2 py-1 text-[10px] font-bold tracking-[0.28em] text-[#6f1d2a] outline-none transition hover:text-[#241916] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" onClick={onClose}>
             ZATVORI
           </button>
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-rows-[auto_minmax(0,1fr)] md:grid-cols-[minmax(250px,0.32fr)_minmax(0,0.68fr)] md:grid-rows-none">
-          <aside className="shrink-0 border-b border-[#d8bd80]/25 p-5 md:border-b-0 md:border-r md:p-8 lg:p-10">
-            <h2 className="max-w-full overflow-hidden font-serif text-[clamp(3.1rem,4.6vw,4.9rem)] leading-[0.88] text-[#6f1d2a]">
+        <div className="flex min-h-0 flex-1 flex-col md:grid md:grid-cols-[minmax(250px,0.32fr)_minmax(0,0.68fr)]">
+          <aside className="shrink-0 border-b border-[#d8bd80]/25 p-4 md:border-b-0 md:border-r md:p-8 lg:p-10">
+            <h2 className="max-w-full overflow-hidden font-serif text-[clamp(2.35rem,10vw,3.25rem)] leading-[0.88] text-[#6f1d2a] md:text-[clamp(3.1rem,4.6vw,4.9rem)]">
               ZAKAŽI
               <br />
               TERMIN
             </h2>
-            <div className="mt-7 grid gap-2 md:mt-10">
+            <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 md:mt-10 md:grid md:gap-2">
               {activeSteps.map((item, index) => (
                 <button
                   key={item}
-                  className={`group flex items-center gap-3 py-1.5 text-left text-[11px] font-bold tracking-[0.24em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#6f1d2a] ${
+                  className={`group flex items-center gap-2 py-1.5 text-left text-[10px] font-bold tracking-[0.2em] outline-none transition focus-visible:ring-2 focus-visible:ring-[#6f1d2a] md:gap-3 md:text-[11px] md:tracking-[0.24em] ${
                     index === step ? "text-[#6f1d2a]" : "text-[#8f6d5a]/65"
                   }`}
                   disabled={index > step}
                   onClick={() => setStep(index)}
                 >
                   <span className={`h-1.5 w-1.5 rounded-full ${index === step ? "bg-[#6f1d2a]" : "bg-[#d8bd80]/55"}`} />
-                  <span className={`h-px w-7 ${index === step ? "bg-[#6f1d2a]" : "bg-[#d8bd80]/35"}`} />
+                  <span className={`hidden h-px w-7 md:block ${index === step ? "bg-[#6f1d2a]" : "bg-[#d8bd80]/35"}`} />
                   <span>{String(index + 1).padStart(2, "0")} {item}</span>
                 </button>
               ))}
             </div>
           </aside>
 
-          <main className="min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-5 [touch-action:pan-y] md:p-8 lg:p-10">
+          <main className="min-h-0 min-w-0 w-full max-w-full flex-1 overflow-x-hidden overflow-y-auto overscroll-contain p-5 [-webkit-overflow-scrolling:touch] [touch-action:pan-y] md:p-8 lg:p-10">
             {error ? <p className="mb-5 border border-[#6f1d2a]/20 bg-[#6f1d2a]/8 p-3 text-sm text-[#6f1d2a]">{error}</p> : null}
 
             {currentStep === "USLUGA" ? (
@@ -382,7 +396,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
         </div>
 
         {currentStep !== "POTVRDA" ? (
-          <div className="flex shrink-0 justify-between border-t border-[#d8bd80]/35 bg-[#fff7ef] px-5 py-4 md:px-8">
+          <div className="flex shrink-0 justify-between border-t border-[#d8bd80]/35 bg-[#fff7ef] px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 md:px-8 md:py-4">
             <button className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/35 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1))}>
               NAZAD
             </button>
