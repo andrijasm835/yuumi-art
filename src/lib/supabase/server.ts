@@ -1,11 +1,12 @@
 type QueryValue = string | number | boolean | null | undefined;
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SECRET_KEY = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export function supabaseConfigured() {
-  return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_SERVICE_ROLE_KEY);
+  return Boolean(SUPABASE_URL && SUPABASE_PUBLISHABLE_KEY && SUPABASE_SECRET_KEY);
 }
 
 export class SupabaseConfigError extends Error {
@@ -15,7 +16,7 @@ export class SupabaseConfigError extends Error {
 }
 
 function assertConfig() {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY || !SUPABASE_SECRET_KEY) {
     throw new SupabaseConfigError();
   }
 }
@@ -35,8 +36,8 @@ async function supabaseFetch<T>(path: string, init: RequestInit = {}, query?: Re
   const response = await fetch(`${SUPABASE_URL}/rest/v1/${path}${queryString(query)}`, {
     ...init,
     headers: {
-      apikey: SUPABASE_SERVICE_ROLE_KEY as string,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      apikey: SUPABASE_SECRET_KEY as string,
+      Authorization: `Bearer ${SUPABASE_SECRET_KEY}`,
       "Content-Type": "application/json",
       Prefer: "return=representation",
       ...init.headers,
@@ -81,10 +82,10 @@ export function isAuthorizedAdmin(user: { app_metadata?: { role?: string }; emai
 }
 
 export async function verifyAdminToken(token: string) {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) return null;
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
     headers: {
-      apikey: SUPABASE_ANON_KEY,
+      apikey: SUPABASE_PUBLISHABLE_KEY,
       Authorization: `Bearer ${token}`,
     },
     cache: "no-store",
@@ -96,11 +97,11 @@ export async function verifyAdminToken(token: string) {
 }
 
 export async function signInWithPassword(email: string, password: string) {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) throw new SupabaseConfigError();
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) throw new SupabaseConfigError();
   const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: {
-      apikey: SUPABASE_ANON_KEY,
+      apikey: SUPABASE_PUBLISHABLE_KEY,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ email, password }),
