@@ -26,6 +26,7 @@ export function HeroExperience() {
             end: isMobile ? "+=140%" : "+=240%",
             scrub: 1,
             pin: true,
+            anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });

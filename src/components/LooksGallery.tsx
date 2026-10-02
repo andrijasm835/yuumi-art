@@ -4,13 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { detailImages, servicesAndEducation } from "@/content/site";
+import { servicesAndEducation } from "@/content/site";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
     "--image-position-desktop": position.desktop,
     "--image-position-mobile": position.mobile,
   } as CSSProperties;
+}
+
+const serviceTextLayouts = {
+  "bottom-left":
+    "left-5 bottom-6 max-w-[80%] md:left-[5vw] md:bottom-[6vh] md:max-w-[72%]",
+  "top-right":
+    "right-5 top-16 max-w-[78%] md:right-[5vw] md:top-[8vh] md:max-w-[66%]",
+} as const;
+
+function serviceTextLayout(layout: string) {
+  return serviceTextLayouts[layout as keyof typeof serviceTextLayouts] ?? serviceTextLayouts["bottom-left"];
 }
 
 export function LooksGallery() {
@@ -53,6 +64,15 @@ export function LooksGallery() {
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        const entrance = gsap.timeline({
+          scrollTrigger: {
+            trigger: scope.current,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -60,21 +80,31 @@ export function LooksGallery() {
             end: isMobile ? "+=280%" : "+=340%",
             scrub: 1,
             pin: true,
+            anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
 
         const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
 
+        entrance.fromTo(
+          track,
+          { yPercent: isMobile ? 8 : 10, scale: isMobile ? 1.015 : 1.025, opacity: 0.82 },
+          { yPercent: 0, scale: 1, opacity: 1, ease: "none" },
+          0,
+        );
+
         timeline
           .to(track, { x: () => -distance(), ease: "none", duration: 3 }, 0)
           .to(".look-image:not(.no-service-zoom)", { scale: isMobile ? 1.025 : 1.055, xPercent: isMobile ? -0.5 : -1.5, stagger: 0.06, duration: 3 }, 0)
           .to(".service-item", { xPercent: isMobile ? -0.5 : -1.5, stagger: 0.06, duration: 3 }, 0)
           .to(scope.current, { backgroundColor: "#211714", ease: "none", duration: 0.78 }, 2.36)
-          .to(".service-final-image", { scale: isMobile ? 1.08 : 1.18, xPercent: isMobile ? -1 : -3, yPercent: isMobile ? 1 : 2, filter: isMobile ? "contrast(1.02)" : "contrast(1.04) saturate(1.04)", duration: 0.82 }, 2.38)
-          .fromTo(".looks-detail-bridge", { opacity: 0, scale: 1.08, clipPath: "circle(0% at 58% 58%)" }, { opacity: 1, scale: 1, clipPath: "circle(86% at 58% 58%)", duration: 0.72 }, 2.66);
+          .to(".service-final-image", { scale: isMobile ? 1.08 : 1.18, xPercent: isMobile ? -1 : -3, yPercent: isMobile ? 1 : 2, filter: isMobile ? "contrast(1.02)" : "contrast(1.04) saturate(1.04)", duration: 0.82 }, 2.38);
 
-        return () => timeline.kill();
+        return () => {
+          entrance.kill();
+          timeline.kill();
+        };
       },
     );
 
@@ -107,38 +137,26 @@ export function LooksGallery() {
                 } ${look.fit === "contain" ? "no-service-zoom" : ""}`}
                 style={imagePositionStyle(look.position)}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#160f0c]/58 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(22,15,12,0.44)_0%,transparent_34%,transparent_54%,rgba(22,15,12,0.68)_100%)]" />
             </div>
             <div
-              className={`look-title pointer-events-none absolute z-20 max-w-4xl ${look.title}`}
-              style={
-                look.lightText
-                  ? { color: "#f7f0e8", textShadow: "0 2px 18px rgba(22,15,12,0.28)" }
-                  : undefined
-              }
+              className={`look-title pointer-events-none absolute z-20 text-[#fff8ef] ${serviceTextLayout(look.layout)}`}
+              style={{ textShadow: "0 2px 18px rgba(22,15,12,0.3)" }}
             >
               <p className="text-xs font-bold tracking-[0.4em] text-[#d9b577]">
                 {String(index + 1).padStart(2, "0")} / 04
               </p>
-              <h2 className="mt-3 font-serif text-[clamp(3.1rem,15vw,10rem)] leading-[0.78]">
-                {look.name}
+              <h2 className="mt-3 font-serif text-[clamp(2.5rem,12vw,5rem)] leading-[0.9] md:text-[clamp(2.8rem,7vw,7.5rem)]">
+                {look.nameLines.map((line) => (
+                  <span className="block" key={line}>
+                    {line}
+                  </span>
+                ))}
               </h2>
-              <p className="mt-4 max-w-[17rem] text-sm font-medium leading-6 text-current md:mt-5 md:max-w-md md:text-lg">{look.text}</p>
+              <p className="mt-4 max-w-[17rem] text-sm font-medium leading-6 text-current md:mt-5 md:max-w-[30rem] md:text-[1.05rem]">{look.text}</p>
             </div>
           </button>
         ))}
-      </div>
-
-      <div className="looks-detail-bridge pointer-events-none absolute inset-0 z-30 opacity-0">
-        <Image
-          src={detailImages.lips.src}
-          alt={detailImages.lips.alt}
-          fill
-          sizes="100vw"
-          className="responsive-image object-cover"
-          style={imagePositionStyle(detailImages.lips.position)}
-        />
-        <div className="absolute inset-0 bg-[#211714]/42" />
       </div>
 
       {preview ? (

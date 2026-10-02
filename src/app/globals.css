@@ -136,8 +136,6 @@ button:focus-visible {
   .stage-copy-1,
   .stage-copy-2,
   .stage-copy-3,
-  .look-handoff,
-  .looks-detail-bridge,
   .detail-front,
   .details-light,
   .artist-bridge,
@@ -153,7 +151,6 @@ button:focus-visible {
   }
 
   .artist-bridge,
-  .looks-detail-bridge,
   .booking-panel {
     clip-path: none !important;
   }

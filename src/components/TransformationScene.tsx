@@ -1,10 +1,8 @@
 "use client";
 
 import { useRef } from "react";
-import Image from "next/image";
 import { BeautyFace } from "@/components/BeautyFace";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { primaryServiceImage } from "@/content/site";
 
 const makeupStages = [
   {
@@ -42,6 +40,15 @@ export function TransformationScene() {
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        const entrance = gsap.timeline({
+          scrollTrigger: {
+            trigger: scope.current,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -49,9 +56,17 @@ export function TransformationScene() {
             end: isMobile ? "+=260%" : "+=360%",
             scrub: 1.15,
             pin: true,
+            anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
+
+        entrance.fromTo(
+          ".transformation-frame",
+          { yPercent: isMobile ? 6 : 8, scale: isMobile ? 1.025 : 1.035, opacity: 0.78 },
+          { yPercent: 0, scale: 1, opacity: 1, ease: "none" },
+          0,
+        );
 
         const showCopy = (index: number, at: number) => {
           tl.to(".stage-copy", { autoAlpha: 0, y: -22, duration: 0.16 }, at - 0.02)
@@ -94,10 +109,12 @@ export function TransformationScene() {
           .set(".stage-final", { autoAlpha: 1 }, 3.1)
           .to(".reveal-final", { scaleY: 1, duration: 0.48, ease: "power2.out" }, 3.12)
           .to(".final-shimmer", { autoAlpha: 0.55, xPercent: 140, duration: 0.45 }, 3.18)
-          .to(".final-shimmer", { autoAlpha: 0, duration: 0.14 }, 3.62)
-          .to(".look-handoff", { opacity: 1, scale: 1, duration: 0.32 }, 4.35);
+          .to(".final-shimmer", { autoAlpha: 0, duration: 0.14 }, 3.62);
 
-        return () => tl.kill();
+        return () => {
+          entrance.kill();
+          tl.kill();
+        };
       },
     );
 
@@ -115,16 +132,6 @@ export function TransformationScene() {
       </div>
 
       <div className="transformation-enter pointer-events-none absolute inset-0 z-20 bg-[#fff7ef]/18 backdrop-blur-[8px]" />
-      <div className="look-handoff pointer-events-none absolute right-[-20vw] top-[22vh] z-20 h-[56vh] w-[58vw] scale-110 overflow-hidden opacity-0 md:right-[-8vw] md:top-[12vh] md:h-[76vh] md:w-[42vw]">
-        <Image
-          src={primaryServiceImage}
-          alt="Profesionalno šminkanje"
-          fill
-          sizes="42vw"
-          className="object-cover"
-        />
-      </div>
-
       <div className="relative z-30 flex h-full items-end px-5 pb-8 md:px-12 md:pb-20">
         <div className="relative min-h-52 w-full max-w-4xl md:min-h-64">
           {makeupStages.map((stage, index) => (

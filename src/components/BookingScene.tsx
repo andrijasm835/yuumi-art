@@ -26,6 +26,15 @@ export function BookingScene() {
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        const entrance = gsap.timeline({
+          scrollTrigger: {
+            trigger: scope.current,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -33,9 +42,16 @@ export function BookingScene() {
             end: isMobile ? "+=130%" : "+=180%",
             scrub: 1,
             pin: true,
+            anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
+
+        entrance
+          .fromTo(".final-mirror", { scale: 0.82, opacity: 0.72 }, { scale: 0.92, opacity: 1, ease: "none" }, 0)
+          .fromTo(".booking-reflection", { opacity: 0.34, scale: 1.14 }, { opacity: 0, scale: 1.08, ease: "none" }, 0)
+          .fromTo(".ready-top", { yPercent: 10, opacity: 0.76 }, { yPercent: 0, opacity: 1, ease: "none" }, 0)
+          .fromTo(".ready-bottom", { yPercent: 10, opacity: 0.76 }, { yPercent: 0, opacity: 1, ease: "none" }, 0);
 
         tl.fromTo(".final-mirror", { scale: 0.92, rotate: 0, filter: "blur(2px)" }, { scale: isMobile ? 0.98 : 1.05, rotate: 0, filter: "blur(0px)" }, 0)
           .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1 }, 0.2)
@@ -45,7 +61,10 @@ export function BookingScene() {
           .to(".ready-top", { xPercent: isMobile ? -3 : -9 }, 0)
           .to(".ready-bottom", { xPercent: isMobile ? 3 : 10 }, 0);
 
-        return () => tl.kill();
+        return () => {
+          entrance.kill();
+          tl.kill();
+        };
       },
     );
 

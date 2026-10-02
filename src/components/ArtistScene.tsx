@@ -26,6 +26,15 @@ export function ArtistScene() {
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        const entrance = gsap.timeline({
+          scrollTrigger: {
+            trigger: scope.current,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -33,9 +42,17 @@ export function ArtistScene() {
             end: isMobile ? "+=150%" : "+=180%",
             scrub: 1,
             pin: true,
+            anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
+
+        entrance.fromTo(
+          ".artist-photo",
+          { scale: 1.22, opacity: 0.86 },
+          { scale: 1.18, opacity: 1, ease: "none" },
+          0,
+        );
 
         tl.fromTo(".artist-photo", { scale: 1.18, width: "100vw", height: "100svh", x: 0, y: 0 }, { scale: 1, width: isMobile ? "78vw" : "48vw", height: isMobile ? "58svh" : "78vh", x: isMobile ? "11vw" : "26vw", y: isMobile ? "12svh" : "10vh" }, 0)
           .fromTo(".artist-word-meet", { opacity: 0, xPercent: -18 }, { opacity: 1, xPercent: 0 }, 0.05)
@@ -47,7 +64,10 @@ export function ArtistScene() {
           .fromTo(".artist-reflection-bridge", { opacity: 0, scale: 0.34, rotate: -6 }, { opacity: 1, scale: 1, rotate: 0 }, 1.34)
           .to(".artist-word-meet, .artist-word-name, .artist-copy, .artist-meta", { opacity: 0.18, filter: isMobile ? "blur(1px)" : "blur(3px)" }, 1.42);
 
-        return () => tl.kill();
+        return () => {
+          entrance.kill();
+          tl.kill();
+        };
       },
     );
 

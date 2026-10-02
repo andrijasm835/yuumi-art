@@ -28,6 +28,15 @@ export function DetailsScene() {
       },
       (context) => {
         const isMobile = context.conditions?.mobile;
+        const entrance = gsap.timeline({
+          scrollTrigger: {
+            trigger: scope.current,
+            start: "top bottom",
+            end: "top top",
+            scrub: true,
+            invalidateOnRefresh: true,
+          },
+        });
         const tl = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -35,9 +44,15 @@ export function DetailsScene() {
             end: isMobile ? "+=260%" : "+=320%",
             scrub: 1.15,
             pin: true,
+            anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
+
+        entrance
+          .fromTo(".details-entry", { opacity: 0.82 }, { opacity: 1, ease: "none" }, 0)
+          .fromTo(".detail-a", { yPercent: isMobile ? 24 : 38 }, { yPercent: isMobile ? 16 : 28, ease: "none" }, 0)
+          .fromTo(".details-word-one", { yPercent: isMobile ? 7 : 12 }, { yPercent: 0, ease: "none" }, 0);
 
         tl.fromTo(".detail-a", { xPercent: isMobile ? -38 : -72, yPercent: isMobile ? 16 : 28, clipPath: "inset(0 100% 0 0)" }, { xPercent: 0, yPercent: 0, clipPath: "inset(0 0% 0 0)" }, 0)
           .to(".details-word-one", { xPercent: isMobile ? -8 : -28, yPercent: isMobile ? -6 : -12 }, 0)
@@ -51,7 +66,10 @@ export function DetailsScene() {
           .to(".details-light", { opacity: 1 }, 2.55)
           .to(".artist-bridge", { opacity: 1, clipPath: "inset(0% 0% 0% 0%)" }, 2.72);
 
-        return () => tl.kill();
+        return () => {
+          entrance.kill();
+          tl.kill();
+        };
       },
     );
 
@@ -60,7 +78,7 @@ export function DetailsScene() {
 
   return (
     <section ref={scope} className="relative h-svh overflow-hidden bg-[#211714] text-[#fff7ef] md:h-screen">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_24%,rgba(118,29,42,0.32),transparent_34%),radial-gradient(circle_at_22%_72%,rgba(199,168,107,0.24),transparent_30%)]" />
+      <div className="details-entry absolute inset-0 bg-[radial-gradient(circle_at_78%_24%,rgba(118,29,42,0.32),transparent_34%),radial-gradient(circle_at_22%_72%,rgba(199,168,107,0.24),transparent_30%)]" />
       <div className="absolute inset-0 z-10 font-serif text-[clamp(4.2rem,18vw,14rem)] leading-[0.75] tracking-normal text-[#fff7ef]/34">
         <span className="details-word-one absolute left-[6vw] top-[15vh]">BEAUTY</span>
         <span className="details-word-two absolute right-[8vw] top-[38vh]">IS IN</span>
