@@ -45,7 +45,7 @@ test("new booking triggers admin email", async () => {
   await notifyNewBookingRequest(booking);
 
   assert.equal(sent[0].to, "adriana@example.com");
-  assert.equal(sent[0].subject, "Novi zahtev za termin - Yummi Art");
+  assert.equal(sent[0].subject, "Novi zahtev za termin - Yuumi Art");
   assert.equal(sent[0].idempotencyKey, "new-booking/booking-123");
 });
 
@@ -54,7 +54,7 @@ test("new booking with customer email triggers received email", async () => {
 
   assert.equal(sent.length, 2);
   assert.equal(sent[1].to, "ana@example.com");
-  assert.equal(sent[1].subject, "Primili smo tvoj zahtev - Yummi Art");
+  assert.equal(sent[1].subject, "Primili smo tvoj zahtev - Yuumi Art");
   assert.equal(sent[1].idempotencyKey, "booking-received/booking-123");
 });
 
@@ -70,7 +70,7 @@ test("pending to confirmed triggers confirmation email", async () => {
 
   assert.equal(sent.length, 1);
   assert.equal(sent[0].to, "ana@example.com");
-  assert.equal(sent[0].subject, "Termin je potvrđen - Yummi Art");
+  assert.equal(sent[0].subject, "Termin je potvrđen - Yuumi Art");
   assert.equal(sent[0].idempotencyKey, "booking-confirmed/booking-123");
 });
 
@@ -78,7 +78,7 @@ test("pending to rejected triggers rejection email", async () => {
   await notifyBookingStatusTransition("pending", { ...booking, status: "rejected" });
 
   assert.equal(sent.length, 1);
-  assert.equal(sent[0].subject, "Termin nije potvrđen - Yummi Art");
+  assert.equal(sent[0].subject, "Termin nije potvrđen - Yuumi Art");
   assert.equal(sent[0].idempotencyKey, "booking-rejected/booking-123");
 });
 
@@ -86,7 +86,7 @@ test("confirmed to cancelled triggers cancellation email", async () => {
   await notifyBookingStatusTransition("confirmed", { ...booking, status: "cancelled" });
 
   assert.equal(sent.length, 1);
-  assert.equal(sent[0].subject, "Termin je otkazan - Yummi Art");
+  assert.equal(sent[0].subject, "Termin je otkazan - Yuumi Art");
   assert.equal(sent[0].idempotencyKey, "booking-cancelled/booking-123");
 });
 

@@ -1,4 +1,4 @@
-# Yummi Art
+# Yuumi Art
 
 Premium one-page website with Supabase-backed booking.
 
@@ -13,7 +13,7 @@ SUPABASE_SECRET_KEY=...
 ADMIN_EMAIL_ALLOWLIST=adriana@example.com
 RESEND_API_KEY=...
 BOOKING_ADMIN_EMAIL=adriana@example.com
-BOOKING_FROM_EMAIL=Yummi Art <booking@yourdomain.com>
+BOOKING_FROM_EMAIL=Yuumi Art <booking@yourdomain.com>
 ```
 
 Legacy fallback names still work during migration:

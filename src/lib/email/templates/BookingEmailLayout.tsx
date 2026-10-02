@@ -18,7 +18,7 @@ export function BookingEmailLayout({ eyebrow, title, children, footer }: Booking
             <h1 style={emailStyles.heading}>{title}</h1>
             {children}
           </div>
-          <p style={emailStyles.footer}>{footer ?? "Yummi Art · Adriana · Lebane"}</p>
+          <p style={emailStyles.footer}>{footer ?? "Yuumi Art · Adriana · Lebane"}</p>
         </div>
       </body>
     </html>

@@ -21,7 +21,7 @@ const bodoni = Bodoni_Moda({
 export const metadata: Metadata = {
   title: `${brand.name} | Makeup Artist Adriana — Lebane`,
   description:
-    "Yummi Art je makeup studio Adriane iz Lebana. Profesionalno šminkanje uz individualan pristup i fokus na prirodan, elegantan izgled.",
+    "Yuumi Art je makeup studio Adriane iz Lebana. Profesionalno šminkanje uz individualan pristup i fokus na prirodan, elegantan izgled.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -5,7 +5,7 @@ import { emailStyles } from "@/lib/email/templates/styles";
 
 export function BookingConfirmedEmail({ booking }: { booking: BookingRecord }) {
   return (
-    <BookingEmailLayout eyebrow="Yummi Art" title="Termin je potvrđen">
+    <BookingEmailLayout eyebrow="Yuumi Art" title="Termin je potvrđen">
       <p style={emailStyles.text}>
         {booking.customer_name ? `${booking.customer_name}, t` : "T"}voj termin je potvrđen. Vidimo se u izabranom
         terminu.

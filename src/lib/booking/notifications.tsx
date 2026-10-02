@@ -12,7 +12,7 @@ export async function notifyNewBookingRequest(booking: BookingRecord) {
     if (adminEmail) {
       await sendTransactionalEmail({
         to: adminEmail,
-        subject: "Novi zahtev za termin - Yummi Art",
+        subject: "Novi zahtev za termin - Yuumi Art",
         react: <NewBookingAdminEmail booking={booking} adminUrl={adminUrl()} />,
         idempotencyKey: `new-booking/${booking.id}`,
       });
@@ -21,7 +21,7 @@ export async function notifyNewBookingRequest(booking: BookingRecord) {
     if (booking.email) {
       await sendTransactionalEmail({
         to: booking.email,
-        subject: "Primili smo tvoj zahtev - Yummi Art",
+        subject: "Primili smo tvoj zahtev - Yuumi Art",
         react: <BookingReceivedEmail booking={booking} />,
         idempotencyKey: `booking-received/${booking.id}`,
       });
@@ -34,7 +34,7 @@ export async function notifyBookingConfirmed(booking: BookingRecord) {
   await safelySend("booking confirmed", () =>
     sendTransactionalEmail({
       to: booking.email as string,
-      subject: "Termin je potvrđen - Yummi Art",
+      subject: "Termin je potvrđen - Yuumi Art",
       react: <BookingConfirmedEmail booking={booking} />,
       idempotencyKey: `booking-confirmed/${booking.id}`,
     }),
@@ -46,7 +46,7 @@ export async function notifyBookingRejected(booking: BookingRecord) {
   await safelySend("booking rejected", () =>
     sendTransactionalEmail({
       to: booking.email as string,
-      subject: "Termin nije potvrđen - Yummi Art",
+      subject: "Termin nije potvrđen - Yuumi Art",
       react: <BookingRejectedEmail booking={booking} siteUrl={bookingSiteUrl()} />,
       idempotencyKey: `booking-rejected/${booking.id}`,
     }),
@@ -58,7 +58,7 @@ export async function notifyBookingCancelled(booking: BookingRecord) {
   await safelySend("booking cancelled", () =>
     sendTransactionalEmail({
       to: booking.email as string,
-      subject: "Termin je otkazan - Yummi Art",
+      subject: "Termin je otkazan - Yuumi Art",
       react: <BookingCancelledEmail booking={booking} />,
       idempotencyKey: `booking-cancelled/${booking.id}`,
     }),

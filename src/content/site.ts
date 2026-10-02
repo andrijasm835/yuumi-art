@@ -1,7 +1,7 @@
 import { bookingServices } from "@/lib/booking/services";
 
 export const brand = {
-  name: "Yummi Art",
+  name: "Yuumi Art",
   navName: "YUMMI ART",
   artistName: "Adriana",
   artistLabel: "ADRIANA · MAKEUP ARTIST",
@@ -50,7 +50,7 @@ export const artist = {
   education:
     "Kroz profesionalno šminkanje i edukacije želim da svaka devojka stekne više sigurnosti, znanja i osećaja za lepotu koja joj prirodno pripada.",
   image: "/yummi/artist.jpg",
-  alt: "Adriana, makeup artistkinja iza Yummi Art brenda",
+  alt: "Adriana, makeup artistkinja iza Yuumi Art brenda",
   position: { desktop: "50% 58%", mobile: "50% 52%" },
 };
 

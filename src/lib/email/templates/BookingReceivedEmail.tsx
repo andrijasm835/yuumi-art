@@ -5,7 +5,7 @@ import { emailStyles } from "@/lib/email/templates/styles";
 
 export function BookingReceivedEmail({ booking }: { booking: BookingRecord }) {
   return (
-    <BookingEmailLayout eyebrow="Yummi Art" title="Primili smo tvoj zahtev">
+    <BookingEmailLayout eyebrow="Yuumi Art" title="Primili smo tvoj zahtev">
       <p style={emailStyles.text}>
         Tvoj zahtev za termin je primljen, ali termin još nije potvrđen. Adriana će ga pregledati i potvrditi ili
         odbiti u skladu sa dostupnošću.
