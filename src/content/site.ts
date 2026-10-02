@@ -2,7 +2,7 @@ import { bookingServices } from "@/lib/booking/services";
 
 export const brand = {
   name: "Yuumi Art",
-  navName: "YUMMI ART",
+  navName: "YUUMI ART",
   artistName: "Adriana",
   artistLabel: "ADRIANA · MAKEUP ARTIST",
   location: "Lebane, Srbija",

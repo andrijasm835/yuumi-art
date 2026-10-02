@@ -8,6 +8,22 @@ import { notifyNewBookingRequest } from "@/lib/booking/notifications";
 import { supabaseAdmin } from "@/lib/supabase/server";
 import { addDays, belgradeDate } from "@/lib/booking/time";
 
+const datePattern = /^\d{4}-\d{2}-\d{2}$/;
+const timePattern = /^\d{2}:\d{2}$/;
+
+function validDate(value: string) {
+  if (!datePattern.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+function validTime(value: string) {
+  if (!timePattern.test(value)) return false;
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+}
+
 export async function getAvailability(serviceId: string, date: string) {
   const [weeklyAvailability, exceptions, bookings] = await Promise.all([
     getWeeklyAvailability(),
@@ -54,6 +70,7 @@ export async function createBookingRequest(input: {
 }) {
   const service = getBookingService(input.serviceId);
   if (!service) throw new Error("Izabrana usluga nije dostupna.");
+  if (!validDate(input.date) || !validTime(input.startTime)) throw new Error("Izabrani datum ili vreme nisu ispravni.");
 
   const errors = validateCustomerDetails(input.customer);
   if (hasValidationErrors(errors)) {

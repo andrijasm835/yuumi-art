@@ -3,6 +3,9 @@ import { requireAdmin } from "@/app/api/admin/_auth";
 import { createBookingRequest } from "@/lib/booking/server";
 import { getAllBookings } from "@/lib/booking/repository";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET(request: Request) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

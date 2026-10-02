@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { availableTimeSlots, blockingIntervals, dateHasAvailableSlot } from "@/lib/booking/availability";
 import { belgradeDate, intervalsOverlap } from "@/lib/booking/time";
 import { isDatabaseOverlapError } from "@/lib/booking/server";
+import { validateCustomerDetails } from "@/lib/booking/validation";
 import { isAuthorizedAdmin } from "@/lib/supabase/server";
 import type { AvailabilityException, BookingRecord, WeeklyAvailability } from "@/lib/booking/types";
 
@@ -87,4 +88,26 @@ test("fully booked day is disabled", () => {
 
 test("database overlap conflict is normalized", () => {
   assert.equal(isDatabaseOverlapError(new Error("violates exclusion constraint no_active_booking_overlap")), true);
+});
+
+test("customer validation rejects oversized optional fields", () => {
+  const errors = validateCustomerDetails({
+    fullName: "Ana Markovic",
+    phone: "+38160111222",
+    email: `${"a".repeat(170)}@example.com`,
+    instagram: "a".repeat(81),
+    note: "x".repeat(801),
+  });
+  assert.equal(Boolean(errors.email), true);
+  assert.equal(Boolean(errors.instagram), true);
+  assert.equal(Boolean(errors.note), true);
+});
+
+test("customer validation keeps email optional", () => {
+  const errors = validateCustomerDetails({
+    fullName: "Ana Markovic",
+    phone: "+38160111222",
+    email: "",
+  });
+  assert.equal(Object.values(errors).some(Boolean), false);
 });

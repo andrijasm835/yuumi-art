@@ -6,6 +6,9 @@ import { supabaseAdmin } from "@/lib/supabase/server";
 
 const allowed = new Set<BookingStatus>(["pending", "confirmed", "rejected", "cancelled"]);
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function PATCH(request: Request, context: RouteContext<"/api/admin/bookings/[id]/status">) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

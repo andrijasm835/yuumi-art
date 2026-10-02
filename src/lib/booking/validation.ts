@@ -2,14 +2,21 @@ import type { CustomerDetails } from "@/lib/booking/types";
 
 export function validateCustomerDetails(details: CustomerDetails) {
   const errors: Partial<Record<keyof CustomerDetails, string>> = {};
+  const fullName = details.fullName.trim();
+  const phone = details.phone.trim();
+  const email = details.email?.trim() ?? "";
+  const instagram = details.instagram?.trim() ?? "";
+  const note = details.note?.trim() ?? "";
 
-  if (!details.fullName.trim()) errors.fullName = "Ime i prezime je obavezno.";
-  if (details.fullName.trim().length > 120) errors.fullName = "Ime je predugačko.";
-  if (!details.phone.trim()) errors.phone = "Telefon je obavezan.";
-  if (details.phone.trim() && !/^[+()\d\s-]{6,24}$/.test(details.phone.trim())) errors.phone = "Unesi ispravan broj telefona.";
-  if (details.email?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(details.email.trim())) errors.email = "Unesi ispravnu email adresu.";
-  if (details.instagram && details.instagram.length > 80) errors.instagram = "Instagram korisničko ime je predugačko.";
-  if (details.note && details.note.length > 800) errors.note = "Napomena može imati najviše 800 karaktera.";
+  if (!fullName) errors.fullName = "Ime i prezime je obavezno.";
+  if (fullName.length > 120) errors.fullName = "Ime je predugačko.";
+  if (!phone) errors.phone = "Telefon je obavezan.";
+  if (phone && !/^[+()\d\s-]{6,24}$/.test(phone)) errors.phone = "Unesi ispravan broj telefona.";
+  if (email.length > 160) errors.email = "Email je predugačak.";
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Unesi ispravnu email adresu.";
+  if (instagram.length > 80) errors.instagram = "Instagram korisničko ime je predugačko.";
+  if (instagram && !/^@?[A-Za-z0-9._]{1,80}$/.test(instagram)) errors.instagram = "Unesi ispravan Instagram profil.";
+  if (note.length > 800) errors.note = "Napomena može imati najviše 800 karaktera.";
 
   return errors;
 }

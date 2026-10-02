@@ -2,9 +2,20 @@ import { NextResponse } from "next/server";
 import { createBookingRequest } from "@/lib/booking/server";
 import { SupabaseConfigError } from "@/lib/supabase/server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const contentLength = Number(request.headers.get("content-length") ?? 0);
+    if (contentLength > 10_000) {
+      return NextResponse.json({ error: "Zahtev je prevelik." }, { status: 413 });
+    }
+    const rawBody = await request.text();
+    if (rawBody.length > 10_000) {
+      return NextResponse.json({ error: "Zahtev je prevelik." }, { status: 413 });
+    }
+    const body = JSON.parse(rawBody);
     const booking = await createBookingRequest({
       serviceId: String(body.serviceId ?? ""),
       date: String(body.date ?? ""),
@@ -23,6 +34,9 @@ export async function POST(request: Request) {
     if (error instanceof SupabaseConfigError) {
       return NextResponse.json({ error: "Supabase nije konfigurisan." }, { status: 503 });
     }
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Termin nije moguće rezervisati." }, { status: 409 });
+    const message = error instanceof Error && error.message && !error.message.includes("Supabase request failed")
+      ? error.message
+      : "Termin nije moguće rezervisati.";
+    return NextResponse.json({ error: message }, { status: 409 });
   }
 }
