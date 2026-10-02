@@ -26,7 +26,14 @@ SUPABASE_SERVICE_ROLE_KEY=...
 
 `SUPABASE_SECRET_KEY` is server-only. Never expose it to browser code or prefix it with `NEXT_PUBLIC_`.
 
-Run all SQL migrations in `supabase/migrations/`, including the booking schema and `replace_weekly_availability` RPC migration.
+Run all SQL migrations in `supabase/migrations/`, including:
+
+- booking system
+- `replace_weekly_availability` RPC
+- restricted RPC permissions
+- `booking_inquiries`
+- `booking_inquiries` `service_role` grant
+- required customer email / optional phone adjustment
 
 Create Adriana's admin user in Supabase Auth. Mark the account as admin in Supabase Auth user metadata:
 
@@ -44,13 +51,17 @@ Alternatively set `ADMIN_EMAIL_ALLOWLIST` as a comma-separated fallback. A valid
 
 Public booking flow:
 
-1. Usluga
-2. Datum
-3. Vreme
-4. Podaci
-5. Potvrda
+Professional makeup:
 
-Pending and confirmed bookings reserve their interval. Rejected and cancelled bookings release it. Server routes recompute duration and availability before insert; PostgreSQL exclusion constraint prevents overlapping active bookings.
+`USLUGA → DATUM → VREME → PODACI → POTVRDA`
+
+Professional makeup creates a real timed booking in `bookings`. Pending and confirmed bookings reserve their interval. Rejected and cancelled bookings release it. Server routes recompute duration and availability before insert; PostgreSQL exclusion constraint prevents overlapping active bookings.
+
+Education services:
+
+`USLUGA → PODACI → POTVRDA`
+
+Education services create `booking_inquiries`. Inquiries do not block appointment availability and do not participate in overlap logic. Course scheduling is agreed with Adriana afterwards.
 
 Booking email notifications are sent server-side with Resend. `RESEND_API_KEY`, `BOOKING_ADMIN_EMAIL` and `BOOKING_FROM_EMAIL` must stay server-only and must not use the `NEXT_PUBLIC_` prefix.
 
