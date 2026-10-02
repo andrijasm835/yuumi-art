@@ -127,7 +127,10 @@ button:focus-visible {
   }
 
   .hero-handoff-portrait,
-  .makeup-layer,
+  .stage-skin,
+  .stage-eyes,
+  .stage-color,
+  .stage-final,
   .reveal-shape,
   .stage-copy-0,
   .stage-copy-1,
@@ -171,8 +174,13 @@ button:focus-visible {
 
   .reveal-cheek-left,
   .reveal-cheek-right {
+    rx: 155px !important;
+    ry: 105px !important;
+  }
+
+  .reveal-lips {
     rx: 120px !important;
-    ry: 86px !important;
+    ry: 58px !important;
   }
 }
 
