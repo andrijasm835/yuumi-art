@@ -10,11 +10,22 @@ Create `.env.local` and keep secrets out of git:
 NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 SUPABASE_SERVICE_ROLE_KEY=...
+ADMIN_EMAIL_ALLOWLIST=adriana@example.com
 ```
 
 Run the SQL migration in `supabase/migrations/20261002114500_booking_system.sql`.
 
-Create Adriana's admin user in Supabase Auth. `/admin` uses Supabase email/password login and all admin mutations call server routes with the returned access token.
+Create Adriana's admin user in Supabase Auth. Mark the account as admin in Supabase Auth user metadata:
+
+```json
+{
+  "app_metadata": {
+    "role": "admin"
+  }
+}
+```
+
+Alternatively set `ADMIN_EMAIL_ALLOWLIST` as a comma-separated fallback. A valid Supabase login is not enough for admin access.
 
 ## Booking
 

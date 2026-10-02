@@ -71,6 +71,15 @@ export const supabaseAdmin = {
   },
 };
 
+export function isAuthorizedAdmin(user: { app_metadata?: { role?: string }; email?: string } | null) {
+  if (!user) return false;
+  const allowlist = (process.env.ADMIN_EMAIL_ALLOWLIST ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+  return user.app_metadata?.role === "admin" || (user.email ? allowlist.includes(user.email.toLowerCase()) : false);
+}
+
 export async function verifyAdminToken(token: string) {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
   const response = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
@@ -82,7 +91,8 @@ export async function verifyAdminToken(token: string) {
   });
 
   if (!response.ok) return null;
-  return (await response.json()) as { id: string; email?: string; role?: string };
+  const user = (await response.json()) as { id: string; email?: string; role?: string; app_metadata?: { role?: string } };
+  return isAuthorizedAdmin(user) ? user : null;
 }
 
 export async function signInWithPassword(email: string, password: string) {

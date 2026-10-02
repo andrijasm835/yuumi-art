@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { bookingServices } from "@/lib/booking/services";
-import type { BookingRecord, BookingStatus } from "@/lib/booking/types";
+import type { BookingRecord, BookingStatus, WeeklyAvailability } from "@/lib/booking/types";
+import { addDays, belgradeDate } from "@/lib/booking/time";
 
 function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  return belgradeDate();
 }
+
+const weekdays = ["Nedelja", "Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota"];
 
 export function AdminDashboard() {
   const [token, setToken] = useState("");
@@ -16,6 +19,7 @@ export function AdminDashboard() {
   const [status, setStatus] = useState("");
   const [date, setDate] = useState("");
   const [error, setError] = useState("");
+  const [weekly, setWeekly] = useState<WeeklyAvailability[]>([]);
   const [manual, setManual] = useState({
     serviceId: bookingServices[0].id,
     date: todayIso(),
@@ -58,11 +62,24 @@ export function AdminDashboard() {
     else setError(data.error || "Booking lista nije dostupna.");
   }
 
+  async function loadAvailability() {
+    if (!token) return;
+    const response = await fetch("/api/admin/availability", { headers: { Authorization: `Bearer ${token}` } });
+    const data = await response.json();
+    if (response.ok) setWeekly(data.weekly ?? []);
+  }
+
   useEffect(() => {
     const task = window.setTimeout(() => void loadBookings(), 0);
     return () => window.clearTimeout(task);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, status, date]);
+
+  useEffect(() => {
+    const task = window.setTimeout(() => void loadAvailability(), 0);
+    return () => window.clearTimeout(task);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   async function updateStatus(id: string, nextStatus: BookingStatus) {
     const response = await fetch(`/api/admin/bookings/${id}/status`, {
@@ -97,6 +114,18 @@ export function AdminDashboard() {
     if (!response.ok) setError(data.error || "Blokada nije sačuvana.");
     else setError("");
   }
+
+  async function saveWeekday(weekday: number, active: boolean, intervals: { startTime: string; endTime: string }[]) {
+    const response = await fetch("/api/admin/availability", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ weekday, active, intervals }),
+    });
+    if (!response.ok) setError("Radno vreme nije sačuvano.");
+    await loadAvailability();
+  }
+
+  const weekDates = Array.from({ length: 7 }, (_, index) => addDays(date || todayIso(), index));
 
   if (!token) {
     return (
@@ -150,6 +179,26 @@ export function AdminDashboard() {
         </section>
 
         <section className="mt-8 grid gap-5 lg:grid-cols-[1fr_0.38fr]">
+          <div className="grid gap-5">
+          <div className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4">
+            <h2 className="font-serif text-3xl text-[#6f1d2a]">Week view</h2>
+            <div className="mt-4 grid gap-3 md:grid-cols-7">
+              {weekDates.map((item) => {
+                const dayBookings = bookings.filter((booking) => booking.booking_date === item);
+                return (
+                  <div className="min-h-32 border border-[#d8bd80]/35 p-3" key={item}>
+                    <p className="text-xs font-bold tracking-[0.18em] text-[#8f6d5a]">{item}</p>
+                    {dayBookings.length === 0 ? <p className="mt-3 text-xs text-[#6b574e]">AVAILABLE</p> : null}
+                    {dayBookings.map((booking) => (
+                      <p className={`mt-2 text-xs font-bold ${booking.status === "confirmed" ? "text-[#1f6f3f]" : booking.status === "pending" ? "text-[#9b6a10]" : "text-[#6b574e]"}`} key={booking.id}>
+                        {booking.start_time.slice(0, 5)} {booking.status.toUpperCase()}
+                      </p>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
           <div className="overflow-hidden border border-[#d8bd80]/45 bg-[#fff7ef]">
             <div className="grid grid-cols-7 bg-[#241916] px-4 py-3 text-xs font-bold tracking-[0.18em] text-[#fff7ef]">
               <span>DATUM</span><span>VREME</span><span className="col-span-2">KLIJENT</span><span>USLUGA</span><span>STATUS</span><span>AKCIJE</span>
@@ -170,8 +219,39 @@ export function AdminDashboard() {
               </div>
             ))}
           </div>
+          </div>
 
           <div className="grid gap-5">
+            <div className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5">
+              <h2 className="font-serif text-3xl text-[#6f1d2a]">Radno vreme</h2>
+              <div className="mt-4 grid gap-4">
+                {weekdays.map((label, weekday) => {
+                  const intervals = weekly.filter((item) => item.weekday === weekday && item.active);
+                  const first = intervals[0] ?? { start_time: "10:00", end_time: "18:00" };
+                  return (
+                    <form
+                      className="grid grid-cols-[1fr_auto] gap-2 border-t border-[#d8bd80]/25 pt-3"
+                      key={label}
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        const form = new FormData(event.currentTarget);
+                        void saveWeekday(weekday, form.get("active") === "on", [
+                          { startTime: String(form.get("startTime")), endTime: String(form.get("endTime")) },
+                        ]);
+                      }}
+                    >
+                      <label className="text-sm font-bold">
+                        <input className="mr-2" name="active" type="checkbox" defaultChecked={intervals.length > 0} />
+                        {label}
+                      </label>
+                      <button className="text-xs font-bold text-[#6f1d2a]">SAVE</button>
+                      <input className="border bg-transparent p-2" name="startTime" defaultValue={String(first.start_time).slice(0, 5)} />
+                      <input className="border bg-transparent p-2" name="endTime" defaultValue={String(first.end_time).slice(0, 5)} />
+                    </form>
+                  );
+                })}
+              </div>
+            </div>
             <form className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5" onSubmit={createManual}>
               <h2 className="font-serif text-3xl text-[#6f1d2a]">Manual booking</h2>
               <select className="mt-4 w-full border bg-transparent p-3" value={manual.serviceId} onChange={(event) => setManual((current) => ({ ...current, serviceId: event.target.value }))}>

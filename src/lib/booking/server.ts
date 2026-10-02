@@ -3,9 +3,10 @@ import { getBookingService } from "@/lib/booking/services";
 import type { BookingRecord, CustomerDetails } from "@/lib/booking/types";
 import { addMinutes } from "@/lib/booking/time";
 import { validateCustomerDetails, hasValidationErrors } from "@/lib/booking/validation";
-import { getBookingsForDate, getExceptionsForDate, getWeeklyAvailability } from "@/lib/booking/repository";
+import { getBookingsForDate, getBookingsForDates, getExceptionsForDate, getExceptionsForDates, getWeeklyAvailability } from "@/lib/booking/repository";
 import { notifyNewBookingRequest } from "@/lib/booking/notifications";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { addDays, belgradeDate } from "@/lib/booking/time";
 
 export async function getAvailability(serviceId: string, date: string) {
   const [weeklyAvailability, exceptions, bookings] = await Promise.all([
@@ -15,6 +16,33 @@ export async function getAvailability(serviceId: string, date: string) {
   ]);
 
   return availableTimeSlots({ serviceId, date, weeklyAvailability, exceptions, bookings });
+}
+
+export function isDatabaseOverlapError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return message.includes("no_active_booking_overlap") || message.includes("conflicting key value") || message.includes("23P01");
+}
+
+export async function getBookableDates(serviceId: string, count = 45) {
+  const start = belgradeDate();
+  const dates = Array.from({ length: count }, (_, index) => addDays(start, index));
+  const [weeklyAvailability, exceptions, bookings] = await Promise.all([
+    getWeeklyAvailability(),
+    getExceptionsForDates(dates),
+    getBookingsForDates(dates),
+  ]);
+
+  return dates.map((date) => ({
+    date,
+    available:
+      availableTimeSlots({
+        serviceId,
+        date,
+        weeklyAvailability,
+        exceptions: exceptions.filter((exception) => exception.date === date),
+        bookings: bookings.filter((booking) => booking.booking_date === date),
+      }).length > 0,
+  }));
 }
 
 export async function createBookingRequest(input: {
@@ -62,7 +90,15 @@ export async function createBookingRequest(input: {
     status: input.status ?? "pending",
   };
 
-  const [booking] = await supabaseAdmin.insert<BookingRecord>("bookings", payload);
+  let booking: BookingRecord;
+  try {
+    [booking] = await supabaseAdmin.insert<BookingRecord>("bookings", payload);
+  } catch (error) {
+    if (isDatabaseOverlapError(error)) {
+      throw new Error("Izabrani termin je u međuvremenu zauzet. Izaberi drugi termin.");
+    }
+    throw error;
+  }
   await notifyNewBookingRequest(booking);
   return booking;
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BookingService } from "@/lib/booking/types";
+import { addDays, belgradeDate } from "@/lib/booking/time";
 
 type Step = 0 | 1 | 2 | 3 | 4;
 
@@ -12,19 +13,9 @@ type BookingModalProps = {
 
 const steps = ["USLUGA", "DATUM", "VREME", "PODACI", "POTVRDA"];
 
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 function nextDays(count = 45) {
-  const days: string[] = [];
-  const start = new Date();
-  for (let i = 0; i < count; i += 1) {
-    const date = new Date(start);
-    date.setDate(start.getDate() + i);
-    days.push(date.toISOString().slice(0, 10));
-  }
-  return days;
+  const start = belgradeDate();
+  return Array.from({ length: count }, (_, index) => addDays(start, index));
 }
 
 function formatDate(date: string) {
@@ -33,13 +24,16 @@ function formatDate(date: string) {
 
 export function BookingModal({ open, onClose }: BookingModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
   const [step, setStep] = useState<Step>(0);
   const [services, setServices] = useState<BookingService[]>([]);
   const [serviceId, setServiceId] = useState("");
-  const [date, setDate] = useState(todayIso());
+  const [date, setDate] = useState(belgradeDate());
+  const [bookableDates, setBookableDates] = useState<Record<string, boolean>>({});
   const [slots, setSlots] = useState<string[]>([]);
   const [startTime, setStartTime] = useState("");
   const [loadingSlots, setLoadingSlots] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<{ service: string; date: string; time: string } | null>(null);
   const [details, setDetails] = useState({ fullName: "", phone: "", email: "", instagram: "", note: "" });
@@ -49,16 +43,31 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
 
   useEffect(() => {
     if (!open) return;
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
     const previous = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     panelRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
+      if (event.key === "Tab" && panelRef.current) {
+        const focusable = panelRef.current.querySelectorAll<HTMLElement>("button:not(:disabled), input, select, textarea, [tabindex]:not([tabindex='-1'])");
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = previous;
       window.removeEventListener("keydown", onKey);
+      previouslyFocused.current?.focus();
     };
   }, [open, onClose]);
 
@@ -72,6 +81,25 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
       })
       .catch(() => setError("Usluge trenutno ne mogu da se učitaju."));
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !serviceId) return;
+    const task = window.setTimeout(() => {
+      fetch(`/api/bookable-dates?serviceId=${encodeURIComponent(serviceId)}`)
+        .then(async (response) => {
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Datumi trenutno nisu dostupni.");
+          const map = Object.fromEntries((data.dates ?? []).map((item: { date: string; available: boolean }) => [item.date, item.available]));
+          setBookableDates(map);
+          if (!map[date]) {
+            const first = (data.dates ?? []).find((item: { date: string; available: boolean }) => item.available)?.date;
+            if (first) setDate(first);
+          }
+        })
+        .catch((err: Error) => setError(err.message));
+    }, 0);
+    return () => window.clearTimeout(task);
+  }, [open, serviceId, date]);
 
   useEffect(() => {
     if (!open || !serviceId || !date) return;
@@ -103,19 +131,25 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
     (step === 3 && details.fullName.trim() && details.phone.trim());
 
   async function submit() {
+    if (submitting) return;
+    setSubmitting(true);
     setError("");
-    const response = await fetch("/api/booking", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ serviceId, date, startTime, ...details }),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      setError(data.error || "Termin nije moguće poslati.");
-      return;
+    try {
+      const response = await fetch("/api/booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ serviceId, date, startTime, ...details }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setError(data.error || "Termin nije moguće poslati.");
+        return;
+      }
+      setSuccess({ service: selectedService?.name ?? "", date, time: startTime });
+      setStep(4);
+    } finally {
+      setSubmitting(false);
     }
-    setSuccess({ service: selectedService?.name ?? "", date, time: startTime });
-    setStep(4);
   }
 
   return (
@@ -185,7 +219,8 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
                 {days.map((item) => (
                   <button
                     key={item}
-                    className={`border p-4 text-left ${date === item ? "border-[#6f1d2a] bg-[#6f1d2a]/8" : "border-[#d8bd80]/40"}`}
+                    disabled={!bookableDates[item]}
+                    className={`border p-4 text-left disabled:cursor-not-allowed disabled:opacity-35 ${date === item ? "border-[#6f1d2a] bg-[#6f1d2a]/8" : "border-[#d8bd80]/40"}`}
                     onClick={() => setDate(item)}
                   >
                     <span className="block font-serif text-2xl">{new Date(`${item}T00:00:00`).getDate()}</span>
@@ -259,13 +294,13 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
             </button>
             <button
               className="font-bold text-[#6f1d2a] disabled:text-[#8f6d5a]/40"
-              disabled={!canContinue}
+              disabled={!canContinue || submitting}
               onClick={() => {
                 if (step === 3) void submit();
                 else setStep((current) => Math.min(4, current + 1) as Step);
               }}
             >
-              {step === 3 ? "POŠALJI ZAHTEV" : "DALJE"}
+              {step === 3 ? (submitting ? "SLANJE..." : "POŠALJI ZAHTEV") : "DALJE"}
             </button>
           </div>
         ) : null}

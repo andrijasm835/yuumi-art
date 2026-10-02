@@ -10,8 +10,18 @@ export async function getExceptionsForDate(date: string) {
   return supabaseAdmin.select<AvailabilityException>("availability_exceptions", { select: "*", date: `eq.${date}` });
 }
 
+export async function getExceptionsForDates(dates: string[]) {
+  if (dates.length === 0) return [];
+  return supabaseAdmin.select<AvailabilityException>("availability_exceptions", { select: "*", date: `in.(${dates.join(",")})` });
+}
+
 export async function getBookingsForDate(date: string) {
   return supabaseAdmin.select<BookingRecord>("bookings", { select: "*", booking_date: `eq.${date}` });
+}
+
+export async function getBookingsForDates(dates: string[]) {
+  if (dates.length === 0) return [];
+  return supabaseAdmin.select<BookingRecord>("bookings", { select: "*", booking_date: `in.(${dates.join(",")})` });
 }
 
 export async function getAllBookings(query: { status?: string; serviceId?: string; date?: string } = {}) {

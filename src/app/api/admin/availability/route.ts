@@ -35,3 +35,25 @@ export async function POST(request: Request) {
   });
   return NextResponse.json({ result }, { status: 201 });
 }
+
+export async function PUT(request: Request) {
+  const admin = await requireAdmin(request);
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const body = await request.json();
+
+  await supabaseAdmin.delete("weekly_availability", { weekday: `eq.${Number(body.weekday)}` });
+  const intervals = Array.isArray(body.intervals) ? body.intervals : [];
+  const active = Boolean(body.active);
+  if (!active || intervals.length === 0) return NextResponse.json({ result: [] });
+
+  const result = await supabaseAdmin.insert(
+    "weekly_availability",
+    intervals.map((interval: { startTime: string; endTime: string }) => ({
+      weekday: Number(body.weekday),
+      start_time: interval.startTime,
+      end_time: interval.endTime,
+      active: true,
+    })),
+  );
+  return NextResponse.json({ result });
+}

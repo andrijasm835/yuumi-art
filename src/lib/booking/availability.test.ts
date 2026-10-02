@@ -1,7 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { availableTimeSlots, blockingIntervals } from "@/lib/booking/availability";
-import { intervalsOverlap } from "@/lib/booking/time";
+import { availableTimeSlots, blockingIntervals, dateHasAvailableSlot } from "@/lib/booking/availability";
+import { belgradeDate, intervalsOverlap } from "@/lib/booking/time";
+import { isDatabaseOverlapError } from "@/lib/booking/server";
+import { isAuthorizedAdmin } from "@/lib/supabase/server";
 import type { AvailabilityException, BookingRecord, WeeklyAvailability } from "@/lib/booking/types";
 
 const weekly: WeeklyAvailability[] = [{ weekday: 1, start_time: "10:00", end_time: "18:00", active: true }];
@@ -52,4 +54,37 @@ test("custom date availability overrides weekly schedule", () => {
   const slots = availableTimeSlots({ serviceId: "professional-makeup", date: monday, weeklyAvailability: weekly, exceptions, bookings: [] });
   assert.equal(slots.includes("10:00"), false);
   assert.equal(slots.includes("14:00"), true);
+});
+
+test("non-admin authenticated user is not authorized", () => {
+  assert.equal(isAuthorizedAdmin({ email: "user@example.com", app_metadata: { role: "user" } }), false);
+  assert.equal(isAuthorizedAdmin({ email: "adriana@example.com", app_metadata: { role: "admin" } }), true);
+});
+
+test("Europe/Belgrade date boundary uses local calendar date", () => {
+  assert.equal(belgradeDate(new Date("2026-03-28T23:30:00.000Z")), "2026-03-29");
+  assert.equal(belgradeDate(new Date("2026-10-24T22:30:00.000Z")), "2026-10-25");
+});
+
+test("weekly unavailable day is disabled", () => {
+  assert.equal(dateHasAvailableSlot({ serviceId: "professional-makeup", date: "2026-10-07", weeklyAvailability: weekly, exceptions: [], bookings: [] }), false);
+});
+
+test("blocked day is disabled", () => {
+  assert.equal(dateHasAvailableSlot({
+    serviceId: "professional-makeup",
+    date: monday,
+    weeklyAvailability: weekly,
+    exceptions: [{ date: monday, start_time: null, end_time: null, type: "blocked_day" }],
+    bookings: [],
+  }), false);
+});
+
+test("fully booked day is disabled", () => {
+  const bookings: BookingRecord[] = [{ service_id: "professional-makeup", booking_date: monday, start_time: "10:00", end_time: "18:00", status: "confirmed" }];
+  assert.equal(dateHasAvailableSlot({ serviceId: "professional-makeup", date: monday, weeklyAvailability: weekly, exceptions: [], bookings }), false);
+});
+
+test("database overlap conflict is normalized", () => {
+  assert.equal(isDatabaseOverlapError(new Error("violates exclusion constraint no_active_booking_overlap")), true);
 });

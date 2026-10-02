@@ -70,3 +70,13 @@ export function availableTimeSlots(input: {
 
   return slots;
 }
+
+export function dateHasAvailableSlot(input: {
+  serviceId: string;
+  date: string;
+  weeklyAvailability: WeeklyAvailability[];
+  exceptions: AvailabilityException[];
+  bookings: BookingRecord[];
+}) {
+  return availableTimeSlots(input).length > 0;
+}
