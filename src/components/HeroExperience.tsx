@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { hero, makeupProps } from "@/content/site";
+import { viewportScrollDistance } from "@/lib/scrollCadence";
 
 export function HeroExperience() {
   const scope = useRef<HTMLElement>(null);
@@ -24,7 +25,7 @@ export function HeroExperience() {
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? "+=120%" : isTablet ? "+=170%" : "+=240%",
+            end: isMobile ? viewportScrollDistance(1) : isTablet ? viewportScrollDistance(1.7, 0.9) : "+=240%",
             scrub: 1,
             pin: true,
             anticipatePin: 1,

@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { makeupProps, transformation } from "@/content/site";
+import { viewportScrollDistance } from "@/lib/scrollCadence";
 
 const makeupStages = [
   {
@@ -86,7 +87,7 @@ export function TransformationScene() {
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? "+=210%" : isTablet ? "+=280%" : "+=360%",
+            end: isMobile ? viewportScrollDistance(3.8) : isTablet ? viewportScrollDistance(3.2, 0.9) : "+=360%",
             scrub: 1.15,
             pin: true,
             anticipatePin: 1,

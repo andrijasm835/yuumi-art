@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { detailImages } from "@/content/site";
+import { viewportScrollDistance } from "@/lib/scrollCadence";
 
 const details = [detailImages.lips, detailImages.eye, detailImages.texture];
 
@@ -53,7 +54,7 @@ export function DetailsScene() {
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? "+=155%" : isTablet ? "+=280%" : "+=320%",
+            end: isMobile ? viewportScrollDistance(2.8) : isTablet ? viewportScrollDistance(3.1, 0.9) : "+=320%",
             scrub: 1.15,
             pin: true,
             anticipatePin: 1,

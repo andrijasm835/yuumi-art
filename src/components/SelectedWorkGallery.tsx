@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { galleryWorks, makeupProps } from "@/content/site";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
+import { viewportScrollDistance } from "@/lib/scrollCadence";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -42,7 +43,7 @@ export function SelectedWorkGallery() {
             scrollTrigger: {
               trigger: scope.current,
               start: "top top",
-              end: `+=${(mobileCount - 1) * 65}%`,
+              end: viewportScrollDistance(mobileCount - 1, 0.78),
               scrub: 0.9,
               pin: true,
               anticipatePin: 1,
@@ -76,7 +77,7 @@ export function SelectedWorkGallery() {
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: `+=${(count - 1) * (isTablet ? 72 : 88)}%`,
+            end: isTablet ? viewportScrollDistance(count - 1, 0.9) : `+=${(count - 1) * 88}%`,
             scrub: 1,
             pin: true,
             anticipatePin: 1,

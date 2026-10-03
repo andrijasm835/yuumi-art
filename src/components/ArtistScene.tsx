@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { artist, brand } from "@/content/site";
+import { viewportScrollDistance } from "@/lib/scrollCadence";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -55,7 +56,7 @@ export function ArtistScene() {
             scrollTrigger: {
               trigger: scope.current,
               start: "top top",
-              end: "+=95%",
+              end: viewportScrollDistance(1.15),
               scrub: 0.9,
               pin: true,
               anticipatePin: 1,

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { makeupProps } from "@/content/site";
+import { viewportScrollDistance } from "@/lib/scrollCadence";
 
 export function BookingScene() {
   const scope = useRef<HTMLElement>(null);
@@ -45,7 +46,7 @@ export function BookingScene() {
             scrollTrigger: {
               trigger: scope.current,
               start: "top 82%",
-              end: "center center",
+              end: viewportScrollDistance(1),
               scrub: 0.8,
               invalidateOnRefresh: true,
             },
