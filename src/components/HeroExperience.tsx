@@ -28,10 +28,6 @@ export function HeroExperience() {
           scale: isMobile ? 0.985 : 0.99,
         });
 
-        gsap.set(".hero-logo-image", {
-          scale: isMobile ? 1.055 : 1.03,
-        });
-
         gsap.set(".hero-small", {
           autoAlpha: 0,
           y: 10,
@@ -101,16 +97,7 @@ export function HeroExperience() {
             ".hero-logo-visual",
             {
               yPercent: isMobile ? -3 : isTablet ? -4 : -5,
-              scale: isMobile ? 1.015 : isTablet ? 1.02 : 1.025,
-              ease: "none",
-            },
-            0,
-          )
-          .to(
-            ".hero-logo-image",
-            {
-              yPercent: isMobile ? 0.8 : 1.2,
-              scale: isMobile ? 1.06 : isTablet ? 1.04 : 1.045,
+              scale: isMobile ? 1.012 : isTablet ? 1.018 : 1.022,
               ease: "none",
             },
             0,
@@ -142,7 +129,7 @@ export function HeroExperience() {
             {
               opacity: 0,
               yPercent: isMobile ? -5 : -7,
-              scale: isMobile ? 1.02 : 1.035,
+              scale: isMobile ? 1.018 : 1.03,
               ease: "none",
             },
             0.72,
@@ -164,8 +151,6 @@ export function HeroExperience() {
       id="top"
       className="hero-experience relative h-[100dvh] overflow-hidden bg-[#eee8dc] text-[#241916]"
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_44%,rgba(255,250,245,0.95),rgba(238,232,220,0.82)_48%,rgba(216,189,128,0.15)_100%)] md:bg-[#d8d2c7]" />
-
       {/* MOBILE */}
       <div className="relative z-10 flex h-full items-center justify-center px-4 md:hidden">
         <div className="hero-logo-visual relative aspect-square w-[92vw] overflow-hidden shadow-[0_28px_90px_rgba(36,25,22,0.12)]">
@@ -174,9 +159,9 @@ export function HeroExperience() {
             alt="Yuumi Art by Adriana — Makeup studio"
             fill
             priority
-            quality={95}
+            quality={100}
             sizes="92vw"
-            className="hero-logo-image object-cover object-center"
+            className="hero-logo-image object-cover object-center [transform:scaleX(1.03)]"
           />
         </div>
 
@@ -206,14 +191,15 @@ export function HeroExperience() {
           alt="Yuumi Art by Adriana — Makeup studio"
           fill
           priority
-          quality={95}
+          quality={100}
           sizes="100vw"
-          className="hero-logo-image object-cover object-center"
+          className="hero-logo-image object-cover object-center [transform:scaleX(1.03)]"
         />
 
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(22,15,12,0.03),transparent_35%,rgba(22,15,12,0.07))]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(22,15,12,0.025),transparent_36%,rgba(22,15,12,0.055))]" />
       </div>
 
+      {/* DECORATIVE PROPS — TABLET / DESKTOP */}
       <Image
         src={makeupProps.brush}
         alt=""
@@ -232,6 +218,7 @@ export function HeroExperience() {
         className="hero-prop hero-prop-right pointer-events-none absolute right-[8vw] top-[12vh] z-20 hidden h-[18vh] w-auto rotate-[17deg] opacity-78 drop-shadow-xl md:block lg:right-[10vw] lg:h-[21vh]"
       />
 
+      {/* SCROLL PROMPT */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+1.8rem)] z-40 flex justify-center px-5 text-center sm:bottom-[6svh]">
         <p className="hero-small text-[10px] font-bold tracking-[0.42em] text-[#70574b] sm:text-[11px]">
           {hero.scrollPrompt}
