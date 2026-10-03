@@ -41,6 +41,12 @@ export const detailImages = {
   },
 };
 
+export const transformation = {
+  image: "/yummi/professional-makeup.jpg",
+  alt: "Realni Yuumi Art makeup portret sa naglašenim očima, ujednačenim tenom i definisanim usnama",
+  position: { desktop: "52% 36%", mobile: "54% 34%" },
+};
+
 export const artist = {
   name: brand.artistName.toUpperCase(),
   intro:
