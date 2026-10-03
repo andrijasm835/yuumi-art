@@ -5,6 +5,7 @@ import { DetailsScene } from "@/components/DetailsScene";
 import { HeroExperience } from "@/components/HeroExperience";
 import { LooksGallery } from "@/components/LooksGallery";
 import { ScrollProgress } from "@/components/ScrollProgress";
+import { SelectedWorkGallery } from "@/components/SelectedWorkGallery";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { TransformationScene } from "@/components/TransformationScene";
 
@@ -19,6 +20,7 @@ export default function Home() {
       <LooksGallery />
       <DetailsScene />
       <ArtistScene />
+      <SelectedWorkGallery />
       <BookingScene />
     </main>
   );

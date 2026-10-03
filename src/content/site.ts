@@ -91,6 +91,54 @@ export const booking = {
   position: { desktop: "50% 34%", mobile: "50% 31%" },
 };
 
+export const galleryWorks = [
+  {
+    src: "/yummi/new/yuumi-work-01-blue-eyeshadow.jpg",
+    alt: "Yuumi Art makeup portret sa plavom senkom na očima",
+    position: { desktop: "50% 31%", mobile: "50% 28%" },
+  },
+  {
+    src: "/yummi/new/yuumi-work-02-ponytail.jpg",
+    alt: "Yuumi Art makeup portret sa zalizanom kosom i crnim outfitom",
+    position: { desktop: "52% 33%", mobile: "52% 30%" },
+  },
+  {
+    src: "/yummi/new/yuumi-work-03-gold-earring.jpg",
+    alt: "Yuumi Art makeup portret sa mokrom kosom i zlatnom minđušom",
+    position: { desktop: "51% 32%", mobile: "51% 29%" },
+  },
+  {
+    src: "/yummi/new/yuumi-work-04-sunlight-wet-hair.jpg",
+    alt: "Yuumi Art makeup portret u jakom sunčevom svetlu",
+    position: { desktop: "50% 39%", mobile: "51% 36%" },
+  },
+  {
+    src: "/yummi/new/yuumi-work-05-soft-glam-bun.jpg",
+    alt: "Yuumi Art soft glam makeup portret sa punđom",
+    position: { desktop: "50% 35%", mobile: "50% 32%" },
+  },
+  {
+    src: "/yummi/new/yuumi-work-06-editorial-fur.jpg",
+    alt: "Yuumi Art editorial makeup portret sa mokrom kosom i belim stylingom",
+    position: { desktop: "50% 35%", mobile: "50% 32%" },
+  },
+  {
+    src: "/yummi/new/yuumi-work-07-clean-glam.jpg",
+    alt: "Yuumi Art clean glam makeup portret sa belim topom",
+    position: { desktop: "50% 34%", mobile: "50% 31%" },
+  },
+  {
+    src: "/yummi/new/yuumi-work-08-smiling-soft-glam.jpg",
+    alt: "Yuumi Art soft glam makeup portret sa talasastom kosom",
+    position: { desktop: "50% 34%", mobile: "50% 31%" },
+  },
+  {
+    src: "/yummi/new/yuumi-work-09-sunlit-bun.jpg",
+    alt: "Yuumi Art makeup portret sa punđom i toplim svetlom",
+    position: { desktop: "50% 31%", mobile: "50% 28%" },
+  },
+];
+
 export const servicesAndEducation = [
   {
     id: bookingServices[0].id,
