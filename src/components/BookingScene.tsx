@@ -115,6 +115,22 @@ export function BookingScene() {
         height={360}
         className="pointer-events-none absolute -right-[7vw] bottom-[9dvh] h-[19dvh] w-auto rotate-[22deg] opacity-30 md:-right-[2vw] md:bottom-[10dvh] md:h-[23dvh] lg:right-[4vw] lg:bottom-[12vh] lg:h-[26vh]"
       />
+      <Image
+        src={makeupProps.eyelashCurler}
+        alt=""
+        aria-hidden="true"
+        width={280}
+        height={360}
+        className="pointer-events-none absolute -left-[12vw] top-[16dvh] h-[18dvh] w-auto rotate-[-14deg] opacity-25 md:-left-[4vw] md:top-[18dvh] md:h-[23dvh] lg:left-[5vw] lg:top-[16vh] lg:h-[27vh]"
+      />
+      <Image
+        src={makeupProps.sponge}
+        alt=""
+        aria-hidden="true"
+        width={220}
+        height={300}
+        className="pointer-events-none absolute bottom-[7dvh] left-[12vw] hidden h-[11dvh] w-auto rotate-[16deg] opacity-20 md:block lg:left-[18vw] lg:h-[13vh]"
+      />
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center font-serif text-[clamp(2.7rem,11.5vw,5rem)] leading-[0.86] text-[#fff7ef]/82 md:text-[clamp(4.8rem,10vw,7rem)] lg:text-[clamp(3rem,14vw,9rem)] lg:leading-[0.82]">
         <span className="ready-top">SPREMNA ZA</span>
         <span className="ready-bottom italic">SVOJ LOOK?</span>

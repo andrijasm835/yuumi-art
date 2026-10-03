@@ -21,6 +21,12 @@ export const makeupProps = {
   brush: "/makeup/props/brush.svg",
   compact: "/makeup/props/compact.svg",
   lipstick: "/makeup/props/lipstick.svg",
+  mascara: "/makeup/props/mascara.svg",
+  eyeliner: "/makeup/props/eyeliner.svg",
+  sponge: "/makeup/props/sponge.svg",
+  eyelashCurler: "/makeup/props/eyelash-curler.svg",
+  eyeshadowPalette: "/makeup/props/eyeshadow-palette.svg",
+  powderPuff: "/makeup/props/powder-puff.svg",
 };
 
 export const detailImages = {

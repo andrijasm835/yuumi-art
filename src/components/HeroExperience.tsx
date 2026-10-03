@@ -37,11 +37,14 @@ export function HeroExperience() {
           .to(".hero-small", { y: 38, opacity: 0 }, 0)
           .to(".vanity-object-left", { x: isMobile ? -20 : isTablet ? -50 : -86, y: isMobile ? 18 : isTablet ? 40 : 64, rotate: -12 }, 0)
           .to(".vanity-object-right", { x: isMobile ? 20 : isTablet ? 48 : 82, y: isMobile ? -16 : isTablet ? -32 : -54, rotate: 14 }, 0)
+          .to(".vanity-object-center", { x: isMobile ? 4 : isTablet ? 12 : 20, y: isMobile ? 24 : isTablet ? 38 : 54, rotate: -5 }, 0)
+          .to(".vanity-object-thin", { x: isMobile ? -12 : isTablet ? -28 : -46, y: isMobile ? -18 : isTablet ? -32 : -48, rotate: 8 }, 0)
           .to(".mirror-glow", { opacity: 1, scale: isMobile ? 1.18 : isTablet ? 1.36 : 1.65, xPercent: isMobile ? 7 : isTablet ? 16 : 28 }, 0.08)
           .to(".mirror", { scale: isMobile ? 4.85 : isTablet ? 5.6 : 7.6, yPercent: isMobile ? 0 : -1, borderRadius: "0%", ease: "power2.inOut" }, 0.2)
           .to(".mirror-photo", { scale: isMobile ? 1.16 : isTablet ? 1.2 : 1.32, filter: "blur(0px) saturate(1.12) brightness(1.08)" }, 0.2)
           .to(".vanity-object-left", { opacity: 0, filter: "blur(10px)" }, 0.38)
           .to(".vanity-object-right", { opacity: 0, filter: "blur(10px)" }, 0.38)
+          .to(".vanity-object-center, .vanity-object-thin", { opacity: 0, filter: "blur(8px)" }, 0.42)
           .to(".mirror-plane", { opacity: 1, backdropFilter: isMobile ? "blur(4px)" : "blur(10px)", scale: 1 }, 0.46)
           .to(".mirror-plane", { opacity: 0, backdropFilter: "blur(0px)" }, 0.72)
           .to(".vanity", { scale: isMobile ? 1.04 : isTablet ? 1.16 : 1.28, opacity: 0 }, 0.68);
@@ -94,6 +97,27 @@ export function HeroExperience() {
             width={95}
             height={190}
             className="vanity-object-right absolute right-[4%] top-[21%] z-30 h-[18svh] w-auto rotate-[17deg] drop-shadow-2xl sm:right-[10%] sm:h-[22svh] lg:right-[12%] lg:top-[23%] lg:h-[24vh]"
+          />
+          <Image
+            src={makeupProps.sponge}
+            alt="Beauty sponge"
+            width={110}
+            height={150}
+            className="vanity-object-center absolute bottom-[10%] right-[9%] z-20 h-[10svh] w-auto rotate-[14deg] opacity-85 drop-shadow-xl sm:right-[18%] sm:h-[12svh] lg:bottom-[12%] lg:right-[20%] lg:h-[13vh]"
+          />
+          <Image
+            src={makeupProps.mascara}
+            alt="Mascara"
+            width={60}
+            height={260}
+            className="vanity-object-thin absolute left-[4%] top-[14%] z-10 hidden h-[19svh] w-auto rotate-[64deg] opacity-70 drop-shadow-lg sm:block lg:left-[4%] lg:top-[13%] lg:h-[22vh]"
+          />
+          <Image
+            src={makeupProps.eyeliner}
+            alt="Eyeliner"
+            width={250}
+            height={44}
+            className="vanity-object-thin absolute bottom-[5%] right-[3%] z-10 h-[4.2svh] w-auto rotate-[-13deg] opacity-65 drop-shadow-lg sm:right-[10%] sm:h-[4.8svh] lg:bottom-[6%] lg:right-[13%] lg:h-[5vh]"
           />
         </div>
 

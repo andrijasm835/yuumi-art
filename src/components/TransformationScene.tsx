@@ -124,8 +124,9 @@ export function TransformationScene() {
           .to(".final-shimmer", { autoAlpha: 0, duration: 0.14 }, 3.62);
 
         tl.to(".transformation-brush", { x: isMobile ? 12 : isTablet ? 28 : 54, y: isMobile ? -8 : isTablet ? -14 : -24, rotate: isMobile ? -18 : -16, duration: 3.4, ease: "none" }, 0)
-          .to(".transformation-compact", { x: isMobile ? -6 : isTablet ? -14 : -28, y: isMobile ? 8 : isTablet ? 16 : 32, rotate: isMobile ? 8 : 10, duration: 3.4, ease: "none" }, 0)
-          .to(".transformation-lipstick", { x: isMobile ? -8 : isTablet ? -14 : -26, y: isMobile ? -12 : isTablet ? -28 : -48, rotate: isMobile ? 9 : 13, duration: 3.4, ease: "none" }, 0);
+          .to(".transformation-palette", { x: isMobile ? -6 : isTablet ? -14 : -28, y: isMobile ? 8 : isTablet ? 16 : 32, rotate: isMobile ? 8 : 10, duration: 3.4, ease: "none" }, 0)
+          .to(".transformation-lipstick", { x: isMobile ? -8 : isTablet ? -14 : -26, y: isMobile ? -12 : isTablet ? -28 : -48, rotate: isMobile ? 9 : 13, duration: 3.4, ease: "none" }, 0)
+          .to(".transformation-mascara", { x: isMobile ? 0 : isTablet ? 18 : 38, y: isMobile ? 0 : isTablet ? -10 : -22, rotate: isMobile ? 0 : -27, duration: 3.4, ease: "none" }, 0);
 
         return () => {
           entrance.kill();
@@ -152,12 +153,12 @@ export function TransformationScene() {
           className="transformation-prop transformation-brush pointer-events-none absolute -bottom-[8dvh] -left-[12vw] z-10 hidden h-[34dvh] w-auto rotate-[-24deg] opacity-45 md:block md:h-[39dvh] lg:-bottom-[10vh] lg:-left-[4vw] lg:h-[46vh]"
         />
         <Image
-          src={makeupProps.compact}
+          src={makeupProps.eyeshadowPalette}
           alt=""
           aria-hidden="true"
-          width={170}
-          height={170}
-          className="transformation-prop transformation-compact pointer-events-none absolute left-[16vw] top-[16dvh] z-10 h-[10dvh] w-auto rotate-[10deg] opacity-35 md:left-[8vw] md:top-[18dvh] md:h-[13dvh] lg:left-[18vw] lg:top-[12vh] lg:h-[14vh]"
+          width={360}
+          height={220}
+          className="transformation-prop transformation-palette pointer-events-none absolute left-[13vw] top-[16dvh] z-10 h-[9dvh] w-auto rotate-[10deg] opacity-35 md:left-[8vw] md:top-[18dvh] md:h-[12dvh] lg:left-[18vw] lg:top-[12vh] lg:h-[13vh]"
         />
         <Image
           src={makeupProps.lipstick}
@@ -166,6 +167,14 @@ export function TransformationScene() {
           width={180}
           height={360}
           className="transformation-prop transformation-lipstick pointer-events-none absolute -right-[5vw] bottom-[10dvh] z-10 h-[20dvh] w-auto rotate-[18deg] opacity-55 md:-right-[3vw] md:bottom-[11dvh] md:h-[24dvh] lg:right-[2vw] lg:bottom-[7vh] lg:h-[28vh]"
+        />
+        <Image
+          src={makeupProps.mascara}
+          alt=""
+          aria-hidden="true"
+          width={120}
+          height={520}
+          className="transformation-prop transformation-mascara pointer-events-none absolute right-[26vw] top-[9dvh] z-10 hidden h-[27dvh] w-auto rotate-[-34deg] opacity-30 md:block lg:right-[35vw] lg:top-[7vh] lg:h-[32vh]"
         />
         <div className="transformation-frame absolute left-1/2 top-[7dvh] z-20 h-[72dvh] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[11dvh] md:h-[78dvh] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
           <Image
