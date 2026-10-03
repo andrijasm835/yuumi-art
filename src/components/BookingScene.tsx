@@ -1,18 +1,10 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { CSSProperties } from "react";
 import Image from "next/image";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { booking, makeupProps } from "@/content/site";
-
-function imagePositionStyle(position: { desktop: string; mobile: string }) {
-  return {
-    "--image-position-desktop": position.desktop,
-    "--image-position-mobile": position.mobile,
-  } as CSSProperties;
-}
+import { makeupProps } from "@/content/site";
 
 export function BookingScene() {
   const scope = useRef<HTMLElement>(null);
@@ -89,7 +81,7 @@ export function BookingScene() {
         tl.to(".final-mirror", { scale: isMobile ? 0.94 : isTablet ? 1 : 1.05, rotate: 0, filter: "blur(0px)" }, 0)
           .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1 }, 0.2)
           .to(".booking-reflection", { opacity: 0.72, scale: 1 }, 0.18)
-          .fromTo(".booking-panel", { clipPath: "circle(0% at 50% 50%)", opacity: 0 }, { clipPath: "circle(84% at 50% 50%)", opacity: 1 }, 0.38)
+          .fromTo(".booking-panel", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1 }, 0.38)
           .to(".final-shine", { xPercent: 130 }, 0.42)
           .to(".ready-top", { xPercent: isMobile ? -2 : isTablet ? -5 : -9 }, 0)
           .to(".ready-bottom", { xPercent: isMobile ? 2 : isTablet ? 5 : 10 }, 0);
@@ -136,22 +128,19 @@ export function BookingScene() {
         <span className="ready-bottom italic">SVOJ LOOK?</span>
       </div>
 
-      <div className="final-mirror glass-reflection absolute left-1/2 top-1/2 isolate h-[66svh] w-[min(82vw,430px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[48%_48%_42%_42%] border border-[#d8bd80]/50 bg-[#fff7ef]/10 shadow-[0_40px_160px_rgba(0,0,0,0.38)] backdrop-blur-sm md:h-[70vh] md:w-[min(68vw,500px)] lg:h-[72vh] lg:w-[min(76vw,520px)]">
-        <Image
-          src={booking.reflection}
-          alt={booking.reflectionAlt}
-          fill
-          sizes="520px"
-          className="responsive-image booking-reflection rounded-[inherit] object-cover opacity-0"
-          style={imagePositionStyle(booking.position)}
-        />
-        <div className="absolute inset-0 rounded-[inherit] bg-[#fff7ef]/18 mix-blend-screen" />
+      <div className="final-mirror glass-reflection absolute left-1/2 top-1/2 isolate h-[66svh] w-[min(82vw,430px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[48%_48%_42%_42%] border-[7px] border-[#c5a56d]/75 bg-[#fff8ef] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.48),inset_0_0_34px_rgba(38,22,18,0.26),0_40px_160px_rgba(0,0,0,0.38)] md:h-[70vh] md:w-[min(68vw,500px)] md:border-[8px] lg:h-[72vh] lg:w-[min(76vw,520px)] lg:border-[10px]">
+        <div className="booking-reflection absolute inset-0 rounded-[inherit] bg-[radial-gradient(circle_at_50%_28%,rgba(255,255,255,0.7),transparent_20%),radial-gradient(circle_at_33%_70%,rgba(216,189,128,0.25),transparent_32%),linear-gradient(135deg,#fff8ef_0%,#ead8c2_42%,#c7a982_68%,#f8efe4_100%)] opacity-0" />
+        <div className="absolute left-[12%] top-[17%] h-[34%] w-[52%] rotate-[-16deg] rounded-full bg-white/18" />
+        <div className="absolute bottom-[12%] right-[8%] h-[30%] w-[38%] rotate-12 rounded-full bg-[#6f1d2a]/9" />
+        <div className="absolute inset-[9px] z-20 rounded-[inherit] border border-[#2b1b18]/24 md:inset-[10px]" />
+        <div className="absolute inset-[8%] rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.22),transparent_48%,rgba(43,27,24,0.12))]" />
+        <div className="absolute inset-0 rounded-[inherit] bg-[#2b211d]/8" />
         <div className="final-shine absolute inset-y-0 left-[-45%] w-1/2 rounded-[inherit] rotate-12 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-        <div className="booking-panel relative z-10 grid h-full place-items-center rounded-[inherit] p-6 text-center text-[#fff7ef] drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] md:p-8">
+        <div className="booking-panel relative z-30 grid h-full place-items-center rounded-[inherit] p-6 text-center text-[#6f1d2a] drop-shadow-[0_2px_16px_rgba(255,248,239,0.42)] md:p-8">
           <div>
             <button
               data-cursor="DM"
-              className="block font-serif text-[clamp(2.25rem,10vw,4.4rem)] leading-[0.86] tracking-normal text-[#fff7ef] outline-none transition hover:text-[#f0d7a1] focus-visible:text-[#f0d7a1] md:text-[clamp(3.2rem,6vw,5.8rem)] lg:text-[clamp(3.2rem,6.6vw,6.6rem)] lg:leading-[0.82]"
+              className="block font-serif text-[clamp(2.25rem,10vw,4.4rem)] leading-[0.86] tracking-normal text-[#6f1d2a] outline-none transition hover:text-[#241916] focus-visible:text-[#241916] md:text-[clamp(3.2rem,6vw,5.8rem)] lg:text-[clamp(3.2rem,6.6vw,6.6rem)] lg:leading-[0.82]"
               onClick={() => setBookingOpen(true)}
             >
               ZAKAŽI
@@ -160,7 +149,7 @@ export function BookingScene() {
               <br />
               TERMIN
             </button>
-            <div className="mt-6 flex justify-center text-center text-[10px] font-bold tracking-[0.18em] text-[#fff7ef] md:mt-8 md:text-[11px] md:tracking-[0.26em] lg:mt-9 lg:tracking-[0.3em]">
+            <div className="mt-6 flex justify-center text-center text-[10px] font-bold tracking-[0.18em] text-[#70574b] md:mt-8 md:text-[11px] md:tracking-[0.26em] lg:mt-9 lg:tracking-[0.3em]">
               <button onClick={() => setBookingOpen(true)} data-cursor="VIEW">
                 IZABERI USLUGU I POŠALJI ZAHTEV →
               </button>
