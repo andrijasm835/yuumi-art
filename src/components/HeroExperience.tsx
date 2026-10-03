@@ -37,6 +37,10 @@ export function HeroExperience() {
           autoAlpha: 0,
         });
 
+        gsap.set(".hero-logo-image", {
+          scale: 1.055,
+        });
+
         const intro = gsap.timeline();
 
         intro
@@ -106,7 +110,7 @@ export function HeroExperience() {
             ".hero-logo-image",
             {
               yPercent: isMobile ? 0.8 : 1.5,
-              scale: isMobile ? 1.005 : 1.018,
+              scale: isMobile ? 1.06 : isTablet ? 1.065 : 1.07,
               ease: "none",
             },
             0,
@@ -182,7 +186,7 @@ export function HeroExperience() {
               className="hero-logo-image object-cover object-center"
             />
 
-            <div className="pointer-events-none absolute inset-0 border border-white/25" />
+            <div className="pointer-events-none absolute inset-0 border border-[#d8bd80]/15" />
           </div>
 
           {/* Subtle brand props */}
