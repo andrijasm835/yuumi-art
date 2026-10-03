@@ -40,12 +40,12 @@ export function HeroExperience() {
           .to(".vanity-object-center", { x: isMobile ? 4 : isTablet ? 12 : 20, y: isMobile ? 24 : isTablet ? 38 : 54, rotate: -5 }, 0)
           .to(".vanity-object-thin", { x: isMobile ? -12 : isTablet ? -28 : -46, y: isMobile ? -18 : isTablet ? -32 : -48, rotate: 8 }, 0)
           .to(".mirror-glow", { opacity: 1, scale: isMobile ? 1.18 : isTablet ? 1.36 : 1.65, xPercent: isMobile ? 7 : isTablet ? 16 : 28 }, 0.08)
-          .to(".mirror", { scale: isMobile ? 4.85 : isTablet ? 5.6 : 7.6, yPercent: isMobile ? 0 : -1, borderRadius: "0%", ease: "power2.inOut" }, 0.2)
+          .to(".mirror", isMobile ? { scale: 6.15, yPercent: 0, ease: "power2.inOut" } : { scale: isTablet ? 5.6 : 7.6, yPercent: -1, borderRadius: "0%", ease: "power2.inOut" }, 0.2)
           .to(".mirror-photo", { scale: isMobile ? 1.16 : isTablet ? 1.2 : 1.32, filter: "blur(0px) saturate(1.12) brightness(1.08)" }, 0.2)
           .to(".vanity-object-left", { opacity: 0, filter: "blur(10px)" }, 0.38)
           .to(".vanity-object-right", { opacity: 0, filter: "blur(10px)" }, 0.38)
           .to(".vanity-object-center, .vanity-object-thin", { opacity: 0, filter: "blur(8px)" }, 0.42)
-          .to(".mirror-plane", { opacity: 1, backdropFilter: isMobile ? "blur(4px)" : "blur(10px)", scale: 1 }, 0.46)
+          .to(".mirror-plane", { opacity: 1, backdropFilter: isMobile ? "blur(4px)" : "blur(10px)", scale: 1 }, isMobile ? 0.58 : 0.46)
           .to(".mirror-plane", { opacity: 0, backdropFilter: "blur(0px)" }, 0.72)
           .to(".vanity", { scale: isMobile ? 1.04 : isTablet ? 1.16 : 1.28, opacity: 0 }, 0.68);
 

@@ -63,7 +63,7 @@ export function BookingScene() {
             .to(".final-mirror", { scale: 0.94, rotate: 0, filter: "blur(0px)" }, 0)
             .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1 }, 0.18)
             .to(".booking-reflection", { opacity: 0.72, scale: 1 }, 0.16)
-            .fromTo(".booking-panel", { clipPath: "circle(0% at 50% 50%)", opacity: 0 }, { clipPath: "circle(84% at 50% 50%)", opacity: 1 }, 0.32)
+            .fromTo(".booking-panel", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1 }, 0.32)
             .to(".final-shine", { xPercent: 130 }, 0.38)
             .to(".ready-top", { xPercent: -2 }, 0)
             .to(".ready-bottom", { xPercent: 2 }, 0);
@@ -136,18 +136,18 @@ export function BookingScene() {
         <span className="ready-bottom italic">SVOJ LOOK?</span>
       </div>
 
-      <div className="final-mirror glass-reflection absolute left-1/2 top-1/2 h-[66svh] w-[min(82vw,430px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[48%_48%_42%_42%] border border-[#d8bd80]/50 bg-[#fff7ef]/10 shadow-[0_40px_160px_rgba(0,0,0,0.38)] backdrop-blur-sm md:h-[70vh] md:w-[min(68vw,500px)] lg:h-[72vh] lg:w-[min(76vw,520px)]">
+      <div className="final-mirror glass-reflection absolute left-1/2 top-1/2 isolate h-[66svh] w-[min(82vw,430px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[48%_48%_42%_42%] border border-[#d8bd80]/50 bg-[#fff7ef]/10 shadow-[0_40px_160px_rgba(0,0,0,0.38)] backdrop-blur-sm md:h-[70vh] md:w-[min(68vw,500px)] lg:h-[72vh] lg:w-[min(76vw,520px)]">
         <Image
           src={booking.reflection}
           alt={booking.reflectionAlt}
           fill
           sizes="520px"
-          className="responsive-image booking-reflection object-cover opacity-0"
+          className="responsive-image booking-reflection rounded-[inherit] object-cover opacity-0"
           style={imagePositionStyle(booking.position)}
         />
-        <div className="absolute inset-0 bg-[#fff7ef]/18 mix-blend-screen" />
-        <div className="final-shine absolute inset-y-0 left-[-45%] w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-        <div className="booking-panel relative z-10 grid h-full place-items-center p-6 text-center text-[#fff7ef] drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] md:p-8">
+        <div className="absolute inset-0 rounded-[inherit] bg-[#fff7ef]/18 mix-blend-screen" />
+        <div className="final-shine absolute inset-y-0 left-[-45%] w-1/2 rounded-[inherit] rotate-12 bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+        <div className="booking-panel relative z-10 grid h-full place-items-center rounded-[inherit] p-6 text-center text-[#fff7ef] drop-shadow-[0_4px_18px_rgba(0,0,0,0.45)] md:p-8">
           <div>
             <button
               data-cursor="DM"

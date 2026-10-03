@@ -29,12 +29,12 @@ export function ArtistScene() {
         const isMobile = context.conditions?.mobile;
         const isTablet = context.conditions?.tablet;
         gsap.set(".artist-photo", {
-          scale: isMobile ? 1.1 : 1.22,
-          width: "100vw",
-          height: "100dvh",
-          x: 0,
-          y: 0,
-          opacity: 0.86,
+          scale: isMobile ? 1.05 : 1.22,
+          width: isMobile ? "92vw" : "100vw",
+          height: isMobile ? "54dvh" : "100dvh",
+          x: isMobile ? "-2vw" : 0,
+          y: isMobile ? "2dvh" : 0,
+          opacity: isMobile ? 1 : 0.86,
         });
 
         const entrance = gsap.timeline({
@@ -46,7 +46,7 @@ export function ArtistScene() {
             invalidateOnRefresh: true,
           },
         });
-        entrance.to(".artist-photo", { scale: isMobile ? 1.06 : isTablet ? 1.12 : 1.18, opacity: 1, ease: "none" }, 0);
+        entrance.to(".artist-photo", { scale: isMobile ? 1.03 : isTablet ? 1.12 : 1.18, opacity: 1, ease: "none" }, 0);
 
         if (isMobile) {
           gsap.set(".artist-copy", { opacity: 1, y: 0, filter: "none" });
@@ -62,7 +62,7 @@ export function ArtistScene() {
           });
 
           mobileIntro
-            .to(".artist-photo", { scale: 1.01, width: "92vw", height: "58dvh", x: "-3vw", y: "9dvh" }, 0)
+            .to(".artist-photo", { scale: 1, x: "-2vw", y: "0.5dvh" }, 0)
             .fromTo(".artist-word-meet", { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0 }, 0.04)
             .fromTo(".artist-word-name", { opacity: 0, xPercent: 12 }, { opacity: 1, xPercent: 0 }, 0.18);
 
@@ -105,8 +105,8 @@ export function ArtistScene() {
 
   return (
     <section id="about" ref={scope} className="scene-overlap relative min-h-[100dvh] overflow-visible bg-[#f7efe8] text-[#241916] md:h-[100dvh] md:min-h-0 md:overflow-hidden lg:h-screen">
-      <div className="artist-mobile-visual relative min-h-[86dvh] overflow-hidden md:contents">
-        <div className="artist-photo absolute left-0 top-0 h-[100dvh] w-screen overflow-hidden lg:h-screen">
+      <div className="artist-mobile-visual relative min-h-[61dvh] overflow-hidden md:contents">
+        <div className="artist-photo absolute left-[4vw] top-[2dvh] h-[54dvh] w-[92vw] overflow-hidden md:left-0 md:top-0 md:h-[100dvh] md:w-screen lg:h-screen">
           <Image
             src={artist.image}
             alt={artist.alt}
@@ -116,24 +116,24 @@ export function ArtistScene() {
             style={imagePositionStyle(artist.position)}
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#f7efe8]/0 via-[#f7efe8]/20 to-[#f7efe8]/86" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#f7efe8]/0 via-[#f7efe8]/10 to-[#f7efe8]/82" />
         <div className="artist-darken pointer-events-none absolute inset-0 z-40 bg-[radial-gradient(circle_at_50%_46%,rgba(244,226,198,0.14),transparent_30%),linear-gradient(180deg,rgba(27,17,16,0.12),rgba(27,17,16,0.86))] opacity-0" />
-        <div className="artist-word-meet absolute left-[5vw] top-[calc(env(safe-area-inset-top)+1.5rem)] z-20 font-serif text-[clamp(3.1rem,12vw,5rem)] leading-[0.84] text-[#241916] mix-blend-multiply md:top-[9vh] md:text-[clamp(5rem,10vw,8.5rem)] lg:top-[10vh] lg:text-[clamp(5rem,12vw,12rem)] lg:leading-[0.78]">
+        <div className="artist-word-meet absolute left-[5vw] top-[calc(env(safe-area-inset-top)+0.9rem)] z-20 font-serif text-[clamp(3.1rem,12vw,5rem)] leading-[0.84] text-[#241916] mix-blend-multiply md:top-[9vh] md:text-[clamp(5rem,10vw,8.5rem)] lg:top-[10vh] lg:text-[clamp(5rem,12vw,12rem)] lg:leading-[0.78]">
           MEET
         </div>
-        <div className="artist-word-name absolute top-[63dvh] right-[5vw] z-20 font-serif text-[clamp(3.2rem,12.5vw,5.4rem)] leading-[0.84] text-[#6f1d2a] mix-blend-multiply md:top-auto md:bottom-[10vh] md:text-[clamp(5.5rem,10vw,9rem)] lg:bottom-[8vh] lg:text-[clamp(5.8rem,12vw,13rem)] lg:leading-[0.78]">
+        <div className="artist-word-name absolute top-[50dvh] right-[5vw] z-20 font-serif text-[clamp(3.2rem,12.5vw,5.4rem)] leading-[0.84] text-[#6f1d2a] mix-blend-multiply md:top-auto md:bottom-[10vh] md:text-[clamp(5.5rem,10vw,9rem)] lg:bottom-[8vh] lg:text-[clamp(5.8rem,12vw,13rem)] lg:leading-[0.78]">
           {artist.name}
         </div>
       </div>
-      <div className="artist-mobile-copy relative z-30 block w-full px-5 pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-6 md:flex md:h-full md:items-end md:justify-between md:px-10 md:pb-12 md:pt-0 lg:px-12 lg:pb-16">
-        <div className="artist-copy max-w-[32rem] rounded-sm bg-[#f7efe8]/92 py-4 backdrop-blur-[2px] md:mb-[5vh] md:max-w-md md:bg-transparent md:py-0 md:backdrop-blur-0 lg:mb-[8vh]">
-          <p className="text-lg leading-7 text-[#3c2d27] md:mt-8 md:text-xl md:leading-8 lg:text-2xl lg:leading-10">
+      <div className="artist-mobile-copy relative z-30 block w-full px-5 pb-[calc(env(safe-area-inset-bottom)+2.5rem)] pt-0 md:flex md:h-full md:items-end md:justify-between md:px-10 md:pb-12 md:pt-0 lg:px-12 lg:pb-16">
+        <div className="artist-copy max-w-[32rem] rounded-sm bg-[#f7efe8]/92 py-3 backdrop-blur-[2px] md:mb-[5vh] md:max-w-md md:bg-transparent md:py-0 md:backdrop-blur-0 lg:mb-[8vh]">
+          <p className="text-[17px] leading-[1.45] text-[#3c2d27] md:mt-8 md:text-xl md:leading-8 lg:text-2xl lg:leading-10">
             {artist.intro}
           </p>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-[#6b574e] md:mt-5 md:text-base md:leading-7 lg:mt-6 lg:text-lg lg:leading-8">
+          <p className="mt-3 max-w-xl text-[15px] leading-[1.55] text-[#6b574e] md:mt-5 md:text-base md:leading-7 lg:mt-6 lg:text-lg lg:leading-8">
             {artist.bio}
           </p>
-          <p className="mt-3 max-w-xl text-sm leading-6 text-[#6b574e] md:mt-5 md:text-base md:leading-7 lg:mt-6 lg:text-lg lg:leading-8">
+          <p className="mt-3 max-w-xl text-[15px] leading-[1.55] text-[#6b574e] md:mt-5 md:text-base md:leading-7 lg:mt-6 lg:text-lg lg:leading-8">
             {artist.education}
           </p>
         </div>

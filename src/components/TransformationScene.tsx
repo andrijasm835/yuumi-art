@@ -189,17 +189,15 @@ export function TransformationScene() {
           />
           <div className="final-shimmer pointer-events-none absolute inset-y-0 left-[-22%] w-[18%] bg-[linear-gradient(100deg,transparent,rgba(255,248,239,0.16),transparent)] opacity-0 mix-blend-screen" />
         </div>
-        <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-r from-[#160f0c]/86 via-[#160f0c]/20 to-[#160f0c]/12" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[42dvh] bg-gradient-to-t from-[#160f0c]/78 via-[#160f0c]/24 to-transparent md:hidden" />
+        <div className="pointer-events-none absolute inset-0 z-30 hidden bg-gradient-to-r from-[#160f0c]/86 via-[#160f0c]/20 to-[#160f0c]/12 md:block" />
       </div>
 
       <div className="transformation-enter pointer-events-none absolute inset-0 z-20 bg-[#201614]/45" />
       <div className="relative z-30 flex h-full items-end px-5 pb-[calc(env(safe-area-inset-bottom)+1.75rem)] md:px-10 md:pb-14 lg:px-12 lg:pb-20">
         <div className="relative min-h-44 w-full max-w-[88vw] sm:min-h-52 md:max-w-2xl lg:min-h-64 lg:max-w-4xl">
           {makeupStages.map((stage, index) => (
-            <div
-              className={`stage-copy stage-copy-${index} absolute bottom-0 left-0 max-w-[min(88vw,44rem)] opacity-0`}
-              key={stage.title}
-            >
+            <div className={`stage-copy stage-copy-${index} absolute bottom-0 left-0 max-w-[min(88vw,44rem)] opacity-0 drop-shadow-[0_12px_28px_rgba(22,15,12,0.44)]`} key={stage.title}>
               <p className="text-sm font-bold tracking-[0.42em] text-[#d2af76]">{stage.number}</p>
               <h2 className="mt-2 font-serif text-[clamp(2.65rem,11.5vw,4.75rem)] leading-[0.88] md:text-[clamp(3.6rem,8vw,6rem)] md:leading-[0.84] lg:text-[clamp(4rem,9vw,9rem)] lg:leading-[0.82]">
                 {stage.title === "FINALNI LOOK" ? (
