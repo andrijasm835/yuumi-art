@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/app/api/admin/_auth";
 import { getWeeklyAvailability } from "@/lib/booking/repository";
 import { supabaseAdmin } from "@/lib/supabase/server";
-import { intervalsOverlap, timeToMinutes } from "@/lib/booking/time";
+import { addDays, intervalsOverlap, timeToMinutes } from "@/lib/booking/time";
 
 const allowedExceptionTypes = new Set(["blocked_day", "blocked_interval", "custom_availability"]);
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
@@ -40,11 +40,13 @@ function intervalsAreValid(intervals: { startTime: string; endTime: string }[]) 
 function validateExceptionInput(body: Record<string, unknown>) {
   const type = String(body.type ?? "");
   const date = String(body.date ?? "");
+  const endDate = body.endDate ? String(body.endDate) : date;
   const startTime = String(body.startTime ?? "");
   const endTime = String(body.endTime ?? "");
   const reason = body.reason ? String(body.reason) : "";
 
   if (!validDate(date)) return "Datum nije ispravan.";
+  if (type === "blocked_day" && (!validDate(endDate) || endDate < date)) return "Krajnji datum nije ispravan.";
   if (!allowedExceptionTypes.has(type)) return "Tip dostupnosti nije ispravan.";
   if (reason.length > 200) return "Razlog može imati najviše 200 karaktera.";
   if (type !== "blocked_day") {
@@ -52,6 +54,16 @@ function validateExceptionInput(body: Record<string, unknown>) {
     if (timeToMinutes(startTime) >= timeToMinutes(endTime)) return "Početak mora biti pre kraja.";
   }
   return "";
+}
+
+function datesInRange(startDate: string, endDate: string) {
+  const dates: string[] = [];
+  let current = startDate;
+  while (current <= endDate) {
+    dates.push(current);
+    current = addDays(current, 1);
+  }
+  return dates;
 }
 
 export async function GET(request: Request) {
@@ -86,13 +98,15 @@ export async function POST(request: Request) {
     const validationError = validateExceptionInput(body);
     if (validationError) return NextResponse.json({ error: validationError }, { status: 400 });
     const type = String(body.type);
-    const result = await supabaseAdmin.insert("availability_exceptions", {
-      date: String(body.date),
+    const dates = type === "blocked_day" ? datesInRange(String(body.date), body.endDate ? String(body.endDate) : String(body.date)) : [String(body.date)];
+    const payload = dates.map((date) => ({
+      date,
       start_time: type === "blocked_day" ? null : String(body.startTime),
       end_time: type === "blocked_day" ? null : String(body.endTime),
       type,
       reason: body.reason ? String(body.reason) : null,
-    });
+    }));
+    const result = await supabaseAdmin.insert("availability_exceptions", payload);
     return NextResponse.json({ result }, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Dostupnost nije sačuvana." }, { status: 400 });

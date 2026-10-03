@@ -110,6 +110,8 @@ export function AdminDashboard() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [weeklyDraft, setWeeklyDraft] = useState<Record<number, WeekInterval[]>>({});
+  const [manualSlots, setManualSlots] = useState<string[]>([]);
+  const [manualSlotsLoading, setManualSlotsLoading] = useState(false);
   const [manual, setManual] = useState({
     serviceId: appointmentServices[0]?.id ?? bookingServices[0].id,
     date: todayIso(),
@@ -120,6 +122,8 @@ export function AdminDashboard() {
   });
   const [block, setBlock] = useState({
     date: todayIso(),
+    endDate: todayIso(),
+    rangeMode: "single",
     type: "blocked_interval",
     startTime: "12:00",
     endTime: "15:00",
@@ -217,6 +221,37 @@ export function AdminDashboard() {
     return () => window.clearTimeout(task);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, weekStart]);
+
+  useEffect(() => {
+    if (!token || !manual.serviceId || !manual.date) return;
+    const controller = new AbortController();
+    async function loadManualSlots() {
+      setManualSlotsLoading(true);
+      try {
+        const response = await fetch(`/api/availability?serviceId=${encodeURIComponent(manual.serviceId)}&date=${encodeURIComponent(manual.date)}`, {
+          signal: controller.signal,
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          setManualSlots([]);
+          return;
+        }
+        const slots = Array.isArray(data.slots) ? data.slots.map((slot: string) => normalizeTime(slot)) : [];
+        setManualSlots(slots);
+        setManual((current) => (
+          current.serviceId === manual.serviceId && current.date === manual.date && !slots.includes(current.startTime)
+            ? { ...current, startTime: slots[0] ?? "" }
+            : current
+        ));
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) setManualSlots([]);
+      } finally {
+        if (!controller.signal.aborted) setManualSlotsLoading(false);
+      }
+    }
+    void loadManualSlots();
+    return () => controller.abort();
+  }, [token, manual.serviceId, manual.date]);
 
   async function updateStatus(id: string, nextStatus: BookingStatus, recordType: AdminBookingItem["recordType"] = "appointment") {
     if (busyBookingId) return;
@@ -572,7 +607,16 @@ export function AdminDashboard() {
                 <input className={fieldClass()} type="date" value={manual.date} onChange={(event) => setManual((current) => ({ ...current, date: event.target.value }))} />
               </label>
               <label className={labelClass()}>Vreme
-                <input className={fieldClass()} type="time" value={manual.startTime} onChange={(event) => setManual((current) => ({ ...current, startTime: event.target.value }))} />
+                <select
+                  className={fieldClass()}
+                  value={manual.startTime}
+                  onChange={(event) => setManual((current) => ({ ...current, startTime: event.target.value }))}
+                  disabled={manualSlotsLoading || manualSlots.length === 0}
+                >
+                  {manualSlotsLoading ? <option value="">Učitavanje...</option> : null}
+                  {!manualSlotsLoading && manualSlots.length === 0 ? <option value="">Nema slobodnih termina</option> : null}
+                  {manualSlots.map((slot) => <option key={slot} value={slot}>{slot}</option>)}
+                </select>
               </label>
               <label className={labelClass()}>Ime i prezime
                 <input className={fieldClass()} value={manual.fullName} onChange={(event) => setManual((current) => ({ ...current, fullName: event.target.value }))} />
@@ -584,7 +628,7 @@ export function AdminDashboard() {
                 <input className={fieldClass()} value={manual.email} onChange={(event) => setManual((current) => ({ ...current, email: event.target.value }))} />
               </label>
             </div>
-            <button className="mt-4 bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.18em] text-white">DODAJ TERMIN</button>
+            <button className="mt-4 bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.18em] text-white disabled:cursor-not-allowed disabled:opacity-45" disabled={!manual.startTime || manualSlotsLoading}>DODAJ TERMIN</button>
           </form>
 
           <form className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5" onSubmit={createBlock}>
@@ -598,9 +642,22 @@ export function AdminDashboard() {
                   <option value="custom_availability">Posebna dostupnost</option>
                 </select>
               </label>
+              {block.type === "blocked_day" ? (
+                <label className={`${labelClass()} sm:col-span-2`}>Trajanje
+                  <select className={fieldClass()} value={block.rangeMode} onChange={(event) => setBlock((current) => ({ ...current, rangeMode: event.target.value, endDate: event.target.value === "single" ? current.date : current.endDate }))}>
+                    <option value="single">Jedan dan</option>
+                    <option value="range">Interval od više dana</option>
+                  </select>
+                </label>
+              ) : null}
               <label className={labelClass()}>Datum
-                <input className={fieldClass()} type="date" value={block.date} onChange={(event) => setBlock((current) => ({ ...current, date: event.target.value }))} />
+                <input className={fieldClass()} type="date" value={block.date} onChange={(event) => setBlock((current) => ({ ...current, date: event.target.value, endDate: current.rangeMode === "single" ? event.target.value : current.endDate }))} />
               </label>
+              {block.type === "blocked_day" && block.rangeMode === "range" ? (
+                <label className={labelClass()}>Do datuma
+                  <input className={fieldClass()} type="date" value={block.endDate} onChange={(event) => setBlock((current) => ({ ...current, endDate: event.target.value }))} />
+                </label>
+              ) : null}
               {block.type !== "blocked_day" ? (
                 <>
                   <label className={labelClass()}>Od
