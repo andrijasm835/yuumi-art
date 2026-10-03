@@ -94,12 +94,7 @@ export function TransformationScene() {
           },
         });
 
-        entrance.fromTo(
-          ".transformation-frame",
-          { yPercent: isMobile ? 2 : isTablet ? 3 : 4, scale: isMobile ? 0.992 : isTablet ? 0.99 : 0.988, opacity: 0.78 },
-          { yPercent: 0, scale: 1, opacity: 1, ease: "none" },
-          0,
-        );
+        entrance.fromTo(".transformation-frame", { opacity: 0.78 }, { opacity: 1, ease: "none" }, 0);
 
         const showCopy = (index: number, at: number) => {
           tl.to(".stage-copy", { autoAlpha: 0, y: -22, duration: 0.16 }, at - 0.02)
@@ -140,7 +135,7 @@ export function TransformationScene() {
   return (
     <section className="scene-overlap relative h-[100dvh] overflow-hidden bg-[#201614] text-[#fff7ef] lg:h-screen" ref={scope}>
       <div className="camera absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_76%_34%,rgba(111,29,42,0.24),transparent_30%),linear-gradient(120deg,#160f0c_0%,#241613_46%,#17100e_100%)]">
-        <div className="transformation-frame absolute left-1/2 top-[7dvh] h-[72dvh] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] will-change-transform md:left-auto md:right-[4vw] md:top-1/2 md:h-[78dvh] md:w-[82vw] md:-translate-y-1/2 md:translate-x-0 lg:right-[5vw] lg:h-[84vh] lg:w-[68vw]">
+        <div className="transformation-frame absolute left-1/2 top-[7dvh] h-[72dvh] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[11dvh] md:h-[78dvh] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
           <Image
             src={transformation.image}
             alt={transformation.alt}
