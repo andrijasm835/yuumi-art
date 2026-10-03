@@ -49,22 +49,26 @@ export function ArtistScene() {
         entrance.to(".artist-photo", { scale: isMobile ? 1.03 : isTablet ? 1.12 : 1.18, opacity: 1, ease: "none" }, 0);
 
         if (isMobile) {
-          gsap.set(".artist-copy", { opacity: 1, y: 0, filter: "none" });
-          gsap.set(".artist-word-meet, .artist-word-name", { opacity: 1, xPercent: 0, filter: "none" });
+          gsap.set(".artist-copy", { opacity: 0.28, y: 24, filter: "none" });
+          gsap.set(".artist-word-meet, .artist-word-name", { opacity: 0, xPercent: 0, filter: "none" });
           const mobileIntro = gsap.timeline({
             scrollTrigger: {
               trigger: scope.current,
               start: "top top",
-              end: "+=70%",
-              scrub: 0.8,
+              end: "+=95%",
+              scrub: 0.9,
+              pin: true,
+              anticipatePin: 1,
               invalidateOnRefresh: true,
             },
           });
 
           mobileIntro
-            .to(".artist-photo", { scale: 1, x: "-2vw", y: "0.5dvh" }, 0)
-            .fromTo(".artist-word-meet", { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0 }, 0.04)
-            .fromTo(".artist-word-name", { opacity: 0, xPercent: 12 }, { opacity: 1, xPercent: 0 }, 0.18);
+            .to(".artist-photo", { scale: 1, x: "-2vw", y: "0.5dvh", duration: 0.36, ease: "power1.out" }, 0)
+            .fromTo(".artist-word-meet", { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0, duration: 0.28 }, 0.1)
+            .fromTo(".artist-word-name", { opacity: 0, xPercent: 12 }, { opacity: 1, xPercent: 0, duration: 0.28 }, 0.24)
+            .to(".artist-copy", { opacity: 1, y: 0, duration: 0.34 }, 0.42)
+            .to(".artist-copy", { opacity: 1, y: 0, duration: 0.28 }, 0.7);
 
           return () => {
             entrance.kill();

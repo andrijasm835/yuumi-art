@@ -45,7 +45,7 @@ export function HeroExperience() {
           .to(".vanity-object-left", { opacity: 0, filter: "blur(10px)" }, 0.38)
           .to(".vanity-object-right", { opacity: 0, filter: "blur(10px)" }, 0.38)
           .to(".vanity-object-center, .vanity-object-thin", { opacity: 0, filter: "blur(8px)" }, 0.42)
-          .to(".mirror-plane", { opacity: 1, backdropFilter: isMobile ? "blur(4px)" : "blur(10px)", scale: 1 }, isMobile ? 0.58 : 0.46)
+          .to(".mirror-plane", isMobile ? { opacity: 0, backdropFilter: "blur(0px)", scale: 1 } : { opacity: 1, backdropFilter: "blur(10px)", scale: 1 }, isMobile ? 0.58 : 0.46)
           .to(".mirror-plane", { opacity: 0, backdropFilter: "blur(0px)" }, 0.72)
           .to(".vanity", { scale: isMobile ? 1.04 : isTablet ? 1.16 : 1.28, opacity: 0 }, 0.68);
 

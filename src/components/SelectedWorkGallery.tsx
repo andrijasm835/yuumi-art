@@ -23,9 +23,46 @@ export function SelectedWorkGallery() {
       {
         desktop: "(min-width: 1024px)",
         tablet: "(min-width: 768px) and (max-width: 1023px)",
+        mobile: "(max-width: 767px)",
       },
       (context) => {
         const isTablet = context.conditions?.tablet;
+        const isMobile = context.conditions?.mobile;
+
+        if (isMobile) {
+          const mobileWorks = gsap.utils.toArray<HTMLElement>(".selected-work-mobile-slide");
+          const mobileCount = mobileWorks.length;
+
+          gsap.set(mobileWorks, { yPercent: 105, scale: 1.01, autoAlpha: 0 });
+          gsap.set(mobileWorks[0], { yPercent: 0, scale: 1, autoAlpha: 1 });
+          gsap.set(".selected-work-mobile-number", { autoAlpha: 0, y: 10 });
+          gsap.set(".selected-work-mobile-number-0", { autoAlpha: 1, y: 0 });
+
+          const mobileTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: scope.current,
+              start: "top top",
+              end: `+=${(mobileCount - 1) * 65}%`,
+              scrub: 0.9,
+              pin: true,
+              anticipatePin: 1,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          for (let index = 1; index < mobileCount; index += 1) {
+            const at = index - 1;
+
+            mobileTl
+              .to(mobileWorks[index - 1], { yPercent: -105, autoAlpha: 0.3, duration: 0.76, ease: "power1.inOut" }, at)
+              .to(mobileWorks[index], { yPercent: 0, scale: 1, autoAlpha: 1, duration: 0.76, ease: "power1.inOut" }, at)
+              .to(`.selected-work-mobile-number-${index - 1}`, { autoAlpha: 0, y: -10, duration: 0.2 }, at)
+              .to(`.selected-work-mobile-number-${index}`, { autoAlpha: 1, y: 0, duration: 0.24 }, at + 0.16);
+          }
+
+          return () => mobileTl.kill();
+        }
+
         const works = gsap.utils.toArray<HTMLElement>(".selected-work");
         const count = works.length;
 
@@ -69,7 +106,7 @@ export function SelectedWorkGallery() {
   });
 
   return (
-    <section ref={scope} className="scene-overlap relative overflow-hidden bg-[#1b1110] text-[#fff7ef] md:h-[100dvh] lg:h-screen">
+    <section ref={scope} className="scene-overlap relative h-[100dvh] overflow-hidden bg-[#1b1110] text-[#fff7ef] lg:h-screen">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,rgba(111,29,42,0.24),transparent_34%),radial-gradient(circle_at_12%_78%,rgba(216,189,128,0.14),transparent_32%),linear-gradient(120deg,#160f0c_0%,#241613_52%,#17100e_100%)]" />
 
       <div className="relative z-10 hidden h-full md:block">
@@ -132,14 +169,14 @@ export function SelectedWorkGallery() {
         </div>
       </div>
 
-      <div className="relative z-10 px-5 pb-[calc(env(safe-area-inset-bottom)+4rem)] pt-[calc(env(safe-area-inset-top)+4.5rem)] md:hidden">
+      <div className="relative z-10 h-full px-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)] pt-[calc(env(safe-area-inset-top)+2rem)] md:hidden">
         <p className="text-[10px] font-bold tracking-[0.34em] text-[#d8bd80]/72">YUUMI ART / RADOVI</p>
-        <h2 className="mt-4 font-serif text-[clamp(3.6rem,16vw,5.8rem)] leading-[0.82]">RADOVI</h2>
+        <h2 className="mt-3 font-serif text-[clamp(3.25rem,15vw,5.2rem)] leading-[0.82]">RADOVI</h2>
 
-        <div className="mt-9 space-y-10">
+        <div className="relative mt-5 h-[68dvh] w-full overflow-hidden">
           {galleryWorks.map((work, index) => (
-            <figure className="selected-work-mobile" key={work.src}>
-              <div className="relative h-[68dvh] w-full overflow-hidden bg-[#2b211d]">
+            <figure className="selected-work-mobile-slide absolute inset-0" key={work.src}>
+              <div className="relative h-full w-full overflow-hidden bg-[#2b211d]">
                 <Image
                   src={work.src}
                   alt={work.alt}
@@ -151,10 +188,15 @@ export function SelectedWorkGallery() {
                   style={imagePositionStyle(work.position)}
                 />
               </div>
-              <figcaption className="mt-3 text-xs font-bold tracking-[0.36em] text-[#d8bd80]">
-                {String(index + 1).padStart(2, "0")} / {String(galleryWorks.length).padStart(2, "0")}
-              </figcaption>
             </figure>
+          ))}
+        </div>
+
+        <div className="relative mt-4 h-6">
+          {galleryWorks.map((work, index) => (
+            <p className={`selected-work-mobile-number selected-work-mobile-number-${index} absolute left-0 top-0 text-xs font-bold tracking-[0.36em] text-[#d8bd80]`} key={work.src}>
+                {String(index + 1).padStart(2, "0")} / {String(galleryWorks.length).padStart(2, "0")}
+            </p>
           ))}
         </div>
       </div>
