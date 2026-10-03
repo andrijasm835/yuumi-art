@@ -111,10 +111,6 @@ button:focus-visible {
     transition-duration: 0.01ms !important;
   }
 
-  .stage-eyes,
-  .stage-color,
-  .stage-final,
-  .reveal-shape,
   .stage-copy-0,
   .stage-copy-1,
   .stage-copy-2,
@@ -139,24 +135,6 @@ button:focus-visible {
   .transformation-enter,
   .details-light {
     display: none !important;
-  }
-
-  .reveal-eye-left,
-  .reveal-eye-right,
-  .reveal-lips,
-  .reveal-final {
-    transform: scale(1) !important;
-  }
-
-  .reveal-cheek-left,
-  .reveal-cheek-right {
-    rx: 155px !important;
-    ry: 105px !important;
-  }
-
-  .reveal-lips {
-    rx: 120px !important;
-    ry: 58px !important;
   }
 }
 

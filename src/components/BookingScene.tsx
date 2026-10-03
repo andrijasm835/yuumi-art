@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { booking } from "@/content/site";
+import { booking, makeupProps } from "@/content/site";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -107,6 +107,14 @@ export function BookingScene() {
   return (
     <section id="book" ref={scope} className="relative h-[100dvh] overflow-hidden bg-[#1b1110] text-[#fff7ef] lg:h-screen">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(244,226,198,0.16),transparent_34%),radial-gradient(circle_at_20%_20%,rgba(111,29,42,0.35),transparent_30%)]" />
+      <Image
+        src={makeupProps.lipstick}
+        alt=""
+        aria-hidden="true"
+        width={180}
+        height={360}
+        className="pointer-events-none absolute -right-[7vw] bottom-[9dvh] h-[19dvh] w-auto rotate-[22deg] opacity-30 md:-right-[2vw] md:bottom-[10dvh] md:h-[23dvh] lg:right-[4vw] lg:bottom-[12vh] lg:h-[26vh]"
+      />
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center font-serif text-[clamp(2.7rem,11.5vw,5rem)] leading-[0.86] text-[#fff7ef]/82 md:text-[clamp(4.8rem,10vw,7rem)] lg:text-[clamp(3rem,14vw,9rem)] lg:leading-[0.82]">
         <span className="ready-top">SPREMNA ZA</span>
         <span className="ready-bottom italic">SVOJ LOOK?</span>

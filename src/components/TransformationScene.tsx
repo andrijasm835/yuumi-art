@@ -4,7 +4,7 @@ import { useRef } from "react";
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { transformation } from "@/content/site";
+import { makeupProps, transformation } from "@/content/site";
 
 const makeupStages = [
   {
@@ -104,6 +104,7 @@ export function TransformationScene() {
         tl.set(".stage-copy", { autoAlpha: 0, y: 20 })
           .set(".final-shimmer", { autoAlpha: 0 })
           .set(".transformation-photo", camera.ten)
+          .set(".transformation-prop", { autoAlpha: 1 })
           .fromTo(".transformation-enter", { opacity: 0.5 }, { opacity: 0, duration: 0.34 }, 0);
 
         showCopy(0, 0.08);
@@ -122,6 +123,10 @@ export function TransformationScene() {
           .to(".final-shimmer", { autoAlpha: 0.55, xPercent: 140, duration: 0.45 }, 3.18)
           .to(".final-shimmer", { autoAlpha: 0, duration: 0.14 }, 3.62);
 
+        tl.to(".transformation-brush", { x: isMobile ? 12 : isTablet ? 28 : 54, y: isMobile ? -8 : isTablet ? -14 : -24, rotate: isMobile ? -18 : -16, duration: 3.4, ease: "none" }, 0)
+          .to(".transformation-compact", { x: isMobile ? -6 : isTablet ? -14 : -28, y: isMobile ? 8 : isTablet ? 16 : 32, rotate: isMobile ? 8 : 10, duration: 3.4, ease: "none" }, 0)
+          .to(".transformation-lipstick", { x: isMobile ? -8 : isTablet ? -14 : -26, y: isMobile ? -12 : isTablet ? -28 : -48, rotate: isMobile ? 9 : 13, duration: 3.4, ease: "none" }, 0);
+
         return () => {
           entrance.kill();
           tl.kill();
@@ -135,7 +140,34 @@ export function TransformationScene() {
   return (
     <section className="scene-overlap relative h-[100dvh] overflow-hidden bg-[#201614] text-[#fff7ef] lg:h-screen" ref={scope}>
       <div className="camera absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_76%_34%,rgba(111,29,42,0.24),transparent_30%),linear-gradient(120deg,#160f0c_0%,#241613_46%,#17100e_100%)]">
-        <div className="transformation-frame absolute left-1/2 top-[7dvh] h-[72dvh] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[11dvh] md:h-[78dvh] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
+        <div className="pointer-events-none absolute left-5 top-[calc(env(safe-area-inset-top)+1.35rem)] z-10 text-[10px] font-bold tracking-[0.38em] text-[#d8bd80]/55 md:left-10 md:top-[8vh] lg:left-12">
+          YUUMI ART / MAKEUP STUDY / 01—04
+        </div>
+        <Image
+          src={makeupProps.brush}
+          alt=""
+          aria-hidden="true"
+          width={220}
+          height={520}
+          className="transformation-prop transformation-brush pointer-events-none absolute -bottom-[8dvh] -left-[12vw] z-10 hidden h-[34dvh] w-auto rotate-[-24deg] opacity-45 md:block md:h-[39dvh] lg:-bottom-[10vh] lg:-left-[4vw] lg:h-[46vh]"
+        />
+        <Image
+          src={makeupProps.compact}
+          alt=""
+          aria-hidden="true"
+          width={170}
+          height={170}
+          className="transformation-prop transformation-compact pointer-events-none absolute left-[16vw] top-[16dvh] z-10 h-[10dvh] w-auto rotate-[10deg] opacity-35 md:left-[8vw] md:top-[18dvh] md:h-[13dvh] lg:left-[18vw] lg:top-[12vh] lg:h-[14vh]"
+        />
+        <Image
+          src={makeupProps.lipstick}
+          alt=""
+          aria-hidden="true"
+          width={180}
+          height={360}
+          className="transformation-prop transformation-lipstick pointer-events-none absolute -right-[5vw] bottom-[10dvh] z-10 h-[20dvh] w-auto rotate-[18deg] opacity-55 md:-right-[3vw] md:bottom-[11dvh] md:h-[24dvh] lg:right-[2vw] lg:bottom-[7vh] lg:h-[28vh]"
+        />
+        <div className="transformation-frame absolute left-1/2 top-[7dvh] z-20 h-[72dvh] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[11dvh] md:h-[78dvh] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
           <Image
             src={transformation.image}
             alt={transformation.alt}
@@ -148,7 +180,7 @@ export function TransformationScene() {
           />
           <div className="final-shimmer pointer-events-none absolute inset-y-0 left-[-22%] w-[18%] bg-[linear-gradient(100deg,transparent,rgba(255,248,239,0.16),transparent)] opacity-0 mix-blend-screen" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#160f0c]/86 via-[#160f0c]/20 to-[#160f0c]/12" />
+        <div className="pointer-events-none absolute inset-0 z-30 bg-gradient-to-r from-[#160f0c]/86 via-[#160f0c]/20 to-[#160f0c]/12" />
       </div>
 
       <div className="transformation-enter pointer-events-none absolute inset-0 z-20 bg-[#201614]/45" />

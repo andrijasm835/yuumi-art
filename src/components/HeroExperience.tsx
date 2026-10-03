@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { BeautyFace } from "@/components/BeautyFace";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { hero, makeupProps } from "@/content/site";
 
@@ -67,9 +66,12 @@ export function HeroExperience() {
         <div className="vanity relative flex h-[min(70svh,760px)] w-[min(94vw,1120px)] items-center justify-center perspective-[1200px] sm:h-[min(74svh,760px)] lg:h-[min(76vh,760px)]">
           <div className="absolute inset-x-[28%] bottom-[5%] h-12 rounded-full bg-[#5d3a2f]/18 blur-2xl" />
           <div className="mirror glass-reflection relative z-20 aspect-[0.74] h-[62svh] max-h-[680px] min-h-[330px] overflow-hidden rounded-[48%_48%_42%_42%] border-[8px] border-[#c5a56d] bg-[#fff8ef] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55),inset_0_0_34px_rgba(38,22,18,0.28),0_50px_150px_rgba(67,43,34,0.24)] before:absolute before:inset-[10px] before:z-30 before:rounded-[inherit] before:border before:border-[#2b1b18]/28 before:content-[''] after:absolute after:inset-[-18px] after:-z-10 after:rounded-[inherit] after:bg-[#f8e8d2]/30 after:blur-2xl after:content-[''] sm:h-[68svh] md:min-h-[430px] lg:h-[72vh] lg:min-h-[440px] lg:border-[10px]">
-            <div className="mirror-glow absolute inset-0 z-20 opacity-50 mix-blend-screen bg-[linear-gradient(120deg,transparent_18%,rgba(255,255,255,0.78)_38%,transparent_56%)]" />
-            <BeautyFace className="mirror-photo h-full w-full scale-105 blur-[1px]" />
-            <div className="absolute inset-0 bg-[#2b211d]/10" />
+            <div className="mirror-photo absolute inset-0 bg-[radial-gradient(circle_at_52%_28%,rgba(255,255,255,0.74),transparent_20%),radial-gradient(circle_at_34%_70%,rgba(216,189,128,0.24),transparent_32%),linear-gradient(135deg,#fff8ef_0%,#ead8c2_42%,#c7a982_68%,#f8efe4_100%)]" />
+            <div className="absolute left-[12%] top-[18%] h-[34%] w-[52%] rotate-[-16deg] rounded-full bg-white/20" />
+            <div className="absolute bottom-[12%] right-[8%] h-[30%] w-[38%] rotate-12 rounded-full bg-[#6f1d2a]/8" />
+            <div className="mirror-glow absolute inset-0 z-20 opacity-60 mix-blend-screen bg-[linear-gradient(120deg,transparent_16%,rgba(255,255,255,0.72)_36%,transparent_54%)]" />
+            <div className="absolute inset-[8%] rounded-[inherit] bg-[linear-gradient(180deg,rgba(255,255,255,0.20),transparent_48%,rgba(43,27,24,0.10))]" />
+            <div className="absolute inset-0 bg-[#2b211d]/6" />
           </div>
 
           <Image
