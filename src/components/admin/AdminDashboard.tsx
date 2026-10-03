@@ -124,9 +124,6 @@ export function AdminDashboard() {
     date: todayIso(),
     endDate: todayIso(),
     rangeMode: "single",
-    type: "blocked_interval",
-    startTime: "12:00",
-    endTime: "15:00",
     reason: "",
   });
 
@@ -294,7 +291,12 @@ export function AdminDashboard() {
     const response = await fetch("/api/admin/availability", {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(block),
+      body: JSON.stringify({
+        type: "blocked_day",
+        date: block.date,
+        endDate: block.rangeMode === "range" ? block.endDate : block.date,
+        reason: block.reason,
+      }),
     });
     const data = await response.json();
     if (!response.ok) setError(data.error || "Blokada nije sačuvana.");
@@ -636,37 +638,21 @@ export function AdminDashboard() {
             <h2 className="font-serif text-3xl text-[#6f1d2a]">Blokiraj dostupnost</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               <label className={`${labelClass()} sm:col-span-2`}>Tip
-                <select className={fieldClass()} value={block.type} onChange={(event) => setBlock((current) => ({ ...current, type: event.target.value }))}>
-                  <option value="blocked_interval">Blokiraj interval</option>
-                  <option value="blocked_day">Blokiraj ceo dan</option>
-                  <option value="custom_availability">Posebna dostupnost</option>
+                <input className={fieldClass()} value="Blokiraj ceo dan" readOnly />
+              </label>
+              <label className={`${labelClass()} sm:col-span-2`}>Trajanje
+                <select className={fieldClass()} value={block.rangeMode} onChange={(event) => setBlock((current) => ({ ...current, rangeMode: event.target.value, endDate: event.target.value === "single" ? current.date : current.endDate }))}>
+                  <option value="single">Jedan dan</option>
+                  <option value="range">Interval od više dana</option>
                 </select>
               </label>
-              {block.type === "blocked_day" ? (
-                <label className={`${labelClass()} sm:col-span-2`}>Trajanje
-                  <select className={fieldClass()} value={block.rangeMode} onChange={(event) => setBlock((current) => ({ ...current, rangeMode: event.target.value, endDate: event.target.value === "single" ? current.date : current.endDate }))}>
-                    <option value="single">Jedan dan</option>
-                    <option value="range">Interval od više dana</option>
-                  </select>
-                </label>
-              ) : null}
               <label className={labelClass()}>Datum
                 <input className={fieldClass()} type="date" value={block.date} onChange={(event) => setBlock((current) => ({ ...current, date: event.target.value, endDate: current.rangeMode === "single" ? event.target.value : current.endDate }))} />
               </label>
-              {block.type === "blocked_day" && block.rangeMode === "range" ? (
+              {block.rangeMode === "range" ? (
                 <label className={labelClass()}>Do datuma
                   <input className={fieldClass()} type="date" value={block.endDate} onChange={(event) => setBlock((current) => ({ ...current, endDate: event.target.value }))} />
                 </label>
-              ) : null}
-              {block.type !== "blocked_day" ? (
-                <>
-                  <label className={labelClass()}>Od
-                    <input className={fieldClass()} type="time" value={block.startTime} onChange={(event) => setBlock((current) => ({ ...current, startTime: event.target.value }))} />
-                  </label>
-                  <label className={labelClass()}>Do
-                    <input className={fieldClass()} type="time" value={block.endTime} onChange={(event) => setBlock((current) => ({ ...current, endTime: event.target.value }))} />
-                  </label>
-                </>
               ) : null}
               <label className={`${labelClass()} sm:col-span-2`}>Razlog
                 <input className={fieldClass()} value={block.reason} onChange={(event) => setBlock((current) => ({ ...current, reason: event.target.value }))} />
