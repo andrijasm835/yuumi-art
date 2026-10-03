@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import type { CSSProperties } from "react";
 import Image from "next/image";
-import { galleryWorks } from "@/content/site";
+import { galleryWorks, makeupProps } from "@/content/site";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
@@ -33,6 +33,7 @@ export function SelectedWorkGallery() {
         gsap.set(works[0], { yPercent: 0, scale: 1, autoAlpha: 1 });
         gsap.set(".selected-work-number", { autoAlpha: 0, y: 12 });
         gsap.set(".selected-work-number-0", { autoAlpha: 1, y: 0 });
+        gsap.set(".selected-work-prop", { autoAlpha: 0.5 });
 
         const tl = gsap.timeline({
           scrollTrigger: {
@@ -52,7 +53,10 @@ export function SelectedWorkGallery() {
           tl.to(works[index - 1], { yPercent: -110, scale: 0.98, autoAlpha: 0.38, duration: 0.82, ease: "power1.inOut" }, at)
             .to(works[index], { yPercent: 0, scale: 1, autoAlpha: 1, duration: 0.82, ease: "power1.inOut" }, at)
             .to(`.selected-work-number-${index - 1}`, { autoAlpha: 0, y: -12, duration: 0.22 }, at)
-            .to(`.selected-work-number-${index}`, { autoAlpha: 1, y: 0, duration: 0.28 }, at + 0.18);
+            .to(`.selected-work-number-${index}`, { autoAlpha: 1, y: 0, duration: 0.28 }, at + 0.18)
+            .to(".selected-work-prop-brush", { x: index % 2 === 0 ? -18 : 16, y: index % 3 === 0 ? -10 : 14, rotate: index % 2 === 0 ? -31 : -18, duration: 0.82, ease: "power1.inOut" }, at)
+            .to(".selected-work-prop-compact", { x: index % 2 === 0 ? 16 : -14, y: index % 3 === 0 ? 14 : -8, rotate: index % 2 === 0 ? 8 : -7, duration: 0.82, ease: "power1.inOut" }, at)
+            .to(".selected-work-prop-lipstick", { x: index % 2 === 0 ? -10 : 14, y: index % 3 === 0 ? 8 : -14, rotate: index % 2 === 0 ? 23 : 34, duration: 0.82, ease: "power1.inOut" }, at);
         }
 
         tl.to(".selected-work-frame", { yPercent: -4, scale: 0.99, duration: 0.6, ease: "none" }, count - 1);
@@ -79,6 +83,34 @@ export function SelectedWorkGallery() {
               </p>
             ))}
           </div>
+        </div>
+
+        <div className="pointer-events-none absolute bottom-[11dvh] left-[7vw] h-[28dvh] w-[29vw] md:left-[6vw] md:w-[31vw] lg:bottom-[10vh] lg:left-[8vw] lg:w-[27vw]">
+          <div className="absolute inset-x-[18%] bottom-[4%] h-8 rounded-full bg-black/20 blur-xl" />
+          <Image
+            src={makeupProps.brush}
+            alt=""
+            aria-hidden="true"
+            width={110}
+            height={260}
+            className="selected-work-prop selected-work-prop-brush absolute bottom-[2%] left-[4%] h-[23dvh] w-auto rotate-[-24deg] opacity-50 drop-shadow-2xl lg:h-[25vh]"
+          />
+          <Image
+            src={makeupProps.compact}
+            alt=""
+            aria-hidden="true"
+            width={170}
+            height={170}
+            className="selected-work-prop selected-work-prop-compact absolute bottom-[18%] left-[34%] h-[12dvh] w-auto rotate-[4deg] opacity-42 drop-shadow-xl lg:h-[13vh]"
+          />
+          <Image
+            src={makeupProps.lipstick}
+            alt=""
+            aria-hidden="true"
+            width={95}
+            height={190}
+            className="selected-work-prop selected-work-prop-lipstick absolute bottom-[6%] right-[6%] h-[17dvh] w-auto rotate-[28deg] opacity-54 drop-shadow-2xl lg:h-[19vh]"
+          />
         </div>
 
         <div className="selected-work-frame absolute right-[5vw] top-1/2 h-[78dvh] w-[54vw] -translate-y-1/2 overflow-hidden md:right-[4vw] md:h-[74dvh] md:w-[61vw] lg:right-[7vw] lg:h-[82vh] lg:w-[48vw]">
