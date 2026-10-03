@@ -94,7 +94,10 @@ export function TransformationScene() {
           },
         });
 
-        entrance.fromTo(".transformation-frame", { opacity: 0.78 }, { opacity: 1, ease: "none" }, 0);
+        entrance
+          .fromTo(".transformation-frame", { opacity: 0.72 }, { opacity: 1, ease: "none" }, 0)
+          .fromTo(".transformation-stage-image-0", { autoAlpha: 0, scale: 1.035 }, { autoAlpha: 1, scale: 1, ease: "none" }, 0)
+          .fromTo(".transformation-enter", { opacity: 0.68 }, { opacity: 0.18, ease: "none" }, 0);
 
         const showCopy = (index: number, at: number) => {
           tl.to(".stage-copy", { autoAlpha: 0, y: -22, duration: 0.16 }, at - 0.02)
@@ -107,7 +110,7 @@ export function TransformationScene() {
           .set(".transformation-stage-image", { autoAlpha: 0 })
           .set(".transformation-stage-image-0", { autoAlpha: 1 })
           .set(".transformation-prop", { autoAlpha: 1 })
-          .fromTo(".transformation-enter", { opacity: 0.5 }, { opacity: 0, duration: 0.34 }, 0);
+          .fromTo(".transformation-enter", { opacity: 0.18 }, { opacity: 0, duration: 0.34 }, 0);
 
         showCopy(0, 0.08);
         tl.to(".stage-copy-0", { autoAlpha: 0, y: -24, duration: 0.18 }, 0.86);
