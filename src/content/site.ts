@@ -31,26 +31,45 @@ export const makeupProps = {
 
 export const detailImages = {
   lips: {
-    src: "/yummi/details-1.jpg",
-    alt: "Tamni editorial makeup portret sa bisernom ogrlicom",
-    position: { desktop: "52% 38%", mobile: "52% 34%" },
+    src: "/yummi/new/yuumi-work-03-gold-earring.jpg",
+    alt: "Dramatičan Yuumi Art makeup portret sa zlatnom minđušom",
+    position: { desktop: "52% 32%", mobile: "52% 30%" },
   },
   eye: {
-    src: "/yummi/details-2.jpg",
-    alt: "Beauty portret sa crvenim noktima i naglašenim očima",
-    position: { desktop: "50% 42%", mobile: "48% 38%" },
+    src: "/yummi/new/yuumi-work-04-sunlight-wet-hair.jpg",
+    alt: "Sunčani beauty portret sa sjajem kože i naglašenim očima",
+    position: { desktop: "50% 38%", mobile: "51% 36%" },
   },
   texture: {
-    src: "/yummi/details-3.jpg",
-    alt: "Tamni editorial portret sa crnom rukavicom",
-    position: { desktop: "48% 38%", mobile: "47% 35%" },
+    src: "/yummi/new/yuumi-work-09-sunlit-bun.jpg",
+    alt: "Yuumi Art portret sa punđom i toplim sunčevim svetlom",
+    position: { desktop: "50% 31%", mobile: "50% 28%" },
   },
 };
 
 export const transformation = {
-  image: "/yummi/professional-makeup.jpg",
-  alt: "Realni Yuumi Art makeup portret sa naglašenim očima, ujednačenim tenom i definisanim usnama",
-  position: { desktop: "52% 36%", mobile: "54% 34%" },
+  stages: [
+    {
+      src: "/yummi/new/yuumi-work-07-clean-glam.jpg",
+      alt: "Čist Yuumi Art glam makeup sa belim topom",
+      position: { desktop: "50% 34%", mobile: "50% 31%" },
+    },
+    {
+      src: "/yummi/new/yuumi-work-01-blue-eyeshadow.jpg",
+      alt: "Yuumi Art close-up sa plavom senkom i naglašenim očima",
+      position: { desktop: "50% 31%", mobile: "50% 29%" },
+    },
+    {
+      src: "/yummi/new/yuumi-work-05-soft-glam-bun.jpg",
+      alt: "Soft glam makeup portret sa punđom u studiju",
+      position: { desktop: "50% 35%", mobile: "50% 32%" },
+    },
+    {
+      src: "/yummi/new/yuumi-work-06-editorial-fur.jpg",
+      alt: "Finalni editorial Yuumi Art look sa mokrom kosom i fur stylingom",
+      position: { desktop: "50% 35%", mobile: "50% 33%" },
+    },
+  ],
 };
 
 export const artist = {
@@ -67,9 +86,9 @@ export const artist = {
 };
 
 export const booking = {
-  reflection: "/yummi/booking.jpg",
-  reflectionAlt: "Tamni editorial makeup portret u ogledalu",
-  position: { desktop: "48% 34%", mobile: "48% 30%" },
+  reflection: "/yummi/new/yuumi-work-07-clean-glam.jpg",
+  reflectionAlt: "Čist Yuumi Art glam portret u ogledalu",
+  position: { desktop: "50% 34%", mobile: "50% 31%" },
 };
 
 export const servicesAndEducation = [

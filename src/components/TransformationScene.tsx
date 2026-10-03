@@ -104,6 +104,8 @@ export function TransformationScene() {
         tl.set(".stage-copy", { autoAlpha: 0, y: 20 })
           .set(".final-shimmer", { autoAlpha: 0 })
           .set(".transformation-photo", camera.ten)
+          .set(".transformation-stage-image", { autoAlpha: 0 })
+          .set(".transformation-stage-image-0", { autoAlpha: 1 })
           .set(".transformation-prop", { autoAlpha: 1 })
           .fromTo(".transformation-enter", { opacity: 0.5 }, { opacity: 0, duration: 0.34 }, 0);
 
@@ -112,14 +114,20 @@ export function TransformationScene() {
 
         showCopy(1, 1.02);
         tl.to(".transformation-photo", { ...camera.eyes, duration: 0.58, ease: "power1.inOut" }, 0.92)
+          .to(".transformation-stage-image-1", { autoAlpha: 1, duration: 0.38, ease: "power1.inOut" }, 0.98)
+          .to(".transformation-stage-image-0", { autoAlpha: 0, duration: 0.3, ease: "power1.inOut" }, 1.1)
           .to(".stage-copy-1", { autoAlpha: 0, y: -24, duration: 0.18 }, 1.82);
 
         showCopy(2, 2.02);
         tl.to(".transformation-photo", { ...camera.color, duration: 0.58, ease: "power1.inOut" }, 1.92)
+          .to(".transformation-stage-image-2", { autoAlpha: 1, duration: 0.38, ease: "power1.inOut" }, 1.98)
+          .to(".transformation-stage-image-1", { autoAlpha: 0, duration: 0.3, ease: "power1.inOut" }, 2.1)
           .to(".stage-copy-2", { autoAlpha: 0, y: -24, duration: 0.18 }, 2.82);
 
         showCopy(3, 3.02);
         tl.to(".transformation-photo", { ...camera.final, duration: 0.58, ease: "power1.inOut" }, 2.92)
+          .to(".transformation-stage-image-3", { autoAlpha: 1, duration: 0.38, ease: "power1.inOut" }, 2.98)
+          .to(".transformation-stage-image-2", { autoAlpha: 0, duration: 0.3, ease: "power1.inOut" }, 3.1)
           .to(".final-shimmer", { autoAlpha: 0.55, xPercent: 140, duration: 0.45 }, 3.18)
           .to(".final-shimmer", { autoAlpha: 0, duration: 0.14 }, 3.62);
 
@@ -177,16 +185,21 @@ export function TransformationScene() {
           className="transformation-prop transformation-mascara pointer-events-none absolute right-[26vw] top-[9dvh] z-10 hidden h-[27dvh] w-auto rotate-[-34deg] opacity-30 md:block lg:right-[35vw] lg:top-[7vh] lg:h-[32vh]"
         />
         <div className="transformation-frame absolute left-1/2 top-[7dvh] z-20 h-[72dvh] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[11dvh] md:h-[78dvh] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
-          <Image
-            src={transformation.image}
-            alt={transformation.alt}
-            fill
-            priority
-            quality={92}
-            sizes="(max-width: 767px) 92vw, (max-width: 1023px) 82vw, 68vw"
-            className="responsive-image transformation-photo h-full w-full object-cover will-change-transform"
-            style={imagePositionStyle(transformation.position)}
-          />
+          <div className="transformation-photo absolute inset-0 will-change-transform">
+            {transformation.stages.map((stage, index) => (
+              <Image
+                src={stage.src}
+                alt={stage.alt}
+                fill
+                priority={index === 0}
+                quality={92}
+                sizes="(max-width: 767px) 92vw, (max-width: 1023px) 82vw, 68vw"
+                className={`responsive-image transformation-stage-image transformation-stage-image-${index} h-full w-full object-cover ${index === 0 ? "opacity-100" : "opacity-0"}`}
+                key={stage.src}
+                style={imagePositionStyle(stage.position)}
+              />
+            ))}
+          </div>
           <div className="final-shimmer pointer-events-none absolute inset-y-0 left-[-22%] w-[18%] bg-[linear-gradient(100deg,transparent,rgba(255,248,239,0.16),transparent)] opacity-0 mix-blend-screen" />
         </div>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[42dvh] bg-gradient-to-t from-[#160f0c]/78 via-[#160f0c]/24 to-transparent md:hidden" />
