@@ -18,7 +18,7 @@ const bodoni = Bodoni_Moda({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : new URL("https://yuumi-art.rs");
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ? new URL(process.env.NEXT_PUBLIC_SITE_URL) : new URL("https://www.yuumiart.com");
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,

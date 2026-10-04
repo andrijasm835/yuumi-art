@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BookingService } from "@/lib/booking/types";
 import { addDays, belgradeDate } from "@/lib/booking/time";
@@ -10,6 +11,27 @@ type Step = number;
 type BookingModalProps = {
   open: boolean;
   onClose: () => void;
+};
+
+const detailFields: Array<{
+  key: keyof BookingDetails;
+  label: string;
+  type: string;
+  autoComplete: string;
+  inputMode?: "email" | "tel";
+}> = [
+  { key: "fullName", label: "Ime i prezime *", type: "text", autoComplete: "name" },
+  { key: "phone", label: "Telefon", type: "tel", autoComplete: "tel", inputMode: "tel" },
+  { key: "email", label: "Email *", type: "email", autoComplete: "email", inputMode: "email" },
+  { key: "instagram", label: "Instagram", type: "text", autoComplete: "off" },
+];
+
+type BookingDetails = {
+  fullName: string;
+  phone: string;
+  email: string;
+  instagram: string;
+  note: string;
 };
 
 function nextDays(count = 45) {
@@ -50,7 +72,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<{ service: string; date?: string; time?: string; duration?: string; mode: "appointment" | "inquiry" } | null>(null);
-  const [details, setDetails] = useState({ fullName: "", phone: "", email: "", instagram: "", note: "" });
+  const [details, setDetails] = useState<BookingDetails>({ fullName: "", phone: "", email: "", instagram: "", note: "" });
 
   const selectedService = services.find((service) => service.id === serviceId);
   const isInquiry = selectedService?.schedulingMode === "inquiry";
@@ -199,6 +221,8 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
         mode: isInquiry ? "inquiry" : "appointment",
       });
       setStep(activeSteps.length - 1);
+    } catch {
+      setError("Došlo je do problema sa mrežom. Pokušaj ponovo.");
     } finally {
       setSubmitting(false);
     }
@@ -335,17 +359,15 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
 
             {currentStep === "PODACI" ? (
               <div className="grid min-w-0 max-w-full gap-5 md:grid-cols-2">
-                {[
-                  ["fullName", "Ime i prezime *"],
-                  ["phone", "Telefon"],
-                  ["email", "Email *"],
-                  ["instagram", "Instagram"],
-                ].map(([key, label]) => (
+                {detailFields.map(({ key, label, type, autoComplete, inputMode }) => (
                   <label className="grid min-w-0 gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]" key={key}>
                     {label}
                     <input
+                      type={type}
+                      autoComplete={autoComplete}
+                      inputMode={inputMode}
                       className="min-w-0 w-full border border-[#d8bd80]/45 bg-[#fffaf4] px-4 py-4 text-base font-normal tracking-normal text-[#241916] outline-none transition focus:border-[#6f1d2a] focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
-                      value={details[key as keyof typeof details]}
+                      value={details[key]}
                       onChange={(event) => setDetails((current) => ({ ...current, [key]: event.target.value }))}
                     />
                   </label>
@@ -396,20 +418,30 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
         </div>
 
         {currentStep !== "POTVRDA" ? (
-          <div className="flex shrink-0 justify-between border-t border-[#d8bd80]/35 bg-[#fff7ef] px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 md:px-8 md:py-4">
-            <button className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/35 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1))}>
-              NAZAD
-            </button>
-            <button
-              className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/40 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
-              disabled={!canContinue || submitting}
-              onClick={() => {
-                if (currentStep === "PODACI") void submit();
-                else setStep((current) => Math.min(activeSteps.length - 1, current + 1));
-              }}
-            >
-              {currentStep === "PODACI" ? (submitting ? "SLANJE..." : "POŠALJI ZAHTEV") : "DALJE"}
-            </button>
+          <div className="grid shrink-0 gap-3 border-t border-[#d8bd80]/35 bg-[#fff7ef] px-5 pb-[calc(env(safe-area-inset-bottom)+1rem)] pt-4 md:px-8 md:py-4">
+            {currentStep === "PODACI" ? (
+              <p className="text-xs leading-5 text-[#8f6d5a]">
+                Slanjem zahteva prihvataš da Yuumi Art koristi navedene podatke isključivo radi obrade rezervacije.{" "}
+                <Link className="font-bold text-[#6f1d2a] underline decoration-[#d8bd80] underline-offset-4" href="/privacy">
+                  Politika privatnosti
+                </Link>
+              </p>
+            ) : null}
+            <div className="flex justify-between">
+              <button className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/35 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1))}>
+                NAZAD
+              </button>
+              <button
+                className="text-xs font-bold tracking-[0.22em] text-[#6f1d2a] outline-none disabled:text-[#8f6d5a]/40 focus-visible:ring-2 focus-visible:ring-[#6f1d2a]"
+                disabled={!canContinue || submitting}
+                onClick={() => {
+                  if (currentStep === "PODACI") void submit();
+                  else setStep((current) => Math.min(activeSteps.length - 1, current + 1));
+                }}
+              >
+                {currentStep === "PODACI" ? (submitting ? "SLANJE..." : "POŠALJI ZAHTEV") : "DALJE"}
+              </button>
+            </div>
           </div>
         ) : null}
       </div>
