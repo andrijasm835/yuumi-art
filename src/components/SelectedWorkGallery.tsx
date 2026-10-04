@@ -14,14 +14,23 @@ function imagePositionStyle(position: { desktop: string; mobile: string }) {
   } as CSSProperties;
 }
 
+const warmedGalleryImages = new Set<number>();
+
 function decodeGalleryImage(index: number) {
   const work = galleryWorks[index];
   if (!work || typeof window === "undefined") return;
+  if (warmedGalleryImages.has(index)) return;
 
-  const image = new window.Image();
-  image.decoding = "async";
-  image.src = work.src;
-  void image.decode?.().catch(() => undefined);
+  warmedGalleryImages.add(index);
+
+  try {
+    const image = new window.Image();
+    image.decoding = "async";
+    image.src = work.src;
+    void image.decode?.().catch(() => undefined);
+  } catch {
+    warmedGalleryImages.delete(index);
+  }
 }
 
 export function SelectedWorkGallery() {
