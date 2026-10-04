@@ -68,10 +68,22 @@ export function SmoothScroll() {
       if (widthDelta > 0 || heightDelta > 0) refresh();
     };
 
+    const refreshAfterTabRestore = () => {
+      if (document.visibilityState !== "visible") return;
+      window.setTimeout(() => {
+        viewportWidth = window.innerWidth;
+        viewportHeight = window.innerHeight;
+        orientation = window.screen.orientation?.type ?? `${window.innerWidth > window.innerHeight ? "landscape" : "portrait"}`;
+        setStableSceneHeight();
+        refresh();
+      }, 180);
+    };
+
     setStableSceneHeight();
     window.addEventListener("orientationchange", refreshForOrientation);
     window.addEventListener("resize", refreshForResize);
     window.addEventListener("load", refreshAfterReady);
+    document.addEventListener("visibilitychange", refreshAfterTabRestore);
     document.fonts?.ready.then(refreshAfterReady).catch(() => undefined);
 
     if (prefersReducedMotion || useNativeScroll) {
@@ -81,6 +93,7 @@ export function SmoothScroll() {
         window.removeEventListener("orientationchange", refreshForOrientation);
         window.removeEventListener("resize", refreshForResize);
         window.removeEventListener("load", refreshAfterReady);
+        document.removeEventListener("visibilitychange", refreshAfterTabRestore);
       };
     }
 
@@ -102,6 +115,7 @@ export function SmoothScroll() {
       window.removeEventListener("resize", refreshForResize);
       window.removeEventListener("orientationchange", refreshForOrientation);
       window.removeEventListener("load", refreshAfterReady);
+      document.removeEventListener("visibilitychange", refreshAfterTabRestore);
       gsap.ticker.remove(update);
       lenis.destroy();
       if (window.__yummiLenis === lenis) delete window.__yummiLenis;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import { galleryWorks, makeupProps } from "@/content/site";
@@ -14,8 +14,34 @@ function imagePositionStyle(position: { desktop: string; mobile: string }) {
   } as CSSProperties;
 }
 
+function decodeGalleryImage(index: number) {
+  const work = galleryWorks[index];
+  if (!work || typeof window === "undefined") return;
+
+  const image = new window.Image();
+  image.decoding = "async";
+  image.src = work.src;
+  void image.decode?.().catch(() => undefined);
+}
+
 export function SelectedWorkGallery() {
   const scope = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+
+    const warmUpcomingImages = () => {
+      decodeGalleryImage(1);
+      decodeGalleryImage(2);
+    };
+    const idleId = window.requestIdleCallback ? window.requestIdleCallback(warmUpcomingImages, { timeout: 1400 }) : undefined;
+    const timer = idleId ? undefined : window.setTimeout(warmUpcomingImages, 700);
+
+    return () => {
+      if (idleId) window.cancelIdleCallback?.(idleId);
+      if (timer) window.clearTimeout(timer);
+    };
+  }, []);
 
   useGsapScene(scope, () => {
     const mm = gsap.matchMedia();
@@ -48,6 +74,11 @@ export function SelectedWorkGallery() {
               pin: true,
               anticipatePin: 1,
               invalidateOnRefresh: true,
+              onUpdate: (self) => {
+                const nextIndex = Math.min(mobileCount - 1, Math.floor(self.progress * (mobileCount - 1)) + 1);
+                decodeGalleryImage(nextIndex);
+                decodeGalleryImage(nextIndex + 1);
+              },
             },
           });
 
