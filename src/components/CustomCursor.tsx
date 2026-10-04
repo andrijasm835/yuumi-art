@@ -53,7 +53,7 @@ export function CustomCursor() {
   return (
     <div
       ref={cursor}
-      className="pointer-events-none fixed left-0 top-0 z-[100] hidden h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#2b211d]/30 bg-[#fffaf5]/20 text-[8px] font-bold tracking-[0.18em] text-[#2b211d] mix-blend-multiply backdrop-blur-sm md:flex"
+      className="custom-cursor pointer-events-none fixed left-0 top-0 z-[100] h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#2b211d]/30 bg-[#fffaf5]/20 text-[8px] font-bold tracking-[0.18em] text-[#2b211d] mix-blend-multiply backdrop-blur-sm"
     >
       {label}
     </div>

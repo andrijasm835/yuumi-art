@@ -16,7 +16,7 @@ const localBusinessJsonLd = {
   name: "Yuumi Art",
   url: "https://www.yuumiart.com",
   image: "https://www.yuumiart.com/yummi/hero-yuumi-logo.jpg",
-  logo: "https://www.yuumiart.com/yummi/hero-logo-red.png",
+  logo: "https://www.yuumiart.com/yummi/brand-icon.jpg",
   description:
     "Yuumi Art je makeup studio Adriane iz Lebana. Profesionalno šminkanje uz individualan pristup i fokus na prirodan, elegantan izgled.",
   address: {

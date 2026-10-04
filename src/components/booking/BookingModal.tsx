@@ -73,6 +73,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<{ service: string; date?: string; time?: string; duration?: string; mode: "appointment" | "inquiry" } | null>(null);
   const [details, setDetails] = useState<BookingDetails>({ fullName: "", phone: "", email: "", instagram: "", note: "" });
+  const [website, setWebsite] = useState("");
 
   const selectedService = services.find((service) => service.id === serviceId);
   const isInquiry = selectedService?.schedulingMode === "inquiry";
@@ -206,7 +207,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
       const response = await fetch("/api/booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(isInquiry ? { serviceId, ...details } : { serviceId, date, startTime, ...details }),
+        body: JSON.stringify(isInquiry ? { serviceId, website, ...details } : { serviceId, date, startTime, website, ...details }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -359,6 +360,18 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
 
             {currentStep === "PODACI" ? (
               <div className="grid min-w-0 max-w-full gap-5 md:grid-cols-2">
+                <div aria-hidden="true" className="absolute h-px w-px overflow-hidden opacity-0" inert>
+                  <label>
+                    Website
+                    <input
+                      tabIndex={-1}
+                      autoComplete="off"
+                      name="website"
+                      value={website}
+                      onChange={(event) => setWebsite(event.target.value)}
+                    />
+                  </label>
+                </div>
                 {detailFields.map(({ key, label, type, autoComplete, inputMode }) => (
                   <label className="grid min-w-0 gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]" key={key}>
                     {label}

@@ -48,9 +48,29 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="font-serif text-3xl text-[#6f1d2a]">Ispravka ili brisanje podataka</h2>
+            <h2 className="font-serif text-3xl text-[#6f1d2a]">Koliko dugo čuvamo podatke</h2>
             <p className="mt-3">
-              Možeš zatražiti ispravku ili brisanje svojih podataka kontaktiranjem Yuumi Art profila na Instagramu:
+              Podaci se čuvaju samo onoliko dugo koliko je razumno potrebno za obradu rezervacije ili upita, kao i za
+              administrativne ili zakonske potrebe.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-serif text-3xl text-[#6f1d2a]">Tvoja prava</h2>
+            <p className="mt-3">
+              Možeš zatražiti pristup svojim podacima, njihovu ispravku ili brisanje kontaktiranjem Yuumi Art profila na Instagramu:
+              {" "}
+              <a className="font-bold text-[#6f1d2a] underline decoration-[#d8bd80] underline-offset-4" href={brand.instagram}>
+                @yuumi__art
+              </a>
+              .
+            </p>
+          </section>
+
+          <section>
+            <h2 className="font-serif text-3xl text-[#6f1d2a]">Kontakt</h2>
+            <p className="mt-3">
+              Za pitanja o privatnosti ili podacima, kontakt je Yuumi Art Instagram profil:
               {" "}
               <a className="font-bold text-[#6f1d2a] underline decoration-[#d8bd80] underline-offset-4" href={brand.instagram}>
                 @yuumi__art
