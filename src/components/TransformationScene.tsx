@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { makeupProps, transformation } from "@/content/site";
-import { viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
 
 const makeupStages = [
   {
@@ -88,7 +88,7 @@ export function TransformationScene() {
             trigger: scope.current,
             start: "top top",
             end: isMobile ? viewportScrollDistance(3.8) : isTablet ? viewportScrollDistance(3.2, 0.9) : "+=360%",
-            scrub: 1.15,
+            scrub: isMobile ? MOBILE_SCRUB : 1.15,
             pin: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
@@ -151,7 +151,7 @@ export function TransformationScene() {
   });
 
   return (
-    <section className="scene-overlap relative h-[100dvh] overflow-hidden bg-[#201614] text-[#fff7ef] lg:h-screen" ref={scope}>
+    <section className="scene-overlap relative h-[var(--scene-vh)] overflow-hidden bg-[#201614] text-[#fff7ef] lg:h-screen" ref={scope}>
       <div className="camera absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_76%_34%,rgba(111,29,42,0.24),transparent_30%),linear-gradient(120deg,#160f0c_0%,#241613_46%,#17100e_100%)]">
         <div className="pointer-events-none absolute left-5 top-[calc(env(safe-area-inset-top)+1.35rem)] z-10 text-[10px] font-bold tracking-[0.38em] text-[#d8bd80]/55 md:left-10 md:top-[8vh] lg:left-12">
           YUUMI ART / MAKEUP STUDY / 01—04
@@ -170,7 +170,7 @@ export function TransformationScene() {
           aria-hidden="true"
           width={360}
           height={220}
-          className="transformation-prop transformation-palette pointer-events-none absolute left-[13vw] top-[16dvh] z-10 h-[9dvh] w-auto rotate-[10deg] opacity-35 md:left-[8vw] md:top-[18dvh] md:h-[12dvh] lg:left-[18vw] lg:top-[12vh] lg:h-[13vh]"
+          className="transformation-prop transformation-palette pointer-events-none absolute left-[13vw] top-[calc(var(--scene-vh)*0.16)] z-10 h-[calc(var(--scene-vh)*0.09)] w-auto rotate-[10deg] opacity-35 md:left-[8vw] md:top-[18dvh] md:h-[12dvh] lg:left-[18vw] lg:top-[12vh] lg:h-[13vh]"
         />
         <Image
           src={makeupProps.lipstick}
@@ -178,7 +178,7 @@ export function TransformationScene() {
           aria-hidden="true"
           width={180}
           height={360}
-          className="transformation-prop transformation-lipstick pointer-events-none absolute -right-[5vw] bottom-[10dvh] z-10 h-[20dvh] w-auto rotate-[18deg] opacity-55 md:-right-[3vw] md:bottom-[11dvh] md:h-[24dvh] lg:right-[2vw] lg:bottom-[7vh] lg:h-[28vh]"
+          className="transformation-prop transformation-lipstick pointer-events-none absolute -right-[5vw] bottom-[calc(var(--scene-vh)*0.1)] z-10 h-[calc(var(--scene-vh)*0.2)] w-auto rotate-[18deg] opacity-55 md:-right-[3vw] md:bottom-[11dvh] md:h-[24dvh] lg:right-[2vw] lg:bottom-[7vh] lg:h-[28vh]"
         />
         <Image
           src={makeupProps.mascara}
@@ -188,7 +188,7 @@ export function TransformationScene() {
           height={520}
           className="transformation-prop transformation-mascara pointer-events-none absolute right-[26vw] top-[9dvh] z-10 hidden h-[27dvh] w-auto rotate-[-34deg] opacity-30 md:block lg:right-[35vw] lg:top-[7vh] lg:h-[32vh]"
         />
-        <div className="transformation-frame absolute left-1/2 top-[7dvh] z-20 h-[72dvh] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[11dvh] md:h-[78dvh] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
+        <div className="transformation-frame absolute left-1/2 top-[calc(var(--scene-vh)*0.07)] z-20 h-[calc(var(--scene-vh)*0.72)] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[11dvh] md:h-[78dvh] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
           <div className="transformation-photo absolute inset-0 will-change-transform">
             {transformation.stages.map((stage, index) => (
               <Image
@@ -206,7 +206,7 @@ export function TransformationScene() {
           </div>
           <div className="final-shimmer pointer-events-none absolute inset-y-0 left-[-22%] w-[18%] bg-[linear-gradient(100deg,transparent,rgba(255,248,239,0.16),transparent)] opacity-0 mix-blend-screen" />
         </div>
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[42dvh] bg-gradient-to-t from-[#160f0c]/78 via-[#160f0c]/24 to-transparent md:hidden" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[calc(var(--scene-vh)*0.42)] bg-gradient-to-t from-[#160f0c]/78 via-[#160f0c]/24 to-transparent md:hidden" />
         <div className="pointer-events-none absolute inset-0 z-30 hidden bg-gradient-to-r from-[#160f0c]/86 via-[#160f0c]/20 to-[#160f0c]/12 md:block" />
       </div>
 

@@ -3,6 +3,7 @@
 :root {
   --background: #f7efe8;
   --foreground: #2b211d;
+  --scene-vh: 100svh;
 }
 
 @theme inline {
@@ -139,7 +140,17 @@ button:focus-visible {
 }
 
 @media (max-width: 767px) {
+  html {
+    scroll-behavior: auto;
+  }
+
   .looks-track {
     width: max-content;
+  }
+}
+
+@media (pointer: coarse) {
+  html {
+    scroll-behavior: auto;
   }
 }

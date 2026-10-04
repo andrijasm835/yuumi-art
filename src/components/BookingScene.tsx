@@ -5,7 +5,7 @@ import Image from "next/image";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { makeupProps } from "@/content/site";
-import { viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
 
 export function BookingScene() {
   const scope = useRef<HTMLElement>(null);
@@ -23,7 +23,7 @@ export function BookingScene() {
       (context) => {
         const isMobile = context.conditions?.mobile;
         const isTablet = context.conditions?.tablet;
-        gsap.set(".final-mirror", { scale: 0.82, opacity: 0.72, rotate: 0, filter: "blur(2px)" });
+        gsap.set(".final-mirror", { scale: 0.82, opacity: 0.72, rotate: 0, filter: isMobile ? "none" : "blur(2px)" });
         gsap.set(".booking-reflection", { opacity: 0, scale: 1.08 });
         gsap.set(".ready-top, .ready-bottom", { yPercent: 10, opacity: 0.76 });
 
@@ -47,13 +47,13 @@ export function BookingScene() {
               trigger: scope.current,
               start: "top 82%",
               end: viewportScrollDistance(1),
-              scrub: 0.8,
+              scrub: MOBILE_SCRUB,
               invalidateOnRefresh: true,
             },
           });
 
           mobileTl
-            .to(".final-mirror", { scale: 0.94, rotate: 0, filter: "blur(0px)" }, 0)
+            .to(".final-mirror", { scale: 0.94, rotate: 0 }, 0)
             .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1 }, 0.18)
             .to(".booking-reflection", { opacity: 0.72, scale: 1 }, 0.16)
             .fromTo(".booking-panel", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1 }, 0.32)
@@ -98,7 +98,7 @@ export function BookingScene() {
   });
 
   return (
-    <section id="book" ref={scope} className="relative h-[100dvh] overflow-hidden bg-[#1b1110] text-[#fff7ef] lg:h-screen">
+    <section id="book" ref={scope} className="relative h-[var(--scene-vh)] overflow-hidden bg-[#1b1110] text-[#fff7ef] lg:h-screen">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(244,226,198,0.16),transparent_34%),radial-gradient(circle_at_20%_20%,rgba(111,29,42,0.35),transparent_30%)]" />
       <Image
         src={makeupProps.lipstick}

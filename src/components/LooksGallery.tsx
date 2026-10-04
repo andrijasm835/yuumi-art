@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { servicesAndEducation } from "@/content/site";
-import { viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -81,7 +81,7 @@ export function LooksGallery() {
             trigger: scope.current,
             start: "top top",
             end: isMobile ? viewportScrollDistance(3.6) : isTablet ? viewportScrollDistance(3.2, 0.9) : "+=340%",
-            scrub: 1,
+            scrub: isMobile ? MOBILE_SCRUB : 1,
             pin: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
@@ -101,7 +101,7 @@ export function LooksGallery() {
           .to(track, { x: () => -distance(), ease: "none", duration: 3 }, 0)
           .to(".look-image:not(.no-service-zoom)", { scale: isMobile ? 1.01 : isTablet ? 1.025 : 1.055, xPercent: isMobile ? -0.25 : isTablet ? -0.75 : -1.5, stagger: 0.06, duration: 3 }, 0)
           .to(scope.current, { backgroundColor: "#211714", ease: "none", duration: 0.78 }, 2.36)
-          .to(".service-final-image", { scale: isMobile ? 1.018 : isTablet ? 1.04 : 1.09, xPercent: isMobile ? -0.25 : isTablet ? -0.75 : -1.5, yPercent: isMobile ? 0.25 : isTablet ? 0.5 : 1, filter: isMobile ? "contrast(1.01)" : "contrast(1.03) saturate(1.03)", duration: 0.82 }, 2.38);
+          .to(".service-final-image", { scale: isMobile ? 1.018 : isTablet ? 1.04 : 1.09, xPercent: isMobile ? -0.25 : isTablet ? -0.75 : -1.5, yPercent: isMobile ? 0.25 : isTablet ? 0.5 : 1, filter: isMobile ? "none" : "contrast(1.03) saturate(1.03)", duration: 0.82 }, 2.38);
 
         return () => {
           entrance.kill();
@@ -114,7 +114,7 @@ export function LooksGallery() {
   });
 
   return (
-    <section id="work" ref={scope} className="relative h-[100dvh] overflow-hidden bg-[#f5eadf] text-[#241916] lg:h-screen">
+    <section id="work" ref={scope} className="relative h-[var(--scene-vh)] overflow-hidden bg-[#f5eadf] text-[#241916] lg:h-screen">
       <div className="absolute left-5 top-[calc(env(safe-area-inset-top)+1.5rem)] z-20 text-xs font-bold tracking-[0.32em] text-[#7f665a] md:left-8 lg:left-12">
         USLUGE & EDUKACIJE
       </div>

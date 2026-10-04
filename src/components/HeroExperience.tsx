@@ -4,7 +4,7 @@ import { useRef } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { hero } from "@/content/site";
-import { viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
 
 export function HeroExperience() {
   const scope = useRef<HTMLElement>(null);
@@ -63,7 +63,7 @@ export function HeroExperience() {
               : isTablet
                 ? viewportScrollDistance(1.7, 0.9)
                 : "+=240%",
-            scrub: 1,
+            scrub: isMobile ? MOBILE_SCRUB : 1,
             pin: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
@@ -113,7 +113,7 @@ export function HeroExperience() {
     <section
       ref={scope}
       id="top"
-      className="hero-experience relative h-[100dvh] overflow-hidden bg-[#eee8dc] text-[#241916]"
+      className="hero-experience relative h-[var(--scene-vh)] overflow-hidden bg-[#eee8dc] text-[#241916] lg:h-screen"
     >
       {/* FULLSCREEN FUR BACKGROUND */}
       <Image

@@ -13,16 +13,64 @@ declare global {
 export function SmoothScroll() {
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const useNativeScroll = window.matchMedia("(pointer: coarse)").matches || window.matchMedia("(max-width: 767px)").matches;
+    const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+    const useNativeScroll = coarsePointer || window.matchMedia("(max-width: 767px)").matches;
+    let viewportWidth = window.innerWidth;
+    let viewportHeight = window.innerHeight;
+    let orientation = window.screen.orientation?.type ?? `${window.innerWidth > window.innerHeight ? "landscape" : "portrait"}`;
     let refreshTimer: number | undefined;
+
+    const setStableSceneHeight = () => {
+      document.documentElement.style.setProperty("--scene-vh", `${window.innerHeight}px`);
+    };
+
     const refresh = () => {
       window.clearTimeout(refreshTimer);
       refreshTimer = window.setTimeout(() => ScrollTrigger.refresh(), 140);
     };
-    const refreshAfterReady = () => window.setTimeout(refresh, 80);
+    const refreshAfterReady = () => window.setTimeout(() => {
+      setStableSceneHeight();
+      refresh();
+    }, 80);
 
-    window.addEventListener("orientationchange", refresh);
-    window.addEventListener("resize", refresh);
+    const refreshForOrientation = () => {
+      window.setTimeout(() => {
+        viewportWidth = window.innerWidth;
+        viewportHeight = window.innerHeight;
+        orientation = window.screen.orientation?.type ?? `${window.innerWidth > window.innerHeight ? "landscape" : "portrait"}`;
+        setStableSceneHeight();
+        refresh();
+      }, 220);
+    };
+
+    const refreshForResize = () => {
+      const nextWidth = window.innerWidth;
+      const nextHeight = window.innerHeight;
+      const nextOrientation = window.screen.orientation?.type ?? `${nextWidth > nextHeight ? "landscape" : "portrait"}`;
+      const widthDelta = Math.abs(nextWidth - viewportWidth);
+      const heightDelta = Math.abs(nextHeight - viewportHeight);
+      const orientationChanged = nextOrientation !== orientation;
+
+      if (useNativeScroll) {
+        if (orientationChanged || widthDelta >= 24) {
+          viewportWidth = nextWidth;
+          viewportHeight = nextHeight;
+          orientation = nextOrientation;
+          setStableSceneHeight();
+          refresh();
+        }
+        return;
+      }
+
+      viewportWidth = nextWidth;
+      viewportHeight = nextHeight;
+      orientation = nextOrientation;
+      if (widthDelta > 0 || heightDelta > 0) refresh();
+    };
+
+    setStableSceneHeight();
+    window.addEventListener("orientationchange", refreshForOrientation);
+    window.addEventListener("resize", refreshForResize);
     window.addEventListener("load", refreshAfterReady);
     document.fonts?.ready.then(refreshAfterReady).catch(() => undefined);
 
@@ -30,8 +78,8 @@ export function SmoothScroll() {
       if (window.__yummiLenis) delete window.__yummiLenis;
       return () => {
         window.clearTimeout(refreshTimer);
-        window.removeEventListener("orientationchange", refresh);
-        window.removeEventListener("resize", refresh);
+        window.removeEventListener("orientationchange", refreshForOrientation);
+        window.removeEventListener("resize", refreshForResize);
         window.removeEventListener("load", refreshAfterReady);
       };
     }
@@ -51,8 +99,8 @@ export function SmoothScroll() {
 
     return () => {
       window.clearTimeout(refreshTimer);
-      window.removeEventListener("resize", refresh);
-      window.removeEventListener("orientationchange", refresh);
+      window.removeEventListener("resize", refreshForResize);
+      window.removeEventListener("orientationchange", refreshForOrientation);
       window.removeEventListener("load", refreshAfterReady);
       gsap.ticker.remove(update);
       lenis.destroy();

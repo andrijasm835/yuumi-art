@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { galleryWorks, makeupProps } from "@/content/site";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -34,7 +34,7 @@ export function SelectedWorkGallery() {
           const mobileWorks = gsap.utils.toArray<HTMLElement>(".selected-work-mobile-slide");
           const mobileCount = mobileWorks.length;
 
-          gsap.set(mobileWorks, { yPercent: 105, scale: 1.01, autoAlpha: 0 });
+          gsap.set(mobileWorks, { yPercent: 105, autoAlpha: 0, willChange: "transform, opacity" });
           gsap.set(mobileWorks[0], { yPercent: 0, scale: 1, autoAlpha: 1 });
           gsap.set(".selected-work-mobile-number", { autoAlpha: 0, y: 10 });
           gsap.set(".selected-work-mobile-number-0", { autoAlpha: 1, y: 0 });
@@ -44,7 +44,7 @@ export function SelectedWorkGallery() {
               trigger: scope.current,
               start: "top top",
               end: viewportScrollDistance(mobileCount - 1, 0.78),
-              scrub: 0.9,
+              scrub: MOBILE_SCRUB,
               pin: true,
               anticipatePin: 1,
               invalidateOnRefresh: true,
@@ -55,13 +55,16 @@ export function SelectedWorkGallery() {
             const at = index - 1;
 
             mobileTl
-              .to(mobileWorks[index - 1], { yPercent: -105, autoAlpha: 0.3, duration: 0.76, ease: "power1.inOut" }, at)
-              .to(mobileWorks[index], { yPercent: 0, scale: 1, autoAlpha: 1, duration: 0.76, ease: "power1.inOut" }, at)
+              .to(mobileWorks[index - 1], { yPercent: -105, autoAlpha: 0.28, duration: 0.76, ease: "power1.inOut" }, at)
+              .to(mobileWorks[index], { yPercent: 0, autoAlpha: 1, duration: 0.76, ease: "power1.inOut" }, at)
               .to(`.selected-work-mobile-number-${index - 1}`, { autoAlpha: 0, y: -10, duration: 0.2 }, at)
               .to(`.selected-work-mobile-number-${index}`, { autoAlpha: 1, y: 0, duration: 0.24 }, at + 0.16);
           }
 
-          return () => mobileTl.kill();
+          return () => {
+            gsap.set(mobileWorks, { clearProps: "willChange" });
+            mobileTl.kill();
+          };
         }
 
         const works = gsap.utils.toArray<HTMLElement>(".selected-work");
@@ -107,7 +110,7 @@ export function SelectedWorkGallery() {
   });
 
   return (
-    <section ref={scope} className="scene-overlap relative h-[100dvh] overflow-hidden bg-[#1b1110] text-[#fff7ef] lg:h-screen">
+    <section ref={scope} className="scene-overlap relative h-[var(--scene-vh)] overflow-hidden bg-[#1b1110] text-[#fff7ef] lg:h-screen">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,rgba(111,29,42,0.24),transparent_34%),radial-gradient(circle_at_12%_78%,rgba(216,189,128,0.14),transparent_32%),linear-gradient(120deg,#160f0c_0%,#241613_52%,#17100e_100%)]" />
 
       <div className="relative z-10 hidden h-full md:block">
@@ -174,7 +177,7 @@ export function SelectedWorkGallery() {
         <p className="text-[10px] font-bold tracking-[0.34em] text-[#d8bd80]/72">YUUMI ART / RADOVI</p>
         <h2 className="mt-3 font-serif text-[clamp(3.25rem,15vw,5.2rem)] leading-[0.82]">RADOVI</h2>
 
-        <div className="relative mt-5 h-[68dvh] w-full overflow-hidden">
+        <div className="relative mt-5 h-[calc(var(--scene-vh)*0.68)] w-full overflow-hidden">
           {galleryWorks.map((work, index) => (
             <figure className="selected-work-mobile-slide absolute inset-0" key={work.src}>
               <div className="relative h-full w-full overflow-hidden bg-[#2b211d]">
@@ -183,6 +186,7 @@ export function SelectedWorkGallery() {
                   alt={work.alt}
                   fill
                   priority={index === 0}
+                  loading={index === 0 ? undefined : "lazy"}
                   quality={90}
                   sizes="92vw"
                   className="responsive-image h-full w-full object-cover"

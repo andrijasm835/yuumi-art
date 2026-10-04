@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { artist, brand } from "@/content/site";
-import { viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -32,9 +32,9 @@ export function ArtistScene() {
         gsap.set(".artist-photo", {
           scale: isMobile ? 1.05 : 1.22,
           width: isMobile ? "92vw" : "100vw",
-          height: isMobile ? "54dvh" : "100dvh",
+          height: isMobile ? "calc(var(--scene-vh) * 0.54)" : "100dvh",
           x: isMobile ? "-2vw" : 0,
-          y: isMobile ? "2dvh" : 0,
+          y: isMobile ? "calc(var(--scene-vh) * 0.02)" : 0,
           opacity: isMobile ? 1 : 0.86,
         });
 
@@ -57,7 +57,7 @@ export function ArtistScene() {
               trigger: scope.current,
               start: "top top",
               end: viewportScrollDistance(1.15),
-              scrub: 0.9,
+              scrub: MOBILE_SCRUB,
               pin: true,
               anticipatePin: 1,
               invalidateOnRefresh: true,
@@ -65,7 +65,7 @@ export function ArtistScene() {
           });
 
           mobileIntro
-            .to(".artist-photo", { scale: 1, x: "-2vw", y: "0.5dvh", duration: 0.36, ease: "power1.out" }, 0)
+            .to(".artist-photo", { scale: 1, x: "-2vw", y: "calc(var(--scene-vh) * 0.005)", duration: 0.36, ease: "power1.out" }, 0)
             .fromTo(".artist-word-meet", { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0, duration: 0.28 }, 0.1)
             .fromTo(".artist-word-name", { opacity: 0, xPercent: 12 }, { opacity: 1, xPercent: 0, duration: 0.28 }, 0.24)
             .to(".artist-copy", { opacity: 1, y: 0, duration: 0.34 }, 0.42)
@@ -109,9 +109,9 @@ export function ArtistScene() {
   });
 
   return (
-    <section id="about" ref={scope} className="scene-overlap relative min-h-[100dvh] overflow-visible bg-[#f7efe8] text-[#241916] md:h-[100dvh] md:min-h-0 md:overflow-hidden lg:h-screen">
-      <div className="artist-mobile-visual relative min-h-[61dvh] overflow-hidden md:contents">
-        <div className="artist-photo absolute left-[4vw] top-[2dvh] h-[54dvh] w-[92vw] overflow-hidden md:left-0 md:top-0 md:h-[100dvh] md:w-screen lg:h-screen">
+    <section id="about" ref={scope} className="scene-overlap relative min-h-[var(--scene-vh)] overflow-visible bg-[#f7efe8] text-[#241916] md:h-[100dvh] md:min-h-0 md:overflow-hidden lg:h-screen">
+      <div className="artist-mobile-visual relative min-h-[calc(var(--scene-vh)*0.61)] overflow-hidden md:contents">
+        <div className="artist-photo absolute left-[4vw] top-[calc(var(--scene-vh)*0.02)] h-[calc(var(--scene-vh)*0.54)] w-[92vw] overflow-hidden will-change-transform md:left-0 md:top-0 md:h-[100dvh] md:w-screen lg:h-screen">
           <Image
             src={artist.image}
             alt={artist.alt}
@@ -126,7 +126,7 @@ export function ArtistScene() {
         <div className="artist-word-meet absolute left-[5vw] top-[calc(env(safe-area-inset-top)+0.9rem)] z-20 font-serif text-[clamp(3.1rem,12vw,5rem)] leading-[0.84] text-[#241916] mix-blend-multiply md:top-[9vh] md:text-[clamp(5rem,10vw,8.5rem)] lg:top-[10vh] lg:text-[clamp(5rem,12vw,12rem)] lg:leading-[0.78]">
           MEET
         </div>
-        <div className="artist-word-name absolute top-[50dvh] right-[5vw] z-20 font-serif text-[clamp(3.2rem,12.5vw,5.4rem)] leading-[0.84] text-[#6f1d2a] mix-blend-multiply md:top-auto md:bottom-[10vh] md:text-[clamp(5.5rem,10vw,9rem)] lg:bottom-[8vh] lg:text-[clamp(5.8rem,12vw,13rem)] lg:leading-[0.78]">
+        <div className="artist-word-name absolute top-[calc(var(--scene-vh)*0.5)] right-[5vw] z-20 font-serif text-[clamp(3.2rem,12.5vw,5.4rem)] leading-[0.84] text-[#6f1d2a] mix-blend-multiply md:top-auto md:bottom-[10vh] md:text-[clamp(5.5rem,10vw,9rem)] lg:bottom-[8vh] lg:text-[clamp(5.8rem,12vw,13rem)] lg:leading-[0.78]">
           {artist.name}
         </div>
       </div>

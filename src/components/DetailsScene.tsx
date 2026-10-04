@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { detailImages } from "@/content/site";
-import { viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
 
 const details = [detailImages.lips, detailImages.eye, detailImages.texture];
 
@@ -55,7 +55,7 @@ export function DetailsScene() {
             trigger: scope.current,
             start: "top top",
             end: isMobile ? viewportScrollDistance(2.8) : isTablet ? viewportScrollDistance(3.1, 0.9) : "+=320%",
-            scrub: 1.15,
+            scrub: isMobile ? MOBILE_SCRUB : 1.15,
             pin: true,
             anticipatePin: 1,
             invalidateOnRefresh: true,
@@ -74,12 +74,12 @@ export function DetailsScene() {
 
         tl.to(".detail-a", { xPercent: 0, yPercent: 0, clipPath: "inset(0 0% 0 0)" }, 0)
           .to(".details-word-one", { xPercent: isMobile ? -2 : isTablet ? -12 : -28, yPercent: isMobile ? -2 : isTablet ? -6 : -12 }, 0)
-          .fromTo(".detail-b", { xPercent: isMobile ? 12 : isTablet ? 34 : 58, yPercent: isMobile ? -6 : isTablet ? -14 : -26, clipPath: "polygon(0 0, 100% 0, 100% 0, 0 0)" }, { xPercent: 0, yPercent: 0, clipPath: "polygon(0 0, 100% 0, 88% 100%, 8% 100%)" }, 0.9)
+          .fromTo(".detail-b", { xPercent: isMobile ? 12 : isTablet ? 34 : 58, yPercent: isMobile ? -6 : isTablet ? -14 : -26, clipPath: isMobile ? "inset(0 0 100% 0)" : "polygon(0 0, 100% 0, 100% 0, 0 0)" }, { xPercent: 0, yPercent: 0, clipPath: isMobile ? "inset(0 0 0% 0)" : "polygon(0 0, 100% 0, 88% 100%, 8% 100%)" }, 0.9)
           .to(".details-word-two", { xPercent: isMobile ? 2 : isTablet ? 10 : 22, yPercent: isMobile ? 3 : isTablet ? 8 : 16, opacity: 0.42 }, 0.85)
-          .fromTo(".detail-c", { yPercent: isMobile ? 20 : isTablet ? 42 : 72, scale: 0.94, clipPath: "circle(0% at 50% 50%)" }, { yPercent: 0, scale: 1, clipPath: "circle(78% at 50% 50%)" }, 1.72)
+          .fromTo(".detail-c", { yPercent: isMobile ? 20 : isTablet ? 42 : 72, scale: 0.94, clipPath: isMobile ? "inset(100% 0 0 0)" : "circle(0% at 50% 50%)" }, { yPercent: 0, scale: 1, clipPath: isMobile ? "inset(0% 0 0 0)" : "circle(78% at 50% 50%)" }, 1.72)
           .to(".details-word-three", { xPercent: isMobile ? 0 : isTablet ? -3 : -8, yPercent: isMobile ? -8 : isTablet ? -18 : -34, opacity: 0.36 }, 1.7)
           .to(".detail-front", { opacity: 1, yPercent: isMobile ? -2 : -8 }, 1.95)
-          .to(".detail-img", { filter: isMobile ? "contrast(1.01)" : "contrast(1.04) saturate(1.03)", scale: isMobile ? 1.01 : isTablet ? 1.025 : 1.05 }, 2.05)
+          .to(".detail-img", { filter: isMobile ? "none" : "contrast(1.04) saturate(1.03)", scale: isMobile ? 1.01 : isTablet ? 1.025 : 1.05 }, 2.05)
           .to(".detail-c", { scale: isMobile ? 1.015 : isTablet ? 1.06 : 1.12, xPercent: isMobile ? 0 : isTablet ? -1 : -3, yPercent: isMobile ? -1 : isTablet ? -3 : -6 }, 2.45)
           .to(".details-light", { opacity: 1 }, 2.55);
 
@@ -94,7 +94,7 @@ export function DetailsScene() {
   });
 
   return (
-    <section ref={scope} className="relative h-[100dvh] overflow-hidden bg-[#211714] text-[#fff7ef] lg:h-screen">
+    <section ref={scope} className="relative h-[var(--scene-vh)] overflow-hidden bg-[#211714] text-[#fff7ef] lg:h-screen">
       <div className="details-entry absolute inset-0 bg-[radial-gradient(circle_at_78%_24%,rgba(118,29,42,0.32),transparent_34%),radial-gradient(circle_at_22%_72%,rgba(199,168,107,0.24),transparent_30%)]" />
       <div className="absolute inset-0 z-10 font-serif text-[clamp(3rem,12vw,6rem)] leading-[0.82] tracking-normal text-[#fff7ef]/24 md:text-[clamp(4.6rem,10vw,8rem)] lg:text-[clamp(3.8rem,16vw,12rem)] lg:leading-[0.78]">
         <span className="details-word-one absolute left-[6vw] top-[11svh] lg:top-[15vh]">BEAUTY</span>
@@ -102,13 +102,13 @@ export function DetailsScene() {
         <span className="details-word-three absolute bottom-[12svh] left-[8vw] max-w-[86vw] lg:bottom-[10vh] lg:left-[18vw]">THE DETAILS.</span>
       </div>
       <div className="absolute inset-0 z-20">
-        <div className="detail-a absolute left-[4vw] top-[15dvh] h-[29dvh] w-[68vw] overflow-hidden md:left-[5vw] md:top-[14svh] md:h-[34svh] md:w-[54vw] lg:top-[12vh] lg:h-[38vh] lg:w-[42vw] lg:min-w-64">
+        <div className="detail-a absolute left-[4vw] top-[calc(var(--scene-vh)*0.15)] h-[calc(var(--scene-vh)*0.29)] w-[68vw] overflow-hidden md:left-[5vw] md:top-[14svh] md:h-[34svh] md:w-[54vw] lg:top-[12vh] lg:h-[38vh] lg:w-[42vw] lg:min-w-64">
           <Image src={details[0].src} alt={details[0].alt} fill sizes="34vw" className="responsive-image detail-img h-full w-full object-cover" style={imagePositionStyle(details[0].position)} />
         </div>
-        <div className="detail-b absolute right-[4vw] top-[31dvh] h-[38dvh] w-[48vw] overflow-hidden md:right-[7vw] md:top-[10svh] md:h-[52svh] md:w-[34vw] lg:top-[5vh] lg:h-[64vh] lg:w-[28vw] lg:min-w-64">
+        <div className="detail-b absolute right-[4vw] top-[calc(var(--scene-vh)*0.31)] h-[calc(var(--scene-vh)*0.38)] w-[48vw] overflow-hidden md:right-[7vw] md:top-[10svh] md:h-[52svh] md:w-[34vw] lg:top-[5vh] lg:h-[64vh] lg:w-[28vw] lg:min-w-64">
           <Image src={details[1].src} alt={details[1].alt} fill sizes="30vw" className="responsive-image detail-img h-full w-full object-cover" style={imagePositionStyle(details[1].position)} />
         </div>
-        <div className="detail-c absolute bottom-[7dvh] left-[15vw] h-[32dvh] w-[72vw] overflow-hidden md:bottom-[8svh] md:left-[26vw] md:h-[34svh] md:w-[42vw] lg:bottom-[7vh] lg:left-[31vw] lg:h-[42vh] lg:w-[34vw] lg:min-w-72">
+        <div className="detail-c absolute bottom-[calc(var(--scene-vh)*0.07)] left-[15vw] h-[calc(var(--scene-vh)*0.32)] w-[72vw] overflow-hidden md:bottom-[8svh] md:left-[26vw] md:h-[34svh] md:w-[42vw] lg:bottom-[7vh] lg:left-[31vw] lg:h-[42vh] lg:w-[34vw] lg:min-w-72">
           <Image src={details[2].src} alt={details[2].alt} fill sizes="30vw" className="responsive-image detail-img h-full w-full object-cover" style={imagePositionStyle(details[2].position)} />
         </div>
       </div>
