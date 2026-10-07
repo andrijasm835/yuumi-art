@@ -626,7 +626,7 @@ export function AdminDashboard() {
               <label className={labelClass()}>Telefon
                 <input className={fieldClass()} value={manual.phone} onChange={(event) => setManual((current) => ({ ...current, phone: event.target.value }))} />
               </label>
-              <label className={labelClass()}>Email *
+              <label className={labelClass()}>Email
                 <input className={fieldClass()} value={manual.email} onChange={(event) => setManual((current) => ({ ...current, email: event.target.value }))} />
               </label>
             </div>

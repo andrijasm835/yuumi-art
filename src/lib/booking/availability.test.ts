@@ -157,3 +157,12 @@ test("customer validation requires email and keeps phone optional", () => {
   });
   assert.equal(Object.values(errors).some(Boolean), false);
 });
+
+test("customer validation can allow missing email for manual admin bookings", () => {
+  const errors = validateCustomerDetails({
+    fullName: "Ana Markovic",
+    phone: "",
+    email: "",
+  }, { requireEmail: false });
+  assert.equal(Object.values(errors).some(Boolean), false);
+});

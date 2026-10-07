@@ -30,10 +30,11 @@ export async function POST(request: Request) {
       date: String(body.date ?? ""),
       startTime: String(body.startTime ?? ""),
       status: "confirmed",
+      requireCustomerEmail: false,
       customer: {
-        fullName: String(body.fullName ?? "Manual booking"),
+        fullName: String(body.fullName || "Manual booking"),
         phone: body.phone ? String(body.phone) : "",
-        email: String(body.email ?? ""),
+        email: body.email ? String(body.email) : "",
         instagram: body.instagram ? String(body.instagram) : "",
         note: body.note ? String(body.note) : "",
       },

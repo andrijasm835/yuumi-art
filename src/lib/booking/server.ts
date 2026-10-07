@@ -80,13 +80,14 @@ export async function createBookingRequest(input: {
   startTime?: string;
   customer: CustomerDetails;
   status?: "pending" | "confirmed";
+  requireCustomerEmail?: boolean;
 }) {
   const service = getBookingService(input.serviceId);
   if (!service) throw new Error("Izabrana usluga nije dostupna.");
   const shapeError = validateBookingRequestShape(input);
   if (shapeError) throw new Error(shapeError);
 
-  const errors = validateCustomerDetails(input.customer);
+  const errors = validateCustomerDetails(input.customer, { requireEmail: input.requireCustomerEmail ?? true });
   if (hasValidationErrors(errors)) {
     const error = new Error("Podaci nisu ispravni.");
     error.cause = errors;
@@ -98,7 +99,7 @@ export async function createBookingRequest(input: {
       service_id: service.id,
       customer_name: input.customer.fullName.trim(),
       phone: input.customer.phone?.trim() || null,
-      email: input.customer.email.trim(),
+      email: input.customer.email.trim() || null,
       instagram: input.customer.instagram?.trim() || null,
       note: input.customer.note?.trim() || null,
       status: input.status ?? "pending",
@@ -129,7 +130,7 @@ export async function createBookingRequest(input: {
     service_id: service.id,
     customer_name: input.customer.fullName.trim(),
     phone: input.customer.phone?.trim() || null,
-    email: input.customer.email.trim(),
+    email: input.customer.email.trim() || null,
     instagram: input.customer.instagram?.trim() || null,
     note: input.customer.note?.trim() || null,
     booking_date: input.date as string,
