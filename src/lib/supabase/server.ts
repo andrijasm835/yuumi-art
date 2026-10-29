@@ -96,6 +96,8 @@ export async function verifyAdminToken(token: string) {
   return isAuthorizedAdmin(user) ? user : null;
 }
 
+export type AuthSession = { access_token: string; refresh_token: string; expires_in: number; user: { id: string; email?: string } };
+
 export async function signInWithPassword(email: string, password: string) {
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) throw new SupabaseConfigError();
   const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
@@ -109,5 +111,17 @@ export async function signInWithPassword(email: string, password: string) {
   });
 
   if (!response.ok) throw new Error("Neuspešna prijava.");
-  return (await response.json()) as { access_token: string; refresh_token: string; user: { id: string; email?: string } };
+  return (await response.json()) as AuthSession;
+}
+
+export async function refreshAdminSession(refreshToken: string) {
+  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) throw new SupabaseConfigError();
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+    method: "POST",
+    headers: { apikey: SUPABASE_PUBLISHABLE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: refreshToken }),
+    cache: "no-store",
+  });
+  if (!response.ok) return null;
+  return await response.json() as AuthSession;
 }

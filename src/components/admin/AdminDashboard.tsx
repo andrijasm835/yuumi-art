@@ -97,7 +97,8 @@ function availableSegments(day: ScheduleDay) {
 }
 
 export function AdminDashboard() {
-  const [token, setToken] = useState("");
+  const [authenticated, setAuthenticated] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [bookings, setBookings] = useState<AdminBookingItem[]>([]);
@@ -127,6 +128,30 @@ export function AdminDashboard() {
     reason: "",
   });
 
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/admin/auth/session", { cache: "no-store", signal: controller.signal })
+      .then((response) => { if (!controller.signal.aborted) setAuthenticated(response.ok); })
+      .catch(() => { if (!controller.signal.aborted) setError("Provera sesije nije uspela. Pokušajte ponovo."); })
+      .finally(() => { if (!controller.signal.aborted) setCheckingSession(false); });
+    return () => controller.abort();
+  }, []);
+
+  async function logout() {
+    try {
+      const response = await fetch("/api/admin/auth/logout", { method: "POST" });
+      if (!response.ok) throw new Error("logout");
+      setAuthenticated(false);
+      setBookings([]);
+      setSummaryBookings([]);
+      setScheduleDays([]);
+      setError("");
+      setNotice("");
+    } catch {
+      setError("Odjava nije uspela. Pokušajte ponovo.");
+    }
+  }
+
   async function login(event: React.FormEvent) {
     event.preventDefault();
     setError("");
@@ -140,31 +165,32 @@ export function AdminDashboard() {
       setError(data.error || "Prijava nije uspela.");
       return;
     }
-    setToken(data.session.access_token);
+    setPassword("");
+    setAuthenticated(true);
   }
 
   async function loadBookings() {
-    if (!token) return;
+    if (!authenticated) return;
     const params = new URLSearchParams();
     if (status) params.set("status", status);
     if (date) params.set("date", date);
-    const response = await fetch(`/api/admin/bookings?${params}`, { headers: { Authorization: `Bearer ${token}` } });
+    const response = await fetch(`/api/admin/bookings?${params}`);
     const data = await response.json();
     if (response.ok) setBookings(data.bookings ?? []);
     else setError(data.error || "Booking lista nije dostupna.");
   }
 
   async function loadSummaryBookings() {
-    if (!token) return;
-    const response = await fetch("/api/admin/bookings", { headers: { Authorization: `Bearer ${token}` } });
+    if (!authenticated) return;
+    const response = await fetch("/api/admin/bookings");
     const data = await response.json();
     if (response.ok) setSummaryBookings(data.bookings ?? []);
     else setError(data.error || "Booking lista nije dostupna.");
   }
 
   async function loadAvailability() {
-    if (!token) return;
-    const response = await fetch("/api/admin/availability", { headers: { Authorization: `Bearer ${token}` } });
+    if (!authenticated) return;
+    const response = await fetch("/api/admin/availability");
     const data = await response.json();
     if (response.ok) {
       const nextWeekly = data.weekly ?? [];
@@ -182,8 +208,8 @@ export function AdminDashboard() {
   }
 
   async function loadSchedule() {
-    if (!token) return;
-    const response = await fetch(`/api/admin/schedule?start=${weekStart}`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!authenticated) return;
+    const response = await fetch(`/api/admin/schedule?start=${weekStart}`);
     const data = await response.json();
     if (response.ok) setScheduleDays(data.days ?? []);
     else setError(data.error || "Kalendar nije dostupan.");
@@ -193,19 +219,19 @@ export function AdminDashboard() {
     const task = window.setTimeout(() => void loadBookings(), 0);
     return () => window.clearTimeout(task);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, status, date]);
+  }, [authenticated, status, date]);
 
   useEffect(() => {
     const task = window.setTimeout(() => void loadAvailability(), 0);
     return () => window.clearTimeout(task);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [authenticated]);
 
   useEffect(() => {
     const task = window.setTimeout(() => void loadSummaryBookings(), 0);
     return () => window.clearTimeout(task);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [authenticated]);
 
   useEffect(() => {
     if (!notice) return;
@@ -217,10 +243,10 @@ export function AdminDashboard() {
     const task = window.setTimeout(() => void loadSchedule(), 0);
     return () => window.clearTimeout(task);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, weekStart]);
+  }, [authenticated, weekStart]);
 
   useEffect(() => {
-    if (!token || !manual.serviceId || !manual.date) return;
+    if (!authenticated || !manual.serviceId || !manual.date) return;
     const controller = new AbortController();
     async function loadManualSlots() {
       setManualSlotsLoading(true);
@@ -248,7 +274,7 @@ export function AdminDashboard() {
     }
     void loadManualSlots();
     return () => controller.abort();
-  }, [token, manual.serviceId, manual.date]);
+  }, [authenticated, manual.serviceId, manual.date]);
 
   async function updateStatus(id: string, nextStatus: BookingStatus, recordType: AdminBookingItem["recordType"] = "appointment") {
     if (busyBookingId) return;
@@ -256,7 +282,7 @@ export function AdminDashboard() {
     setError("");
     const response = await fetch(`/api/admin/bookings/${id}/status`, {
       method: "PATCH",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: nextStatus, recordType }),
     });
     if (!response.ok) setError("Status nije promenjen.");
@@ -271,7 +297,7 @@ export function AdminDashboard() {
     event.preventDefault();
     const response = await fetch("/api/admin/bookings", {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(manual),
     });
     const data = await response.json();
@@ -290,7 +316,7 @@ export function AdminDashboard() {
     event.preventDefault();
     const response = await fetch("/api/admin/availability", {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         type: "blocked_day",
         date: block.date,
@@ -315,7 +341,7 @@ export function AdminDashboard() {
     }
     const response = await fetch("/api/admin/availability", {
       method: "PUT",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ weekday, active: intervals.length > 0, intervals }),
     });
     if (!response.ok) setError("Radno vreme nije sačuvano.");
@@ -344,7 +370,9 @@ export function AdminDashboard() {
     .sort((a, b) => `${a.booking_date} ${a.start_time}`.localeCompare(`${b.booking_date} ${b.start_time}`))
     .find((booking) => `${booking.booking_date} ${normalizeTime(booking.start_time)}` >= `${today} ${nowInBelgrade}`);
 
-  if (!token) {
+  if (checkingSession) return <main className="grid min-h-svh place-items-center bg-[#1b1110] text-[#fff7ef]" role="status">Provera sesije...</main>;
+
+  if (!authenticated) {
     return (
       <main className="grid min-h-svh place-items-center bg-[#1b1110] p-5 text-[#fff7ef]">
         <form className="w-full max-w-md border border-[#d8bd80]/35 bg-[#fff7ef] p-8 text-[#241916] shadow-[0_30px_120px_rgba(0,0,0,0.35)]" onSubmit={login}>
@@ -375,7 +403,7 @@ export function AdminDashboard() {
           </div>
           <div className="flex items-center gap-5 text-right">
             <p className="hidden text-sm text-[#6b574e] sm:block">{currentAdminDate()}</p>
-            <button className="text-xs font-bold tracking-[0.3em] text-[#6f1d2a]" onClick={() => setToken("")}>ODJAVA</button>
+            <button className="text-xs font-bold tracking-[0.3em] text-[#6f1d2a]" onClick={() => void logout()}>ODJAVA</button>
           </div>
         </header>
 
