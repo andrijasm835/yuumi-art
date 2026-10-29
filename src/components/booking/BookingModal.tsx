@@ -106,7 +106,7 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
       document.body.style.width = "100%";
     }
     window.__yummiLenis?.stop();
-    panelRef.current?.focus();
+    panelRef.current?.focus({ preventScroll: true });
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
       if (event.key === "Tab" && panelRef.current) {
@@ -129,10 +129,10 @@ export function BookingModal({ open, onClose }: BookingModalProps) {
       document.body.style.position = previousPosition;
       document.body.style.top = previousTop;
       document.body.style.width = previousWidth;
-      if (lockBodyPosition) window.scrollTo(0, scrollY);
+      if (lockBodyPosition) window.scrollTo({ top: scrollY, behavior: "instant" });
       window.__yummiLenis?.start();
       window.removeEventListener("keydown", onKey);
-      previouslyFocused.current?.focus();
+      previouslyFocused.current?.focus({ preventScroll: true });
     };
   }, [open, onClose]);
 

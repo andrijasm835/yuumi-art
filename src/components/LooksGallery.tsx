@@ -5,7 +5,7 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { servicesAndEducation } from "@/content/site";
-import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, contentScrollDistance, viewportScrollDistance } from "@/lib/scrollCadence";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -36,8 +36,19 @@ export function LooksGallery() {
 
     lastFocused.current = document.activeElement as HTMLElement | null;
     const previousOverflow = document.body.style.overflow;
+    const previousPosition = document.body.style.position;
+    const previousTop = document.body.style.top;
+    const previousWidth = document.body.style.width;
+    const scrollY = window.scrollY;
+    const lockBodyPosition = window.matchMedia("(pointer: coarse), (max-width: 767px)").matches;
     document.body.style.overflow = "hidden";
-    closeButton.current?.focus();
+    if (lockBodyPosition) {
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+    }
+    window.__yummiLenis?.stop();
+    closeButton.current?.focus({ preventScroll: true });
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setPreview(null);
@@ -47,8 +58,13 @@ export function LooksGallery() {
 
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.body.style.position = previousPosition;
+      document.body.style.top = previousTop;
+      document.body.style.width = previousWidth;
+      if (lockBodyPosition) window.scrollTo({ top: scrollY, behavior: "instant" });
+      window.__yummiLenis?.start();
       window.removeEventListener("keydown", onKeyDown);
-      lastFocused.current?.focus();
+      lastFocused.current?.focus({ preventScroll: true });
     };
   }, [preview]);
 
@@ -68,6 +84,7 @@ export function LooksGallery() {
         const isMobile = context.conditions?.mobile;
         const isTablet = context.conditions?.tablet;
         const entrance = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top bottom",
@@ -77,10 +94,11 @@ export function LooksGallery() {
           },
         });
         const timeline = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? viewportScrollDistance(3.6) : isTablet ? viewportScrollDistance(3.2, 0.9) : "+=340%",
+            end: isMobile ? () => contentScrollDistance(track.scrollWidth - (scope.current?.clientWidth ?? window.innerWidth)) : isTablet ? viewportScrollDistance(3.2, 0.9) : "+=340%",
             scrub: isMobile ? MOBILE_SCRUB : 1,
             pin: true,
             anticipatePin: 1,
@@ -88,7 +106,7 @@ export function LooksGallery() {
           },
         });
 
-        const distance = () => Math.max(0, track.scrollWidth - window.innerWidth);
+        const distance = () => Math.max(0, track.scrollWidth - (scope.current?.clientWidth ?? window.innerWidth));
 
         entrance.fromTo(
           track,
@@ -99,9 +117,9 @@ export function LooksGallery() {
 
         timeline
           .to(track, { x: () => -distance(), ease: "none", duration: 3 }, 0)
-          .to(".look-image:not(.no-service-zoom)", { scale: isMobile ? 1.01 : isTablet ? 1.025 : 1.055, xPercent: isMobile ? -0.25 : isTablet ? -0.75 : -1.5, stagger: 0.06, duration: 3 }, 0)
-          .to(scope.current, { backgroundColor: "#211714", ease: "none", duration: 0.78 }, 2.36)
-          .to(".service-final-image", { scale: isMobile ? 1.018 : isTablet ? 1.04 : 1.09, xPercent: isMobile ? -0.25 : isTablet ? -0.75 : -1.5, yPercent: isMobile ? 0.25 : isTablet ? 0.5 : 1, filter: isMobile ? "none" : "contrast(1.03) saturate(1.03)", duration: 0.82 }, 2.38);
+          .to(".look-image:not(.no-service-zoom)", { scale: isMobile ? 1.01 : isTablet ? 1.025 : 1.055, xPercent: isMobile ? -0.25 : isTablet ? -0.75 : -1.5, stagger: isMobile ? 0 : 0.06, duration: 3 }, 0)
+          .to(scope.current, { backgroundColor: "#211714", ease: "none", duration: isMobile ? 0.64 : 0.78 }, 2.36)
+          .to(".service-final-image", { scale: isMobile ? 1.018 : isTablet ? 1.04 : 1.09, xPercent: isMobile ? -0.25 : isTablet ? -0.75 : -1.5, yPercent: isMobile ? 0.25 : isTablet ? 0.5 : 1, filter: isMobile ? "none" : "contrast(1.03) saturate(1.03)", duration: isMobile ? 0.62 : 0.82 }, 2.38);
 
         return () => {
           entrance.kill();

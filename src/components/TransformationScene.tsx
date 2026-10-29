@@ -75,6 +75,7 @@ export function TransformationScene() {
           },
         };
         const entrance = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top bottom",
@@ -84,10 +85,11 @@ export function TransformationScene() {
           },
         });
         const tl = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? viewportScrollDistance(3.8) : isTablet ? viewportScrollDistance(3.2, 0.9) : "+=360%",
+            end: isMobile ? viewportScrollDistance(3.76) : isTablet ? viewportScrollDistance(3.2, 0.9) : "+=360%",
             scrub: isMobile ? MOBILE_SCRUB : 1.15,
             pin: true,
             anticipatePin: 1,
@@ -117,21 +119,21 @@ export function TransformationScene() {
         tl.to(".stage-copy-0", { autoAlpha: 0, y: -24, duration: 0.18 }, 0.86);
 
         showCopy(1, 1.02);
-        tl.to(".transformation-photo", { ...camera.eyes, duration: 0.58, ease: "power1.inOut" }, 0.92)
-          .to(".transformation-stage-image-1", { autoAlpha: 1, duration: 0.38, ease: "power1.inOut" }, 0.98)
-          .to(".transformation-stage-image-0", { autoAlpha: 0, duration: 0.3, ease: "power1.inOut" }, 1.1)
+        tl.to(".transformation-photo", { ...camera.eyes, duration: 0.58, ease: isMobile ? "none" : "power1.inOut" }, 0.92)
+          .to(".transformation-stage-image-1", { autoAlpha: 1, duration: 0.38, ease: isMobile ? "none" : "power1.inOut" }, 0.98)
+          .to(".transformation-stage-image-0", { autoAlpha: 0, duration: 0.3, ease: isMobile ? "none" : "power1.inOut" }, 1.1)
           .to(".stage-copy-1", { autoAlpha: 0, y: -24, duration: 0.18 }, 1.82);
 
         showCopy(2, 2.02);
-        tl.to(".transformation-photo", { ...camera.color, duration: 0.58, ease: "power1.inOut" }, 1.92)
-          .to(".transformation-stage-image-2", { autoAlpha: 1, duration: 0.38, ease: "power1.inOut" }, 1.98)
-          .to(".transformation-stage-image-1", { autoAlpha: 0, duration: 0.3, ease: "power1.inOut" }, 2.1)
+        tl.to(".transformation-photo", { ...camera.color, duration: 0.58, ease: isMobile ? "none" : "power1.inOut" }, 1.92)
+          .to(".transformation-stage-image-2", { autoAlpha: 1, duration: 0.38, ease: isMobile ? "none" : "power1.inOut" }, 1.98)
+          .to(".transformation-stage-image-1", { autoAlpha: 0, duration: 0.3, ease: isMobile ? "none" : "power1.inOut" }, 2.1)
           .to(".stage-copy-2", { autoAlpha: 0, y: -24, duration: 0.18 }, 2.82);
 
         showCopy(3, 3.02);
-        tl.to(".transformation-photo", { ...camera.final, duration: 0.58, ease: "power1.inOut" }, 2.92)
-          .to(".transformation-stage-image-3", { autoAlpha: 1, duration: 0.38, ease: "power1.inOut" }, 2.98)
-          .to(".transformation-stage-image-2", { autoAlpha: 0, duration: 0.3, ease: "power1.inOut" }, 3.1)
+        tl.to(".transformation-photo", { ...camera.final, duration: 0.58, ease: isMobile ? "none" : "power1.inOut" }, 2.92)
+          .to(".transformation-stage-image-3", { autoAlpha: 1, duration: 0.38, ease: isMobile ? "none" : "power1.inOut" }, 2.98)
+          .to(".transformation-stage-image-2", { autoAlpha: 0, duration: 0.3, ease: isMobile ? "none" : "power1.inOut" }, 3.1)
           .to(".final-shimmer", { autoAlpha: 0.55, xPercent: 140, duration: 0.45 }, 3.18)
           .to(".final-shimmer", { autoAlpha: 0, duration: 0.14 }, 3.62);
 
@@ -162,7 +164,7 @@ export function TransformationScene() {
           aria-hidden="true"
           width={220}
           height={520}
-          className="transformation-prop transformation-brush pointer-events-none absolute -bottom-[8dvh] -left-[12vw] z-10 hidden h-[34dvh] w-auto rotate-[-24deg] opacity-45 md:block md:h-[39dvh] lg:-bottom-[10vh] lg:-left-[4vw] lg:h-[46vh]"
+          className="transformation-prop transformation-brush pointer-events-none absolute -bottom-[calc(var(--scene-vh)*0.08)] -left-[12vw] z-10 hidden h-[calc(var(--scene-vh)*0.34)] w-auto rotate-[-24deg] opacity-45 md:block md:h-[calc(var(--scene-vh)*0.39)] lg:-bottom-[10vh] lg:-left-[4vw] lg:h-[46vh]"
         />
         <Image
           src={makeupProps.eyeshadowPalette}
@@ -170,7 +172,7 @@ export function TransformationScene() {
           aria-hidden="true"
           width={360}
           height={220}
-          className="transformation-prop transformation-palette pointer-events-none absolute left-[13vw] top-[calc(var(--scene-vh)*0.16)] z-10 h-[calc(var(--scene-vh)*0.09)] w-auto rotate-[10deg] opacity-35 md:left-[8vw] md:top-[18dvh] md:h-[12dvh] lg:left-[18vw] lg:top-[12vh] lg:h-[13vh]"
+          className="transformation-prop transformation-palette pointer-events-none absolute left-[13vw] top-[calc(var(--scene-vh)*0.16)] z-10 h-[calc(var(--scene-vh)*0.09)] w-auto rotate-[10deg] opacity-35 md:left-[8vw] md:top-[calc(var(--scene-vh)*0.18)] md:h-[calc(var(--scene-vh)*0.12)] lg:left-[18vw] lg:top-[12vh] lg:h-[13vh]"
         />
         <Image
           src={makeupProps.lipstick}
@@ -178,7 +180,7 @@ export function TransformationScene() {
           aria-hidden="true"
           width={180}
           height={360}
-          className="transformation-prop transformation-lipstick pointer-events-none absolute -right-[5vw] bottom-[calc(var(--scene-vh)*0.1)] z-10 h-[calc(var(--scene-vh)*0.2)] w-auto rotate-[18deg] opacity-55 md:-right-[3vw] md:bottom-[11dvh] md:h-[24dvh] lg:right-[2vw] lg:bottom-[7vh] lg:h-[28vh]"
+          className="transformation-prop transformation-lipstick pointer-events-none absolute -right-[5vw] bottom-[calc(var(--scene-vh)*0.1)] z-10 h-[calc(var(--scene-vh)*0.2)] w-auto rotate-[18deg] opacity-55 md:-right-[3vw] md:bottom-[calc(var(--scene-vh)*0.11)] md:h-[calc(var(--scene-vh)*0.24)] lg:right-[2vw] lg:bottom-[7vh] lg:h-[28vh]"
         />
         <Image
           src={makeupProps.mascara}
@@ -186,9 +188,9 @@ export function TransformationScene() {
           aria-hidden="true"
           width={120}
           height={520}
-          className="transformation-prop transformation-mascara pointer-events-none absolute right-[26vw] top-[9dvh] z-10 hidden h-[27dvh] w-auto rotate-[-34deg] opacity-30 md:block lg:right-[35vw] lg:top-[7vh] lg:h-[32vh]"
+          className="transformation-prop transformation-mascara pointer-events-none absolute right-[26vw] top-[calc(var(--scene-vh)*0.09)] z-10 hidden h-[calc(var(--scene-vh)*0.27)] w-auto rotate-[-34deg] opacity-30 md:block lg:right-[35vw] lg:top-[7vh] lg:h-[32vh]"
         />
-        <div className="transformation-frame absolute left-1/2 top-[calc(var(--scene-vh)*0.07)] z-20 h-[calc(var(--scene-vh)*0.72)] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[11dvh] md:h-[78dvh] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
+        <div className="transformation-frame absolute left-1/2 top-[calc(var(--scene-vh)*0.07)] z-20 h-[calc(var(--scene-vh)*0.72)] w-[92vw] -translate-x-1/2 overflow-hidden shadow-[0_36px_130px_rgba(0,0,0,0.42)] md:left-auto md:right-[4vw] md:top-[calc(var(--scene-vh)*0.11)] md:h-[calc(var(--scene-vh)*0.78)] md:w-[82vw] md:translate-x-0 lg:right-[5vw] lg:top-[8vh] lg:h-[84vh] lg:w-[68vw]">
           <div className="transformation-photo absolute inset-0 will-change-transform">
             {transformation.stages.map((stage, index) => (
               <Image

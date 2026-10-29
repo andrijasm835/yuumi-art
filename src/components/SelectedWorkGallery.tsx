@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import type { CSSProperties } from "react";
 import Image from "next/image";
 import { galleryWorks, makeupProps } from "@/content/site";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
-import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB, contentScrollDistance, viewportScrollDistance } from "@/lib/scrollCadence";
 
 function imagePositionStyle(position: { desktop: string; mobile: string }) {
   return {
@@ -14,43 +14,19 @@ function imagePositionStyle(position: { desktop: string; mobile: string }) {
   } as CSSProperties;
 }
 
-const warmedGalleryImages = new Set<number>();
+const warmedGalleryImages = new WeakSet<HTMLImageElement>();
 
-function decodeGalleryImage(index: number) {
-  const work = galleryWorks[index];
-  if (!work || typeof window === "undefined") return;
-  if (warmedGalleryImages.has(index)) return;
-
-  warmedGalleryImages.add(index);
-
-  try {
-    const image = new window.Image();
-    image.decoding = "async";
-    image.src = work.src;
-    void image.decode?.().catch(() => undefined);
-  } catch {
-    warmedGalleryImages.delete(index);
-  }
+function decodeGalleryImage(image: HTMLImageElement | null) {
+  if (!image || warmedGalleryImages.has(image)) return;
+  warmedGalleryImages.add(image);
+  // Decode the responsive Next Image already displayed by this slide, rather
+  // than downloading and decoding a second, full-size copy during a swipe.
+  image.loading = "eager";
+  void image.decode().catch(() => warmedGalleryImages.delete(image));
 }
 
 export function SelectedWorkGallery() {
   const scope = useRef<HTMLElement>(null);
-
-  useEffect(() => {
-    if (!window.matchMedia("(max-width: 767px)").matches) return;
-
-    const warmUpcomingImages = () => {
-      decodeGalleryImage(1);
-      decodeGalleryImage(2);
-    };
-    const idleId = window.requestIdleCallback ? window.requestIdleCallback(warmUpcomingImages, { timeout: 1400 }) : undefined;
-    const timer = idleId ? undefined : window.setTimeout(warmUpcomingImages, 700);
-
-    return () => {
-      if (idleId) window.cancelIdleCallback?.(idleId);
-      if (timer) window.clearTimeout(timer);
-    };
-  }, []);
 
   useGsapScene(scope, () => {
     const mm = gsap.matchMedia();
@@ -68,25 +44,39 @@ export function SelectedWorkGallery() {
         if (isMobile) {
           const mobileWorks = gsap.utils.toArray<HTMLElement>(".selected-work-mobile-slide");
           const mobileCount = mobileWorks.length;
+          let activeIndex = -1;
+          const warmSlides = (index: number) => {
+            if (index === activeIndex) return;
+            activeIndex = index;
+            for (let offset = -1; offset <= 2; offset += 1) {
+              decodeGalleryImage(mobileWorks[index + offset]?.querySelector("img") ?? null);
+            }
+          };
+          const observer = new IntersectionObserver((entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) {
+              warmSlides(0);
+              observer.disconnect();
+            }
+          }, { rootMargin: "100% 0px" });
+          observer.observe(scope.current!);
 
-          gsap.set(mobileWorks, { yPercent: 105, autoAlpha: 0, willChange: "transform, opacity" });
+          gsap.set(mobileWorks, { yPercent: 100, autoAlpha: 0 });
           gsap.set(mobileWorks[0], { yPercent: 0, scale: 1, autoAlpha: 1 });
           gsap.set(".selected-work-mobile-number", { autoAlpha: 0, y: 10 });
           gsap.set(".selected-work-mobile-number-0", { autoAlpha: 1, y: 0 });
 
           const mobileTl = gsap.timeline({
+            defaults: { ease: "none" },
             scrollTrigger: {
               trigger: scope.current,
               start: "top top",
-              end: viewportScrollDistance(mobileCount - 1, 0.78),
+              end: () => contentScrollDistance((mobileCount - 1) * mobileWorks[0].clientHeight),
               scrub: MOBILE_SCRUB,
               pin: true,
               anticipatePin: 1,
               invalidateOnRefresh: true,
               onUpdate: (self) => {
-                const nextIndex = Math.min(mobileCount - 1, Math.floor(self.progress * (mobileCount - 1)) + 1);
-                decodeGalleryImage(nextIndex);
-                decodeGalleryImage(nextIndex + 1);
+                warmSlides(Math.min(mobileCount - 1, Math.floor(self.progress * (mobileCount - 1))));
               },
             },
           });
@@ -95,14 +85,14 @@ export function SelectedWorkGallery() {
             const at = index - 1;
 
             mobileTl
-              .to(mobileWorks[index - 1], { yPercent: -105, autoAlpha: 0.28, duration: 0.76, ease: "power1.inOut" }, at)
-              .to(mobileWorks[index], { yPercent: 0, autoAlpha: 1, duration: 0.76, ease: "power1.inOut" }, at)
+              .to(mobileWorks[index - 1], { yPercent: -100, autoAlpha: 0.28, duration: 1, ease: "none" }, at)
+              .to(mobileWorks[index], { yPercent: 0, autoAlpha: 1, duration: 1, ease: "none" }, at)
               .to(`.selected-work-mobile-number-${index - 1}`, { autoAlpha: 0, y: -10, duration: 0.2 }, at)
               .to(`.selected-work-mobile-number-${index}`, { autoAlpha: 1, y: 0, duration: 0.24 }, at + 0.16);
           }
 
           return () => {
-            gsap.set(mobileWorks, { clearProps: "willChange" });
+            observer.disconnect();
             mobileTl.kill();
           };
         }
@@ -117,6 +107,7 @@ export function SelectedWorkGallery() {
         gsap.set(".selected-work-prop", { autoAlpha: 0.5 });
 
         const tl = gsap.timeline({
+          defaults: { ease: "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
@@ -154,7 +145,7 @@ export function SelectedWorkGallery() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_76%_18%,rgba(111,29,42,0.24),transparent_34%),radial-gradient(circle_at_12%_78%,rgba(216,189,128,0.14),transparent_32%),linear-gradient(120deg,#160f0c_0%,#241613_52%,#17100e_100%)]" />
 
       <div className="relative z-10 hidden h-full md:block">
-        <div className="absolute left-8 top-[8dvh] max-w-[18rem] lg:left-12 lg:top-[10vh]">
+        <div className="absolute left-8 top-[calc(var(--scene-vh)*0.08)] max-w-[18rem] lg:left-12 lg:top-[10vh]">
           <p className="text-[10px] font-bold tracking-[0.38em] text-[#d8bd80]/70">YUUMI ART / SELECTED WORK</p>
           <h2 className="mt-6 font-serif text-[clamp(4.8rem,9vw,9rem)] leading-[0.8] text-[#fff7ef]">RADOVI</h2>
           <div className="relative mt-7 h-10">
@@ -166,7 +157,7 @@ export function SelectedWorkGallery() {
           </div>
         </div>
 
-        <div className="pointer-events-none absolute bottom-[11dvh] left-[7vw] h-[28dvh] w-[29vw] md:left-[6vw] md:w-[31vw] lg:bottom-[10vh] lg:left-[8vw] lg:w-[27vw]">
+        <div className="pointer-events-none absolute bottom-[calc(var(--scene-vh)*0.11)] left-[7vw] h-[calc(var(--scene-vh)*0.28)] w-[29vw] md:left-[6vw] md:w-[31vw] lg:bottom-[10vh] lg:left-[8vw] lg:w-[27vw]">
           <div className="absolute inset-x-[18%] bottom-[4%] h-8 rounded-full bg-black/20 blur-xl" />
           <Image
             src={makeupProps.brush}
@@ -174,7 +165,7 @@ export function SelectedWorkGallery() {
             aria-hidden="true"
             width={110}
             height={260}
-            className="selected-work-prop selected-work-prop-brush absolute bottom-[2%] left-[4%] h-[23dvh] w-auto rotate-[-24deg] opacity-50 drop-shadow-2xl lg:h-[25vh]"
+            className="selected-work-prop selected-work-prop-brush absolute bottom-[2%] left-[4%] h-[calc(var(--scene-vh)*0.23)] w-auto rotate-[-24deg] opacity-50 drop-shadow-2xl lg:h-[25vh]"
           />
           <Image
             src={makeupProps.compact}
@@ -182,7 +173,7 @@ export function SelectedWorkGallery() {
             aria-hidden="true"
             width={170}
             height={170}
-            className="selected-work-prop selected-work-prop-compact absolute bottom-[18%] left-[34%] h-[12dvh] w-auto rotate-[4deg] opacity-42 drop-shadow-xl lg:h-[13vh]"
+            className="selected-work-prop selected-work-prop-compact absolute bottom-[18%] left-[34%] h-[calc(var(--scene-vh)*0.12)] w-auto rotate-[4deg] opacity-42 drop-shadow-xl lg:h-[13vh]"
           />
           <Image
             src={makeupProps.lipstick}
@@ -190,11 +181,11 @@ export function SelectedWorkGallery() {
             aria-hidden="true"
             width={95}
             height={190}
-            className="selected-work-prop selected-work-prop-lipstick absolute bottom-[6%] right-[6%] h-[17dvh] w-auto rotate-[28deg] opacity-54 drop-shadow-2xl lg:h-[19vh]"
+            className="selected-work-prop selected-work-prop-lipstick absolute bottom-[6%] right-[6%] h-[calc(var(--scene-vh)*0.17)] w-auto rotate-[28deg] opacity-54 drop-shadow-2xl lg:h-[19vh]"
           />
         </div>
 
-        <div className="selected-work-frame absolute right-[5vw] top-1/2 h-[78dvh] w-[54vw] -translate-y-1/2 overflow-hidden md:right-[4vw] md:h-[74dvh] md:w-[61vw] lg:right-[7vw] lg:h-[82vh] lg:w-[48vw]">
+        <div className="selected-work-frame absolute right-[5vw] top-1/2 h-[calc(var(--scene-vh)*0.78)] w-[54vw] -translate-y-1/2 overflow-hidden md:right-[4vw] md:h-[calc(var(--scene-vh)*0.74)] md:w-[61vw] lg:right-[7vw] lg:h-[82vh] lg:w-[48vw]">
           {galleryWorks.map((work, index) => (
             <div className={`selected-work selected-work-${index} absolute inset-0 overflow-hidden bg-[#2b211d]`} key={work.src}>
               <Image

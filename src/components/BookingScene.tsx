@@ -5,7 +5,7 @@ import Image from "next/image";
 import { BookingModal } from "@/components/booking/BookingModal";
 import { useGsapScene, gsap } from "@/lib/useGsapScene";
 import { makeupProps } from "@/content/site";
-import { MOBILE_SCRUB, viewportScrollDistance } from "@/lib/scrollCadence";
+import { MOBILE_SCRUB } from "@/lib/scrollCadence";
 
 export function BookingScene() {
   const scope = useRef<HTMLElement>(null);
@@ -27,6 +27,27 @@ export function BookingScene() {
         gsap.set(".booking-reflection", { opacity: 0, scale: 1.08 });
         gsap.set(".ready-top, .ready-bottom", { yPercent: 10, opacity: 0.76 });
 
+        if (isMobile) {
+          const mobileTl = gsap.timeline({
+            defaults: { ease: "none" },
+            scrollTrigger: {
+              trigger: scope.current,
+              start: "top bottom",
+              end: "top top",
+              scrub: MOBILE_SCRUB,
+              invalidateOnRefresh: true,
+            },
+          });
+          mobileTl
+            .to(".final-mirror", { scale: 0.94, opacity: 1, duration: 1 }, 0)
+            .to(".ready-top, .ready-bottom", { yPercent: 0, opacity: 1, duration: 1 }, 0)
+            .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1, duration: 0.6 }, 0.15)
+            .to(".booking-reflection", { opacity: 0.72, scale: 1, duration: 0.75 }, 0.15)
+            .fromTo(".booking-panel", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.6 }, 0.3)
+            .to(".final-shine", { xPercent: 130, duration: 0.6 }, 0.4);
+          return () => mobileTl.kill();
+        }
+
         const entrance = gsap.timeline({
           scrollTrigger: {
             trigger: scope.current,
@@ -41,33 +62,8 @@ export function BookingScene() {
           .to(".booking-reflection", { opacity: 0.25, scale: 1.04, ease: "none" }, 0)
           .to(".ready-top, .ready-bottom", { yPercent: 0, opacity: 1, ease: "none" }, 0);
 
-        if (isMobile) {
-          const mobileTl = gsap.timeline({
-            scrollTrigger: {
-              trigger: scope.current,
-              start: "top 82%",
-              end: viewportScrollDistance(1),
-              scrub: MOBILE_SCRUB,
-              invalidateOnRefresh: true,
-            },
-          });
-
-          mobileTl
-            .to(".final-mirror", { scale: 0.94, rotate: 0 }, 0)
-            .fromTo(".lipstick-stroke", { scaleX: 0 }, { scaleX: 1 }, 0.18)
-            .to(".booking-reflection", { opacity: 0.72, scale: 1 }, 0.16)
-            .fromTo(".booking-panel", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1 }, 0.32)
-            .to(".final-shine", { xPercent: 130 }, 0.38)
-            .to(".ready-top", { xPercent: -2 }, 0)
-            .to(".ready-bottom", { xPercent: 2 }, 0);
-
-          return () => {
-            entrance.kill();
-            mobileTl.kill();
-          };
-        }
-
         const tl = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
@@ -106,7 +102,7 @@ export function BookingScene() {
         aria-hidden="true"
         width={180}
         height={360}
-        className="pointer-events-none absolute -right-[7vw] bottom-[9dvh] h-[19dvh] w-auto rotate-[22deg] opacity-30 md:-right-[2vw] md:bottom-[10dvh] md:h-[23dvh] lg:right-[4vw] lg:bottom-[12vh] lg:h-[26vh]"
+        className="pointer-events-none absolute -right-[7vw] bottom-[calc(var(--scene-vh)*0.09)] h-[calc(var(--scene-vh)*0.19)] w-auto rotate-[22deg] opacity-30 md:-right-[2vw] md:bottom-[calc(var(--scene-vh)*0.1)] md:h-[calc(var(--scene-vh)*0.23)] lg:right-[4vw] lg:bottom-[12vh] lg:h-[26vh]"
       />
       <Image
         src={makeupProps.eyelashCurler}
@@ -114,7 +110,7 @@ export function BookingScene() {
         aria-hidden="true"
         width={280}
         height={360}
-        className="pointer-events-none absolute -left-[12vw] top-[16dvh] h-[18dvh] w-auto rotate-[-14deg] opacity-25 md:-left-[4vw] md:top-[18dvh] md:h-[23dvh] lg:left-[5vw] lg:top-[16vh] lg:h-[27vh]"
+        className="pointer-events-none absolute -left-[12vw] top-[calc(var(--scene-vh)*0.16)] h-[calc(var(--scene-vh)*0.18)] w-auto rotate-[-14deg] opacity-25 md:-left-[4vw] md:top-[calc(var(--scene-vh)*0.18)] md:h-[calc(var(--scene-vh)*0.23)] lg:left-[5vw] lg:top-[16vh] lg:h-[27vh]"
       />
       <Image
         src={makeupProps.sponge}
@@ -122,7 +118,7 @@ export function BookingScene() {
         aria-hidden="true"
         width={220}
         height={300}
-        className="pointer-events-none absolute bottom-[7dvh] left-[12vw] hidden h-[11dvh] w-auto rotate-[16deg] opacity-20 md:block lg:left-[18vw] lg:h-[13vh]"
+        className="pointer-events-none absolute bottom-[calc(var(--scene-vh)*0.07)] left-[12vw] hidden h-[calc(var(--scene-vh)*0.11)] w-auto rotate-[16deg] opacity-20 md:block lg:left-[18vw] lg:h-[13vh]"
       />
       <div className="absolute inset-0 flex flex-col items-center justify-center px-4 text-center font-serif text-[clamp(2.7rem,11.5vw,5rem)] leading-[0.86] text-[#fff7ef]/82 md:text-[clamp(4.8rem,10vw,7rem)] lg:text-[clamp(3rem,14vw,9rem)] lg:leading-[0.82]">
         <span className="ready-top">SPREMNA ZA</span>

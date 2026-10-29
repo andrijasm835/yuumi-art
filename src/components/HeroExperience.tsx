@@ -22,13 +22,13 @@ export function HeroExperience() {
         const isMobile = context.conditions?.mobile;
         const isTablet = context.conditions?.tablet;
 
-        gsap.set(".hero-brand", {
+        gsap.set(".hero-brand-intro", {
           autoAlpha: 0,
           y: isMobile ? 16 : 24,
           scale: isMobile ? 0.985 : 0.975,
         });
 
-        gsap.set(".hero-small", {
+        gsap.set(".hero-small-intro", {
           autoAlpha: 0,
           y: 10,
         });
@@ -36,7 +36,7 @@ export function HeroExperience() {
         const intro = gsap.timeline();
 
         intro
-          .to(".hero-brand", {
+          .to(".hero-brand-intro", {
             autoAlpha: 1,
             y: 0,
             scale: 1,
@@ -44,7 +44,7 @@ export function HeroExperience() {
             ease: "power2.out",
           })
           .to(
-            ".hero-small",
+            ".hero-small-intro",
             {
               autoAlpha: 1,
               y: 0,
@@ -55,11 +55,12 @@ export function HeroExperience() {
           );
 
         const tl = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
             end: isMobile
-              ? viewportScrollDistance(1)
+              ? viewportScrollDistance(1.22)
               : isTablet
                 ? viewportScrollDistance(1.7, 0.9)
                 : "+=240%",
@@ -132,6 +133,7 @@ export function HeroExperience() {
 
       {/* BRAND LOCKUP */}
       <div className="hero-brand absolute inset-0 z-20 flex flex-col items-center justify-center px-5 text-center">
+        <div className="hero-brand-intro flex w-full flex-col items-center">
         {/* Red YUUMIART logo */}
         <div className="relative w-[82vw] max-w-[860px] md:w-[64vw] lg:w-[56vw]">
           <Image
@@ -159,12 +161,13 @@ export function HeroExperience() {
             className="h-auto w-full object-contain"
           />
         </div>
+        </div>
       </div>
 
       {/* SCROLL PROMPT */}
       <div className="pointer-events-none absolute inset-x-0 bottom-[calc(env(safe-area-inset-bottom)+1.8rem)] z-40 flex justify-center px-5 text-center sm:bottom-[6svh]">
         <p className="hero-small text-[10px] font-bold tracking-[0.42em] text-[#6f1d2a] drop-shadow-[0_1px_8px_rgba(255,247,239,0.9)] sm:text-[11px]">
-          {hero.scrollPrompt}
+          <span className="hero-small-intro inline-block">{hero.scrollPrompt}</span>
         </p>
       </div>
     </section>

@@ -42,6 +42,7 @@ export function DetailsScene() {
         gsap.set(".detail-front", { opacity: 0, yPercent: 0 });
 
         const entrance = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top bottom",
@@ -51,10 +52,11 @@ export function DetailsScene() {
           },
         });
         const tl = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
-            end: isMobile ? viewportScrollDistance(2.8) : isTablet ? viewportScrollDistance(3.1, 0.9) : "+=320%",
+            end: isMobile ? viewportScrollDistance(3.05) : isTablet ? viewportScrollDistance(3.1, 0.9) : "+=320%",
             scrub: isMobile ? MOBILE_SCRUB : 1.15,
             pin: true,
             anticipatePin: 1,

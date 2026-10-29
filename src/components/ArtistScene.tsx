@@ -32,13 +32,14 @@ export function ArtistScene() {
         gsap.set(".artist-photo", {
           scale: isMobile ? 1.05 : 1.22,
           width: isMobile ? "92vw" : "100vw",
-          height: isMobile ? "calc(var(--scene-vh) * 0.54)" : "100dvh",
+          height: isMobile ? "calc(var(--scene-vh) * 0.54)" : "calc(var(--scene-vh)*1.0)",
           x: isMobile ? "-2vw" : 0,
           y: isMobile ? "calc(var(--scene-vh) * 0.02)" : 0,
           opacity: isMobile ? 1 : 0.86,
         });
 
         const entrance = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top bottom",
@@ -53,10 +54,11 @@ export function ArtistScene() {
           gsap.set(".artist-copy", { opacity: 0.28, y: 24, filter: "none" });
           gsap.set(".artist-word-meet, .artist-word-name", { opacity: 0, xPercent: 0, filter: "none" });
           const mobileIntro = gsap.timeline({
+            defaults: { ease: "none" },
             scrollTrigger: {
               trigger: scope.current,
               start: "top top",
-              end: viewportScrollDistance(1.15),
+              end: viewportScrollDistance(0.76),
               scrub: MOBILE_SCRUB,
               pin: true,
               anticipatePin: 1,
@@ -65,11 +67,10 @@ export function ArtistScene() {
           });
 
           mobileIntro
-            .to(".artist-photo", { scale: 1, x: "-2vw", y: "calc(var(--scene-vh) * 0.005)", duration: 0.36, ease: "power1.out" }, 0)
+            .to(".artist-photo", { scale: 1, x: "-2vw", y: "calc(var(--scene-vh) * 0.005)", duration: 0.36, ease: "none" }, 0)
             .fromTo(".artist-word-meet", { opacity: 0, xPercent: -12 }, { opacity: 1, xPercent: 0, duration: 0.28 }, 0.1)
             .fromTo(".artist-word-name", { opacity: 0, xPercent: 12 }, { opacity: 1, xPercent: 0, duration: 0.28 }, 0.24)
-            .to(".artist-copy", { opacity: 1, y: 0, duration: 0.34 }, 0.42)
-            .to(".artist-copy", { opacity: 1, y: 0, duration: 0.28 }, 0.7);
+            .to(".artist-copy", { opacity: 1, y: 0, duration: 0.34 }, 0.42);
 
           return () => {
             entrance.kill();
@@ -78,6 +79,7 @@ export function ArtistScene() {
         }
 
         const tl = gsap.timeline({
+          defaults: { ease: isMobile ? "none" : "power1.out" },
           scrollTrigger: {
             trigger: scope.current,
             start: "top top",
@@ -89,12 +91,12 @@ export function ArtistScene() {
           },
         });
 
-        tl.to(".artist-photo", { scale: 1, width: isTablet ? "58vw" : "48vw", height: isTablet ? "68dvh" : "78vh", x: isTablet ? "20vw" : "26vw", y: isTablet ? "13dvh" : "10vh" }, 0)
+        tl.to(".artist-photo", { scale: 1, width: isTablet ? "58vw" : "48vw", height: isTablet ? "calc(var(--scene-vh)*0.68)" : "78vh", x: isTablet ? "20vw" : "26vw", y: isTablet ? "calc(var(--scene-vh)*0.13)" : "10vh" }, 0)
           .fromTo(".artist-word-meet", { opacity: 0, xPercent: -18 }, { opacity: 1, xPercent: 0 }, 0.05)
           .fromTo(".artist-word-name", { opacity: 0, xPercent: 18 }, { opacity: 1, xPercent: 0 }, 0.28)
           .fromTo(".artist-copy", { opacity: 0, y: 55 }, { opacity: 1, y: 0 }, 0.55)
           .fromTo(".artist-meta", { opacity: 0, x: 40 }, { opacity: 1, x: 0 }, 0.68)
-          .to(".artist-photo", { scale: isTablet ? 1.04 : 1.08, x: isTablet ? "18vw" : "23vw", y: isTablet ? "10dvh" : "6vh", width: isTablet ? "64vw" : "54vw", height: isTablet ? "72dvh" : "84vh" }, 1.18)
+          .to(".artist-photo", { scale: isTablet ? 1.04 : 1.08, x: isTablet ? "18vw" : "23vw", y: isTablet ? "calc(var(--scene-vh)*0.1)" : "6vh", width: isTablet ? "64vw" : "54vw", height: isTablet ? "calc(var(--scene-vh)*0.72)" : "84vh" }, 1.18)
           .to(".artist-darken", { opacity: 1 }, 1.18)
           .to(".artist-word-meet, .artist-word-name, .artist-copy, .artist-meta", { opacity: 0.18, filter: "blur(3px)" }, 1.42);
 
@@ -109,9 +111,9 @@ export function ArtistScene() {
   });
 
   return (
-    <section id="about" ref={scope} className="scene-overlap relative min-h-[var(--scene-vh)] overflow-visible bg-[#f7efe8] text-[#241916] md:h-[100dvh] md:min-h-0 md:overflow-hidden lg:h-screen">
+    <section id="about" ref={scope} className="scene-overlap relative min-h-[var(--scene-vh)] overflow-visible bg-[#f7efe8] text-[#241916] md:h-[calc(var(--scene-vh)*1.0)] md:min-h-0 md:overflow-hidden lg:h-screen">
       <div className="artist-mobile-visual relative min-h-[calc(var(--scene-vh)*0.61)] overflow-hidden md:contents">
-        <div className="artist-photo absolute left-[4vw] top-[calc(var(--scene-vh)*0.02)] h-[calc(var(--scene-vh)*0.54)] w-[92vw] overflow-hidden will-change-transform md:left-0 md:top-0 md:h-[100dvh] md:w-screen lg:h-screen">
+        <div className="artist-photo absolute left-[4vw] top-[calc(var(--scene-vh)*0.02)] h-[calc(var(--scene-vh)*0.54)] w-[92vw] overflow-hidden will-change-transform md:left-0 md:top-0 md:h-[calc(var(--scene-vh)*1.0)] md:w-screen lg:h-screen">
           <Image
             src={artist.image}
             alt={artist.alt}
