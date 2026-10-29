@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "./AdminDashboard.module.css";
 import { bookingServices } from "@/lib/booking/services";
 import type { AdminBookingItem, AvailabilityException, BookingRecord, BookingStatus, WeeklyAvailability } from "@/lib/booking/types";
 import { addDays, belgradeDate, intervalsOverlap, timeToMinutes } from "@/lib/booking/time";
@@ -10,6 +11,16 @@ function todayIso() {
 }
 
 const weekdays = ["Nedelja", "Ponedeljak", "Utorak", "Sreda", "Četvrtak", "Petak", "Subota"];
+const statusLabels: Record<BookingStatus, string> = { pending: "Čeka potvrdu", confirmed: "Potvrđeno", rejected: "Odbijeno", cancelled: "Otkazano" };
+const pages = {
+  overview: { label: "Pregled", icon: "◈", description: "Sve važno za tvoj radni dan, na jednom mestu." },
+  bookings: { label: "Termini i upiti", icon: "☷", description: "Potvrdi nove zahteve i pronađi zakazivanja svojih klijenata." },
+  calendar: { label: "Kalendar", icon: "▦", description: "Pogledaj zakazane termine i slobodno vreme po danima." },
+  hours: { label: "Radno vreme", icon: "◷", description: "Podesi kada klijenti mogu da zakažu termin tokom nedelje." },
+  timeoff: { label: "Slobodni dani", icon: "☼", description: "Zatvori zakazivanje za odmor, putovanje ili slobodan dan." },
+  add: { label: "Dodaj termin", icon: "+", description: "Upiši termin dogovoren telefonom ili porukom." },
+};
+type AdminPage = keyof typeof pages;
 const appointmentServices = bookingServices.filter((service) => service.schedulingMode === "appointment");
 
 type WeekInterval = { startTime: string; endTime: string };
@@ -38,7 +49,7 @@ function formatTableDate(date: string) {
 }
 
 function currentAdminDate() {
-  return new Intl.DateTimeFormat("sr-Latn-RS", { day: "numeric", month: "long", year: "numeric" }).format(new Date());
+  return new Intl.DateTimeFormat("sr-Latn-RS", { day: "numeric", month: "long", year: "numeric", timeZone: "Europe/Belgrade" }).format(new Date());
 }
 
 function statusClass(status: BookingStatus) {
@@ -49,17 +60,14 @@ function statusClass(status: BookingStatus) {
 }
 
 function fieldClass() {
-  return "w-full border border-[#d8bd80]/45 bg-[#fffaf4] px-3 py-2.5 text-sm outline-none transition focus:border-[#6f1d2a] focus:ring-2 focus:ring-[#6f1d2a]/15";
-}
-
-function labelClass() {
-  return "grid gap-1.5 text-[10px] font-bold tracking-[0.18em] text-[#8f6d5a]";
+  return styles.input;
 }
 
 function intervalsAreValid(intervals: WeekInterval[]) {
   const sorted = intervals
     .filter((interval) => interval.startTime && interval.endTime)
     .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+  if (sorted.length !== intervals.length) return false;
   if (sorted.some((interval) => timeToMinutes(interval.startTime) >= timeToMinutes(interval.endTime))) return false;
   return sorted.every((interval, index) => index === 0 || !intervalsOverlap(
     { start: sorted[index - 1].startTime, end: sorted[index - 1].endTime },
@@ -97,11 +105,17 @@ function availableSegments(day: ScheduleDay) {
 }
 
 export function AdminDashboard() {
+  const [page, setPage] = useState<AdminPage>("overview");
+  const [search, setSearch] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [availabilityLoaded, setAvailabilityLoaded] = useState(false);
+  const [exceptions, setExceptions] = useState<AvailabilityException[]>([]);
+  const [period, setPeriod] = useState("upcoming");
   const [authenticated, setAuthenticated] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [bookings, setBookings] = useState<AdminBookingItem[]>([]);
   const [summaryBookings, setSummaryBookings] = useState<AdminBookingItem[]>([]);
   const [scheduleDays, setScheduleDays] = useState<ScheduleDay[]>([]);
   const [weekStart, setWeekStart] = useState(todayIso());
@@ -111,6 +125,7 @@ export function AdminDashboard() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [weeklyDraft, setWeeklyDraft] = useState<Record<number, WeekInterval[]>>({});
+  const [slotsVersion, setSlotsVersion] = useState(0);
   const [manualSlots, setManualSlots] = useState<string[]>([]);
   const [manualSlotsLoading, setManualSlotsLoading] = useState(false);
   const [manual, setManual] = useState({
@@ -139,14 +154,17 @@ export function AdminDashboard() {
 
   async function logout() {
     try {
-      const response = await fetch("/api/admin/auth/logout", { method: "POST" });
-      if (!response.ok) throw new Error("logout");
-      setAuthenticated(false);
-      setBookings([]);
-      setSummaryBookings([]);
-      setScheduleDays([]);
-      setError("");
-      setNotice("");
+        const response = await fetch("/api/admin/auth/logout", { method: "POST" });
+        if (!response.ok) throw new Error("logout");
+        setAuthenticated(false);
+      setLoading(true);
+      setAvailabilityLoaded(false);
+      setExceptions([]);
+      setWeeklyDraft({});
+        setSummaryBookings([]);
+        setScheduleDays([]);
+        setError("");
+        setNotice("");
     } catch {
       setError("Odjava nije uspela. Pokušajte ponovo.");
     }
@@ -166,60 +184,53 @@ export function AdminDashboard() {
       return;
     }
     setPassword("");
+    setPage("overview");
     setAuthenticated(true);
-  }
-
-  async function loadBookings() {
-    if (!authenticated) return;
-    const params = new URLSearchParams();
-    if (status) params.set("status", status);
-    if (date) params.set("date", date);
-    const response = await fetch(`/api/admin/bookings?${params}`);
-    const data = await response.json();
-    if (response.ok) setBookings(data.bookings ?? []);
-    else setError(data.error || "Booking lista nije dostupna.");
   }
 
   async function loadSummaryBookings() {
     if (!authenticated) return;
-    const response = await fetch("/api/admin/bookings");
-    const data = await response.json();
-    if (response.ok) setSummaryBookings(data.bookings ?? []);
-    else setError(data.error || "Booking lista nije dostupna.");
+    try {
+      const response = await fetch("/api/admin/bookings");
+      const data = await response.json();
+      if (response.ok) { setSummaryBookings(data.bookings ?? []); }
+      else setError(data.error || "Lista termina nije dostupna.");
+    } catch { setError("Podaci nisu učitani. Proverite vezu i osvežite stranicu."); }
+    finally { setLoading(false); }
   }
 
   async function loadAvailability() {
     if (!authenticated) return;
-    const response = await fetch("/api/admin/availability");
-    const data = await response.json();
-    if (response.ok) {
-      const nextWeekly = data.weekly ?? [];
-      setWeeklyDraft(
-        Object.fromEntries(
-          weekdays.map((_, weekday) => [
-            weekday,
-            nextWeekly
-              .filter((item: WeeklyAvailability) => item.weekday === weekday && item.active)
-              .map((item: WeeklyAvailability) => ({ startTime: normalizeTime(item.start_time), endTime: normalizeTime(item.end_time) })),
-          ]),
-        ),
-      );
-    }
+    try {
+      const response = await fetch("/api/admin/availability");
+      const data = await response.json();
+      if (response.ok) {
+        setAvailabilityLoaded(true);
+        setExceptions(data.exceptions ?? []);
+        const nextWeekly = data.weekly ?? [];
+        setWeeklyDraft(
+          Object.fromEntries(
+            weekdays.map((_, weekday) => [
+              weekday,
+              nextWeekly
+                .filter((item: WeeklyAvailability) => item.weekday === weekday && item.active)
+                .map((item: WeeklyAvailability) => ({ startTime: normalizeTime(item.start_time), endTime: normalizeTime(item.end_time) })),
+            ]),
+          ),
+        );
+      } else setError("Radno vreme nije dostupno. Osvežite stranicu i pokušajte ponovo.");
+    } catch { setError("Podaci nisu učitani. Proverite vezu i osvežite stranicu."); }
   }
 
   async function loadSchedule() {
     if (!authenticated) return;
-    const response = await fetch(`/api/admin/schedule?start=${weekStart}`);
-    const data = await response.json();
-    if (response.ok) setScheduleDays(data.days ?? []);
-    else setError(data.error || "Kalendar nije dostupan.");
+    try {
+      const response = await fetch(`/api/admin/schedule?start=${weekStart}`);
+      const data = await response.json();
+      if (response.ok) setScheduleDays(data.days ?? []);
+      else setError(data.error || "Kalendar nije dostupan.");
+    } catch { setError("Podaci nisu učitani. Proverite vezu i osvežite stranicu."); }
   }
-
-  useEffect(() => {
-    const task = window.setTimeout(() => void loadBookings(), 0);
-    return () => window.clearTimeout(task);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authenticated, status, date]);
 
   useEffect(() => {
     const task = window.setTimeout(() => void loadAvailability(), 0);
@@ -274,83 +285,106 @@ export function AdminDashboard() {
     }
     void loadManualSlots();
     return () => controller.abort();
-  }, [authenticated, manual.serviceId, manual.date]);
+  }, [authenticated, manual.serviceId, manual.date, slotsVersion]);
 
   async function updateStatus(id: string, nextStatus: BookingStatus, recordType: AdminBookingItem["recordType"] = "appointment") {
     if (busyBookingId) return;
+    if (nextStatus !== "confirmed" && !window.confirm(`${nextStatus === "rejected" ? "Odbiti zahtev" : "Otkazati termin"}? Klijent će dobiti obaveštenje ako je ostavio email.`)) return;
     setBusyBookingId(id);
     setError("");
-    const response = await fetch(`/api/admin/bookings/${id}/status`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: nextStatus, recordType }),
-    });
-    if (!response.ok) setError("Status nije promenjen.");
-    else setNotice("Status termina je promenjen.");
-    await loadBookings();
-    await loadSummaryBookings();
-    await loadSchedule();
-    setBusyBookingId("");
+    try {
+      const response = await fetch(`/api/admin/bookings/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: nextStatus, recordType }),
+      });
+      if (!response.ok) setError("Status nije promenjen.");
+      else setNotice("Status termina je promenjen.");
+      await loadSummaryBookings();
+      await loadSchedule();
+    } catch { setError("Promena nije sačuvana. Proverite vezu i pokušajte ponovo."); }
+    finally { setBusyBookingId(""); }
   }
 
   async function createManual(event: React.FormEvent) {
     event.preventDefault();
-    const response = await fetch("/api/admin/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(manual),
-    });
-    const data = await response.json();
-    if (!response.ok) setError(data.error || "Manual booking nije sačuvan.");
-    else {
-      setNotice("Termin je dodat.");
-      setError("");
-      setManual((current) => ({ ...current, fullName: "", phone: "", email: "" }));
-    }
-    await loadBookings();
-    await loadSummaryBookings();
-    await loadSchedule();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(manual),
+      });
+      const data = await response.json();
+      if (!response.ok) setError(data.error || "Termin nije sačuvan.");
+      else {
+        setNotice("Termin je dodat i potvrđen.");
+        setSlotsVersion((value) => value + 1);
+        setError("");
+        setManual((current) => ({ ...current, fullName: "", phone: "", email: "" }));
+      }
+      await loadSummaryBookings();
+      await loadSchedule();
+    } catch { setError("Čuvanje nije uspelo. Proverite vezu i pokušajte ponovo."); }
+    finally { setSaving(false); }
   }
 
   async function createBlock(event: React.FormEvent) {
     event.preventDefault();
-    const response = await fetch("/api/admin/availability", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type: "blocked_day",
-        date: block.date,
-        endDate: block.rangeMode === "range" ? block.endDate : block.date,
-        reason: block.reason,
-      }),
-    });
-    const data = await response.json();
-    if (!response.ok) setError(data.error || "Blokada nije sačuvana.");
-    else {
-      setNotice("Dostupnost je sačuvana.");
-      setError("");
-      setBlock((current) => ({ ...current, reason: "" }));
-      await loadSchedule();
-    }
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/availability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "blocked_day",
+          date: block.date,
+          endDate: block.rangeMode === "range" ? block.endDate : block.date,
+          reason: block.reason,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) setError(data.error || "Blokada nije sačuvana.");
+      else {
+        setNotice("Slobodni dani su sačuvani.");
+        setSlotsVersion((value) => value + 1);
+        setError("");
+        setBlock((current) => ({ ...current, reason: "" }));
+        await loadSchedule();
+        await loadAvailability();
+      }
+    } catch { setError("Čuvanje nije uspelo. Proverite vezu i pokušajte ponovo."); }
+    finally { setSaving(false); }
   }
 
   async function saveWeekday(weekday: number, intervals: WeekInterval[]) {
     if (!intervalsAreValid(intervals)) {
-      setError("Intervali moraju imati start < end i ne smeju se preklapati.");
+      setError("Vreme početka mora biti pre završetka. Periodi rada ne smeju da se preklapaju.");
       return;
     }
-    const response = await fetch("/api/admin/availability", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ weekday, active: intervals.length > 0, intervals }),
-    });
-    if (!response.ok) setError("Radno vreme nije sačuvano.");
-    else {
-      setNotice("Radno vreme je sačuvano.");
-      setError("");
-    }
-    await loadAvailability();
-    await loadSchedule();
+    if (saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const response = await fetch("/api/admin/availability", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weekday, active: intervals.length > 0, intervals }),
+      });
+      if (!response.ok) setError("Radno vreme nije sačuvano.");
+      else {
+        setNotice("Radno vreme je sačuvano.");
+        setSlotsVersion((value) => value + 1);
+        setError("");
+      }
+      await loadAvailability();
+      await loadSchedule();
+    } catch { setError("Čuvanje nije uspelo. Proverite vezu i pokušajte ponovo."); }
+    finally { setSaving(false); }
   }
 
   const today = todayIso();
@@ -360,15 +394,47 @@ export function AdminDashboard() {
     hour12: false,
     timeZone: "Europe/Belgrade",
   }).format(new Date());
-  const allSummaryBookings = [...scheduleDays.flatMap((day) => day.bookings.map((booking) => ({ ...booking, recordType: "appointment" as const }))), ...summaryBookings]
-    .filter((booking, index, all) => booking.id ? all.findIndex((item) => item.id === booking.id) === index : true);
-  const todaysBookings = allSummaryBookings.filter((booking) => booking.recordType === "appointment" && booking.booking_date === today);
-  const pendingCount = allSummaryBookings.filter((booking) => booking.status === "pending").length;
-  const confirmedCount = allSummaryBookings.filter((booking) => booking.status === "confirmed").length;
-  const nextBooking = allSummaryBookings
-    .filter((booking): booking is BookingRecord & { recordType: "appointment" } => isAppointment(booking) && (booking.status === "pending" || booking.status === "confirmed"))
-    .sort((a, b) => `${a.booking_date} ${a.start_time}`.localeCompare(`${b.booking_date} ${b.start_time}`))
-    .find((booking) => `${booking.booking_date} ${normalizeTime(booking.start_time)}` >= `${today} ${nowInBelgrade}`);
+  const allSummaryBookings = summaryBookings;
+  const activeBookings = allSummaryBookings.filter((item) => item.status === "confirmed" || item.status === "pending");
+  const todaysBookings = activeBookings.filter((item) => isAppointment(item) && item.booking_date === today)
+    .sort((a, b) => isAppointment(a) && isAppointment(b) ? a.start_time.localeCompare(b.start_time) : 0);
+  const pendingBookings = allSummaryBookings.filter((item) => item.status === "pending");
+  const upcomingBookings = activeBookings.filter((item): item is BookingRecord & { recordType: "appointment" } => isAppointment(item) && `${item.booking_date} ${normalizeTime(item.start_time)}` >= `${today} ${nowInBelgrade}`)
+    .sort((a, b) => `${a.booking_date} ${a.start_time}`.localeCompare(`${b.booking_date} ${b.start_time}`));
+  const nextBooking = upcomingBookings[0];
+  const visibleBookings = allSummaryBookings.filter((item) => {
+    if (status && item.status !== status) return false;
+    if (date && (!isAppointment(item) || item.booking_date !== date)) return false;
+    const matchesSearch = `${item.customer_name} ${item.email ?? ""} ${item.phone ?? ""}`.toLowerCase().includes(search.toLowerCase());
+    const matchesPeriod = period === "all" || !isAppointment(item) || (period === "upcoming" ? item.booking_date >= today : item.booking_date < today);
+    return matchesSearch && (date ? true : matchesPeriod);
+  }).sort((a, b) => {
+    if (isAppointment(a) && isAppointment(b)) return `${a.booking_date} ${a.start_time}`.localeCompare(`${b.booking_date} ${b.start_time}`);
+    return Number(a.status !== "pending") - Number(b.status !== "pending");
+  });
+
+  function openBookings(nextStatus = "", nextDate = "") {
+    setStatus(nextStatus); setDate(nextDate); setPeriod(nextStatus === "pending" ? "all" : "upcoming"); setSearch(""); setPage("bookings");
+  }
+
+  function bookingList(items: AdminBookingItem[], empty: string) {
+    return <div className={styles.bookingList}>
+      {items.length === 0 ? <div className={styles.empty}><span aria-hidden="true">✓</span><p>{loading ? "Učitavanje termina…" : empty}</p></div> : items.map((item) => <article className={styles.booking} key={item.id}>
+        <div className={styles.bookingTime}>
+          <strong>{isAppointment(item) ? normalizeTime(item.start_time) : "Upit"}</strong>
+          <span>{isAppointment(item) ? formatTableDate(item.booking_date) : "Dogovor oko datuma"}</span>
+        </div>
+        <div className={styles.bookingPerson}><strong>{item.customer_name || "Klijent"}</strong><span>{bookingServices.find((service) => service.id === item.service_id)?.name}</span>
+          <div className={styles.contacts}>{item.phone ? <a href={`tel:${item.phone}`}>{item.phone}</a> : null}{item.email ? <a href={`mailto:${item.email}`}>{item.email}</a> : null}</div>
+        </div>
+        <span className={`${styles.badge} ${statusClass(item.status)}`}>{statusLabels[item.status]}</span>
+        <div className={styles.bookingActions}>
+          {item.status === "pending" ? <><button className={styles.primarySmall} disabled={Boolean(busyBookingId)} onClick={() => item.id && void updateStatus(item.id, "confirmed", item.recordType)}>{busyBookingId === item.id ? "Čuvanje…" : "Potvrdi"}</button><button className={styles.secondarySmall} disabled={Boolean(busyBookingId)} onClick={() => item.id && void updateStatus(item.id, "rejected", item.recordType)}>Odbij</button></> : null}
+          {item.status === "confirmed" ? <button className={styles.secondarySmall} disabled={Boolean(busyBookingId)} onClick={() => item.id && void updateStatus(item.id, "cancelled", item.recordType)}>{busyBookingId === item.id ? "Čuvanje…" : "Otkaži"}</button> : null}
+        </div>
+      </article>)}
+    </div>;
+  }
 
   if (checkingSession) return <main className="grid min-h-svh place-items-center bg-[#1b1110] text-[#fff7ef]" role="status">Provera sesije...</main>;
 
@@ -381,11 +447,11 @@ export function AdminDashboard() {
           {error ? <p className="mt-4 border border-[#6f1d2a]/20 bg-[#6f1d2a]/8 p-3 text-sm text-[#6f1d2a]">• {error}</p> : null}
           <label className="mt-8 grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]">
             EMAIL
-            <input className={fieldClass()} value={email} onChange={(event) => setEmail(event.target.value)} />
+            <input className={fieldClass()} type="email" autoComplete="username" required value={email} onChange={(event) => setEmail(event.target.value)} />
           </label>
           <label className="mt-4 grid gap-2 text-xs font-bold tracking-[0.2em] text-[#8f6d5a]">
             LOZINKA
-            <input className={fieldClass()} type="password" value={password} onChange={(event) => setPassword(event.target.value)} />
+            <input className={fieldClass()} type="password" autoComplete="current-password" required value={password} onChange={(event) => setPassword(event.target.value)} />
           </label>
           <button className="mt-6 w-full bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.22em] text-white">ULOGUJ SE</button>
         </form>
@@ -394,302 +460,71 @@ export function AdminDashboard() {
   }
 
   return (
-    <main className="min-h-svh overflow-x-hidden bg-[#f7efe8] p-4 text-[#241916] md:p-8">
-      <div className="mx-auto grid max-w-[1500px] gap-6">
-        <header className="flex flex-wrap items-end justify-between gap-4 border-b border-[#d8bd80]/45 pb-6">
-          <div>
-            <p className="text-xs font-bold tracking-[0.35em] text-[#8f6d5a]">YUUMI ART ADMIN</p>
-            <h1 className="mt-2 font-serif text-5xl text-[#6f1d2a] md:text-6xl">Zakazivanja</h1>
-          </div>
-          <div className="flex items-center gap-5 text-right">
-            <p className="hidden text-sm text-[#6b574e] sm:block">{currentAdminDate()}</p>
-            <button className="text-xs font-bold tracking-[0.3em] text-[#6f1d2a]" onClick={() => void logout()}>ODJAVA</button>
-          </div>
-        </header>
+    <div className={styles.admin}>
+      <aside className={styles.sidebar}>
+        <a className={styles.brand} href="/admin"><span>yuumi<span className={styles.brandDot}>.</span></span><small>ART STUDIO · ADMIN</small></a>
+        <p className={styles.menuCaption}>TVOJ STUDIO</p>
+        <nav className={styles.nav} aria-label="Admin navigacija">{(Object.keys(pages) as AdminPage[]).map((key) => <button key={key} aria-current={page === key ? "page" : undefined} className={`${styles.navItem} ${page === key ? styles.navActive : ""}`} onClick={() => setPage(key)}><span aria-hidden="true">{pages[key].icon}</span>{pages[key].label}{key === "bookings" && pendingBookings.length > 0 ? <b>{pendingBookings.length}</b> : null}</button>)}</nav>
+        <div className={styles.sidebarFooter}><p>Sve je na svom mestu.</p><span>Termini, klijenti i vreme za tebe.</span><a href="/" target="_blank" rel="noreferrer">Otvori sajt ↗</a><button onClick={() => void logout()}>Odjavi se ↗</button></div>
+      </aside>
+      <main className={styles.main}>
+        <header className={styles.header}><div><p className={styles.eyebrow}>YUUMI ART / {pages[page].label.toLocaleUpperCase("sr-Latn")}</p><h1>{page === "overview" ? "Tvoj studio, na dlanu." : pages[page].label}</h1><p className={styles.subtitle}>{pages[page].description}</p></div><div className={styles.headerActions}><div className={styles.account}><span>{currentAdminDate()}</span><button onClick={() => void logout()}>Odjavi se</button></div>{page !== "add" ? <button className={styles.primary} onClick={() => setPage("add")}>+ Dodaj termin</button> : null}</div></header>
+        {error ? <div className={styles.error} role="alert">{error}<button aria-label="Zatvori poruku" onClick={() => setError("")}>×</button></div> : null}
+        {notice ? <div className={styles.notice} role="status">✓ {notice}</div> : null}
 
-        {error ? <p className="border border-[#6f1d2a]/20 bg-[#6f1d2a]/8 p-3 text-sm text-[#6f1d2a]">• {error}</p> : null}
-        {notice ? <p className="border border-[#1f6f3f]/20 bg-[#1f6f3f]/10 p-3 text-sm text-[#1f6f3f]">• {notice}</p> : null}
-
-        <section className="grid gap-3 md:grid-cols-4">
-          {[
-            ["DANAS", `${todaysBookings.length} ${todaysBookings.length === 1 ? "termin" : "termina"}`],
-            ["ČEKA POTVRDU", `${pendingCount} ${pendingCount === 1 ? "zahtev" : "zahteva"}`],
-            ["POTVRĐENO", String(confirmedCount)],
-            ["SLEDEĆI TERMIN", nextBooking ? `${normalizeTime(nextBooking.start_time)} · ${nextBooking.customer_name ?? ""}` : "Nema"],
-          ].map(([label, value]) => (
-            <div className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4" key={label}>
-              <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">{label}</p>
-              <p className="mt-2 font-serif text-2xl text-[#6f1d2a]">{value}</p>
-            </div>
-          ))}
-        </section>
-
-        <section className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4">
-          <div className="grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
-            <label className={labelClass()}>
-              STATUS
-              <select className={fieldClass()} value={status} onChange={(event) => setStatus(event.target.value)}>
-                <option value="">Svi statusi</option>
-                <option value="pending">PENDING</option>
-                <option value="confirmed">CONFIRMED</option>
-                <option value="rejected">REJECTED</option>
-                <option value="cancelled">CANCELLED</option>
-              </select>
-            </label>
-            <label className={labelClass()}>
-              DATUM
-              <input className={fieldClass()} type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-            </label>
-            <button className="border border-[#d8bd80]/50 px-4 py-3 text-xs font-bold tracking-[0.2em] text-[#6f1d2a]" onClick={() => { setStatus(""); setDate(""); }}>
-              RESET
-            </button>
+        {page === "overview" ? <>
+          <section className={styles.stats} aria-label="Pregled zakazivanja">
+            <button className={styles.stat} onClick={() => openBookings("", today)}><span>TERMINI DANAS <i>◷</i></span><strong>{loading ? "—" : todaysBookings.length}</strong><small>Pogledaj današnji raspored ↗</small></button>
+            <button className={`${styles.stat} ${styles.statAccent}`} onClick={() => openBookings("pending")}><span>ČEKA POTVRDU <i>◉</i></span><strong>{loading ? "—" : pendingBookings.length}</strong><small>{pendingBookings.length ? "Novi zahtevi su spremni za pregled ↗" : "Svi zahtevi su pregledani"}</small></button>
+            <button className={styles.stat} onClick={() => openBookings("confirmed")}><span>PREDSTOJEĆI TERMINI <i>▦</i></span><strong>{loading ? "—" : upcomingBookings.filter((item) => item.status === "confirmed").length}</strong><small>Potvrđena zakazivanja ↗</small></button>
+          </section>
+          <div className={styles.overviewGrid}>
+            <section className={styles.panel}><div className={styles.panelHeading}><div><p className={styles.eyebrow}>PRVO NA REDU</p><h2>Zahtevi za potvrdu</h2></div><button className={styles.textButton} onClick={() => openBookings("pending")}>Svi zahtevi →</button></div>{bookingList(pendingBookings.slice(0, 4), "Sve je rešeno. Nema zahteva koji čekaju potvrdu.")}</section>
+            <section className={`${styles.panel} ${styles.nextPanel}`}><p className={styles.eyebrow}>SLEDEĆI TERMIN</p>{nextBooking ? <><p className={styles.nextTime}>{normalizeTime(nextBooking.start_time)}</p><p className={styles.nextDate}>{formatTableDate(nextBooking.booking_date)}</p><h2>{nextBooking.customer_name}</h2><p>{bookingServices.find((service) => service.id === nextBooking.service_id)?.name}</p><span className={`${styles.badge} ${statusClass(nextBooking.status)}`}>{statusLabels[nextBooking.status]}</span><button className={styles.secondary} onClick={() => openBookings("", nextBooking.booking_date)}>Pogledaj termine za taj dan →</button></> : <div className={styles.empty}><p>{loading ? "Učitavanje…" : "Trenutno nema predstojećih termina."}</p></div>}</section>
           </div>
-        </section>
+          <section className={styles.panel}><div className={styles.panelHeading}><div><p className={styles.eyebrow}>TVOJ DAN</p><h2>Današnji termini</h2></div><button className={styles.textButton} onClick={() => setPage("calendar")}>Otvori kalendar →</button></div>{bookingList(todaysBookings, "Danas nema zakazanih termina. Imaš vremena za sebe.")}</section>
+          <section className={styles.quickActions}><button onClick={() => setPage("timeoff")}><span>☼</span><div><strong>Planiraš slobodan dan?</strong><p>Zatvori zakazivanje za odabrane datume.</p></div><b>→</b></button><button onClick={() => setPage("hours")}><span>◷</span><div><strong>Menjaš radno vreme?</strong><p>Podesi raspored za svaki dan u nedelji.</p></div><b>→</b></button></section>
+        </> : null}
 
-        <section className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">KALENDAR</p>
-              <h2 className="font-serif text-3xl text-[#6f1d2a]">Nedelja</h2>
-            </div>
-            <div className="flex overflow-hidden border border-[#d8bd80]/45 text-[10px] font-bold tracking-[0.18em] text-[#6f1d2a]">
-              <button className="border-r border-[#d8bd80]/45 px-3 py-2" onClick={() => setWeekStart(addDays(weekStart, -7))}>PRETHODNA</button>
-              <button className="border-r border-[#d8bd80]/45 bg-[#6f1d2a]/8 px-3 py-2" onClick={() => setWeekStart(todayIso())}>DANAS</button>
-              <button className="px-3 py-2" onClick={() => setWeekStart(addDays(weekStart, 7))}>SLEDEĆA</button>
-            </div>
-          </div>
+        {page === "bookings" ? <section className={styles.panel}>
+          <div className={styles.panelHeading}><div><h2>Termini i upiti</h2><p>Upiti za edukacije nemaju fiksan datum — dogovorite ga sa klijentom.</p></div><span className={styles.counter}>{visibleBookings.length} rezultata</span></div>
+          <div className={styles.filters}><label className={styles.label}>Pronađi klijenta<input className={styles.input} type="search" placeholder="Ime, telefon ili email…" value={search} onChange={(e) => setSearch(e.target.value)} /></label><label className={styles.label}>Prikaži<select className={styles.input} value={period} onChange={(e) => setPeriod(e.target.value)}><option value="upcoming">Predstojeći termini</option><option value="all">Svi termini</option><option value="past">Prošli termini</option></select></label><label className={styles.label}>Status<select className={styles.input} value={status} onChange={(e) => setStatus(e.target.value)}><option value="">Svi statusi</option>{Object.entries(statusLabels).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select></label><label className={styles.label}>Datum<input className={styles.input} type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label><button className={styles.textButton} onClick={() => { setSearch(""); setDate(""); setStatus(""); setPeriod("all"); }}>Očisti filtere</button></div>
+          {bookingList(visibleBookings, "Nema rezultata. Promeni datum ili očisti filtere.")}
+        </section> : null}
 
-          <div className="mt-4 overflow-x-auto pb-2">
-            <div className="grid min-w-[980px] grid-cols-7 gap-2">
-              {scheduleDays.map((day) => {
-                const working = dayWorkingIntervals(day);
-                const available = availableSegments(day);
-                const blockedDay = day.exceptions.some((exception) => exception.type === "blocked_day");
-                return (
-                  <div className="min-h-56 border border-[#d8bd80]/35 bg-[#fffaf4] p-3" key={day.date}>
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <p className="text-[10px] font-bold tracking-[0.18em] text-[#8f6d5a]">{weekdays[day.weekday].toUpperCase()}</p>
-                        <p className="font-serif text-2xl text-[#6f1d2a]">{formatAdminDate(day.date)}</p>
-                      </div>
-                      {blockedDay ? <span className="border border-[#6f1d2a]/25 bg-[#6f1d2a]/10 px-2 py-1 text-[9px] font-bold text-[#6f1d2a]">BLOCKED</span> : null}
-                    </div>
-                    {!blockedDay && working.length === 0 ? <p className="mt-10 text-center text-xs font-bold tracking-[0.18em] text-[#8f6d5a]/70">NEDOSTUPNO</p> : null}
-                    {!blockedDay && working.map((interval) => (
-                      <p className="mt-2 text-[11px] font-bold text-[#8f6d5a]" key={`${interval.start}-${interval.end}`}>{interval.start}–{interval.end}</p>
-                    ))}
-                    <div className="mt-3 grid gap-2">
-                      {day.bookings.map((booking) => (
-                        <div className={`border p-2 text-xs ${statusClass(booking.status)}`} key={booking.id}>
-                          <p className="font-bold">{normalizeTime(booking.start_time)} · {booking.customer_name ?? "Klijent"}</p>
-                          <p className="mt-1 text-[10px] font-bold tracking-[0.16em]">{booking.status.toUpperCase()}</p>
-                        </div>
-                      ))}
-                      {day.exceptions.filter((exception) => exception.type === "blocked_interval").map((exception) => (
-                        <div className="border border-[#6f1d2a]/25 bg-[#6f1d2a]/8 p-2 text-xs text-[#6f1d2a]" key={exception.id}>
-                          <p className="font-bold">{normalizeTime(exception.start_time || "")}–{normalizeTime(exception.end_time || "")}</p>
-                          <p className="mt-1 text-[10px] font-bold tracking-[0.16em]">NEDOSTUPNO</p>
-                        </div>
-                      ))}
-                      {!blockedDay && available.slice(0, 3).map((segment) => (
-                        <p className="rounded-sm bg-[#1f6f3f]/5 px-2 py-1 text-[11px] text-[#1f6f3f]/75" key={`${segment.start}-${segment.end}`}>{segment.start}–{segment.end} dostupno</p>
-                      ))}
-                      {!blockedDay && available.length > 3 ? <p className="px-2 text-[11px] text-[#6b574e]/70">+ još dostupnosti</p> : null}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
+        {page === "calendar" ? <section className={styles.panel}>
+          <div className={styles.panelHeading}><div><h2>{formatAdminDate(weekStart)} – {formatAdminDate(addDays(weekStart, 6))}</h2><p>Sedam dana tvog rasporeda. Izaberi dan za detalje.</p></div><div className={styles.weekControls}><button className={styles.secondarySmall} aria-label="Prethodnih sedam dana" onClick={() => setWeekStart(addDays(weekStart, -7))}>←</button><button className={styles.secondarySmall} onClick={() => setWeekStart(todayIso())}>Danas</button><button className={styles.secondarySmall} aria-label="Sledećih sedam dana" onClick={() => setWeekStart(addDays(weekStart, 7))}>→</button></div></div>
+          <div className={styles.calendar}>{scheduleDays.map((day) => {
+            const blocked = day.exceptions.some((item) => item.type === "blocked_day");
+            const working = dayWorkingIntervals(day);
+            return <article key={day.date} className={`${styles.calendarDay} ${day.date === today ? styles.calendarToday : ""}`}><button className={styles.dayHeading} onClick={() => openBookings("", day.date)}><span>{weekdays[day.weekday]}{day.date === today ? " · danas" : ""}</span><strong>{formatAdminDate(day.date)}</strong></button>{blocked || working.length === 0 ? <span className={styles.closed}>{blocked ? "Slobodan dan" : "Neradni dan"}</span> : <p className={styles.workTime}>{working.map((item) => `${item.start}–${item.end}`).join(", ")}</p>}
+              {day.bookings.map((booking) => <button key={booking.id} className={`${styles.calendarBooking} ${statusClass(booking.status)}`} onClick={() => openBookings("", day.date)}><strong>{normalizeTime(booking.start_time)}</strong><span>{booking.customer_name}</span><small>{statusLabels[booking.status]}</small></button>)}
+              {day.exceptions.filter((item) => item.type === "blocked_interval").map((item) => <p className={styles.closed} key={item.id}>{normalizeTime(item.start_time || "")}–{normalizeTime(item.end_time || "")} · pauza</p>)}
+              {!blocked ? availableSegments(day).map((item) => <p key={item.start} className={styles.freeTime}>{item.start}–{item.end} slobodno</p>) : null}
+            </article>;
+          })}</div>
+        </section> : null}
 
-        <section className="overflow-hidden border border-[#d8bd80]/45 bg-[#fff7ef]">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#d8bd80]/35 px-4 py-4">
-            <div>
-              <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">BOOKINGS</p>
-              <h2 className="font-serif text-3xl text-[#6f1d2a]">Termini</h2>
-            </div>
-          </div>
-          <div className="hidden grid-cols-[0.9fr_0.8fr_1.4fr_1.3fr_0.9fr_1fr] bg-[#241916] px-4 py-3 text-xs font-bold tracking-[0.16em] text-[#fff7ef] lg:grid">
-              <span>TIP / DATUM</span><span>VREME</span><span>KLIJENT</span><span>USLUGA</span><span>STATUS</span><span>AKCIJE</span>
-          </div>
-          {bookings.length === 0 ? <p className="p-5 text-[#6b574e]">Nema termina za izabrane filtere.</p> : null}
-          {bookings.map((booking: AdminBookingItem) => (
-            <div className="grid gap-3 border-t border-[#d8bd80]/25 px-4 py-4 text-sm lg:grid-cols-[0.9fr_0.8fr_1.4fr_1.3fr_0.9fr_1fr] lg:items-center" key={booking.id}>
-              <span>
-                <small className="mb-1 block w-fit border border-[#d8bd80]/45 px-2 py-1 text-[9px] font-bold tracking-[0.14em] text-[#8f6d5a]">{booking.recordType === "inquiry" ? "UPIT" : "TERMIN"}</small>
-                {!isAppointment(booking) ? (booking.created_at ? formatTableDate(booking.created_at.slice(0, 10)) : "Upit") : formatTableDate(booking.booking_date)}
-              </span>
-              <span>{!isAppointment(booking) ? "Dogovor" : `${normalizeTime(booking.start_time)}–${normalizeTime(booking.end_time)}`}</span>
-              <span>
-                <strong className="block text-[#241916]">{booking.customer_name}</strong>
-                <small className="block text-[#6b574e]">{booking.phone}</small>
-                {booking.email ? <small className="block text-[#6b574e]">{booking.email}</small> : null}
-              </span>
-              <span>{bookingServices.find((service) => service.id === booking.service_id)?.name}</span>
-              <span className={`w-fit border px-2 py-1 text-[10px] font-bold tracking-[0.16em] ${statusClass(booking.status)}`}>{booking.status.toUpperCase()}</span>
-              <span className="flex flex-wrap gap-2">
-                {booking.status === "pending" ? (
-                  <>
-                    <button
-                      className="border border-[#1f6f3f]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#1f6f3f] disabled:cursor-wait disabled:opacity-45"
-                      disabled={busyBookingId === booking.id}
-                      onClick={() => booking.id && updateStatus(booking.id, "confirmed", booking.recordType)}
-                    >
-                      {busyBookingId === booking.id ? "..." : "POTVRDI"}
-                    </button>
-                    <button
-                      className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a] disabled:cursor-wait disabled:opacity-45"
-                      disabled={busyBookingId === booking.id}
-                      onClick={() => booking.id && updateStatus(booking.id, "rejected", booking.recordType)}
-                    >
-                      {busyBookingId === booking.id ? "..." : "ODBIJ"}
-                    </button>
-                  </>
-                ) : null}
-                {booking.status === "confirmed" ? (
-                  <button
-                    className="border border-[#6f1d2a]/30 px-3 py-2 text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a] disabled:cursor-wait disabled:opacity-45"
-                    disabled={busyBookingId === booking.id}
-                    onClick={() => booking.id && updateStatus(booking.id, "cancelled", booking.recordType)}
-                  >
-                    {busyBookingId === booking.id ? "..." : "OTKAŽI"}
-                  </button>
-                ) : null}
-              </span>
-            </div>
-          ))}
-        </section>
+        {page === "hours" && !availabilityLoaded ? <section className={styles.panel}><p className={styles.muted}>Učitavanje radnog vremena…</p></section> : null}
+        {page === "hours" && availabilityLoaded ? <section className={styles.panel}><div className={styles.panelHeading}><div><h2>Tvoja radna nedelja</h2><p>Dodaj vreme rada ili ukloni sve periode za neradni dan. Sačuvaj svaki izmenjeni dan.</p></div></div><div className={styles.hoursList}>{[1, 2, 3, 4, 5, 6, 0].map((weekday) => {
+          const intervals = weeklyDraft[weekday] ?? [];
+          return <div className={styles.hoursDay} key={weekday}><div><strong>{weekdays[weekday]}</strong><small>{intervals.length ? "Radni dan" : "Neradni dan"}</small></div><div className={styles.intervals}>{intervals.length === 0 ? <p className={styles.muted}>Klijenti ne mogu da zakažu termin.</p> : intervals.map((interval, index) => <div className={styles.interval} key={index}><label className={styles.label}>Od<input className={styles.input} type="time" value={interval.startTime} onChange={(e) => setWeeklyDraft((current) => ({ ...current, [weekday]: current[weekday].map((item, i) => i === index ? { ...item, startTime: e.target.value } : item) }))} /></label><label className={styles.label}>Do<input className={styles.input} type="time" value={interval.endTime} onChange={(e) => setWeeklyDraft((current) => ({ ...current, [weekday]: current[weekday].map((item, i) => i === index ? { ...item, endTime: e.target.value } : item) }))} /></label><button className={styles.textButton} aria-label={`Ukloni period ${interval.startTime}–${interval.endTime} za ${weekdays[weekday]}`} onClick={() => setWeeklyDraft((current) => ({ ...current, [weekday]: current[weekday].filter((_, i) => i !== index) }))}>Ukloni</button></div>)}</div><div className={styles.hoursActions}><button className={styles.textButton} onClick={() => setWeeklyDraft((current) => ({ ...current, [weekday]: [...(current[weekday] ?? []), { startTime: "10:00", endTime: "18:00" }] }))}>+ Period rada</button><button className={styles.secondarySmall} disabled={saving} onClick={() => void saveWeekday(weekday, intervals)}>Sačuvaj dan</button></div></div>;
+        })}</div></section> : null}
 
-        <section className="border border-[#d8bd80]/45 bg-[#fff7ef] p-4">
-          <div className="mb-3">
-            <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">DOSTUPNOST</p>
-            <h2 className="font-serif text-3xl text-[#6f1d2a]">Radno vreme</h2>
-          </div>
-          <div className="grid gap-2">
-            {weekdays.map((label, weekday) => {
-              const intervals = weeklyDraft[weekday] ?? [];
-              return (
-                <div className="grid gap-2 border-t border-[#d8bd80]/25 py-3 lg:grid-cols-[150px_1fr_auto_auto] lg:items-start" key={label}>
-                  <p className="text-sm font-bold">{label}</p>
-                  <div className="grid gap-2">
-                    {intervals.length === 0 ? <p className="text-xs font-bold tracking-[0.14em] text-[#8f6d5a]/70">NEDOSTUPNO</p> : null}
-                    {intervals.map((interval, index) => (
-                      <div className="grid max-w-md grid-cols-[1fr_auto_1fr_auto] items-center gap-2" key={`${weekday}-${index}`}>
-                        <input
-                          className={fieldClass()}
-                          type="time"
-                          value={interval.startTime}
-                          onChange={(event) => setWeeklyDraft((current) => ({
-                            ...current,
-                            [weekday]: current[weekday].map((item, itemIndex) => itemIndex === index ? { ...item, startTime: event.target.value } : item),
-                          }))}
-                        />
-                        <span className="text-[#8f6d5a]">—</span>
-                        <input
-                          className={fieldClass()}
-                          type="time"
-                          value={interval.endTime}
-                          onChange={(event) => setWeeklyDraft((current) => ({
-                            ...current,
-                            [weekday]: current[weekday].map((item, itemIndex) => itemIndex === index ? { ...item, endTime: event.target.value } : item),
-                          }))}
-                        />
-                        <button
-                          className="text-[10px] font-bold tracking-[0.14em] text-[#6f1d2a]"
-                          onClick={() => setWeeklyDraft((current) => ({
-                            ...current,
-                            [weekday]: current[weekday].filter((_, itemIndex) => itemIndex !== index),
-                          }))}
-                        >
-                          UKLONI
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    className="text-left text-[10px] font-bold tracking-[0.16em] text-[#6f1d2a]"
-                    onClick={() => setWeeklyDraft((current) => ({
-                      ...current,
-                      [weekday]: [...(current[weekday] ?? []), { startTime: "10:00", endTime: "18:00" }],
-                    }))}
-                  >
-                    + INTERVAL
-                  </button>
-                  <button className="bg-[#6f1d2a] px-4 py-2 text-[10px] font-bold tracking-[0.16em] text-white" onClick={() => void saveWeekday(weekday, intervals)}>SAČUVAJ</button>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+        {page === "add" ? <div className={styles.formLayout}><form className={styles.formPanel} onSubmit={createManual}><p className={styles.eyebrow}>NOVO ZAKAZIVANJE</p><h2>Dodaj novi termin</h2><p className={styles.muted}>Izaberi slobodno vreme i unesi podatke klijenta.</p><div className={styles.formFields}>
+          <label className={`${styles.label} ${styles.fullWidth}`}>Usluga<select className={styles.input} value={manual.serviceId} onChange={(e) => setManual((current) => ({ ...current, serviceId: e.target.value, startTime: "" }))}>{appointmentServices.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}</select></label>
+          <label className={styles.label}>Datum<input className={styles.input} type="date" min={today} required value={manual.date} onChange={(e) => setManual((current) => ({ ...current, date: e.target.value, startTime: "" }))} /></label>
+          <label className={styles.label}>Slobodno vreme<select className={styles.input} required value={manual.startTime} onChange={(e) => setManual((current) => ({ ...current, startTime: e.target.value }))} disabled={manualSlotsLoading || manualSlots.length === 0}><option value="">{manualSlotsLoading ? "Učitavanje…" : manualSlots.length ? "Izaberi vreme" : "Nema slobodnih termina"}</option>{manualSlots.map((slot) => <option key={slot} value={slot}>{slot}</option>)}</select></label>
+          <label className={`${styles.label} ${styles.fullWidth}`}>Ime i prezime<input className={styles.input} required autoComplete="name" value={manual.fullName} onChange={(e) => setManual((current) => ({ ...current, fullName: e.target.value }))} placeholder="Ime klijenta" /></label>
+          <label className={styles.label}>Telefon <small>nije obavezno</small><input className={styles.input} type="tel" autoComplete="tel" value={manual.phone} onChange={(e) => setManual((current) => ({ ...current, phone: e.target.value }))} /></label>
+          <label className={styles.label}>Email <small>nije obavezno</small><input className={styles.input} type="email" autoComplete="email" value={manual.email} onChange={(e) => setManual((current) => ({ ...current, email: e.target.value }))} /></label>
+        </div><div className={styles.formFooter}><button className={styles.primary} disabled={saving || !manual.startTime || manualSlotsLoading} type="submit">{saving ? "Čuvanje…" : "Sačuvaj termin"}</button><button type="button" className={styles.textButton} onClick={() => setPage("overview")}>Nazad na pregled</button></div></form><aside className={styles.helpCard}><span>✧</span><h3>Već ste se dogovorile?</h3><p>Ovde upiši termine dogovorene telefonom, preko Instagrama ili uživo.</p><p>Termin će odmah biti potvrđen i zauzeće izabrano vreme u kalendaru.</p><p>Ako uneseš email, klijent će dobiti obaveštenje o zakazivanju.</p></aside></div> : null}
 
-        <section className="grid gap-5 xl:grid-cols-2">
-          <form className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5" onSubmit={createManual}>
-            <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">BRZE AKCIJE</p>
-            <h2 className="font-serif text-3xl text-[#6f1d2a]">Dodaj termin</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className={`${labelClass()} sm:col-span-2`}>Usluga
-                <select className={fieldClass()} value={manual.serviceId} onChange={(event) => setManual((current) => ({ ...current, serviceId: event.target.value }))}>
-                  {appointmentServices.map((service) => <option key={service.id} value={service.id}>{service.name}</option>)}
-                </select>
-              </label>
-              <label className={labelClass()}>Datum
-                <input className={fieldClass()} type="date" value={manual.date} onChange={(event) => setManual((current) => ({ ...current, date: event.target.value }))} />
-              </label>
-              <label className={labelClass()}>Vreme
-                <select
-                  className={fieldClass()}
-                  value={manual.startTime}
-                  onChange={(event) => setManual((current) => ({ ...current, startTime: event.target.value }))}
-                  disabled={manualSlotsLoading || manualSlots.length === 0}
-                >
-                  {manualSlotsLoading ? <option value="">Učitavanje...</option> : null}
-                  {!manualSlotsLoading && manualSlots.length === 0 ? <option value="">Nema slobodnih termina</option> : null}
-                  {manualSlots.map((slot) => <option key={slot} value={slot}>{slot}</option>)}
-                </select>
-              </label>
-              <label className={labelClass()}>Ime i prezime
-                <input className={fieldClass()} value={manual.fullName} onChange={(event) => setManual((current) => ({ ...current, fullName: event.target.value }))} />
-              </label>
-              <label className={labelClass()}>Telefon
-                <input className={fieldClass()} value={manual.phone} onChange={(event) => setManual((current) => ({ ...current, phone: event.target.value }))} />
-              </label>
-              <label className={labelClass()}>Email
-                <input className={fieldClass()} value={manual.email} onChange={(event) => setManual((current) => ({ ...current, email: event.target.value }))} />
-              </label>
-            </div>
-            <button className="mt-4 bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.18em] text-white disabled:cursor-not-allowed disabled:opacity-45" disabled={!manual.startTime || manualSlotsLoading}>DODAJ TERMIN</button>
-          </form>
-
-          <form className="border border-[#d8bd80]/45 bg-[#fff7ef] p-5" onSubmit={createBlock}>
-            <p className="text-[10px] font-bold tracking-[0.22em] text-[#8f6d5a]">BRZE AKCIJE</p>
-            <h2 className="font-serif text-3xl text-[#6f1d2a]">Blokiraj dostupnost</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <label className={`${labelClass()} sm:col-span-2`}>Tip
-                <input className={fieldClass()} value="Blokiraj ceo dan" readOnly />
-              </label>
-              <label className={`${labelClass()} sm:col-span-2`}>Trajanje
-                <select className={fieldClass()} value={block.rangeMode} onChange={(event) => setBlock((current) => ({ ...current, rangeMode: event.target.value, endDate: event.target.value === "single" ? current.date : current.endDate }))}>
-                  <option value="single">Jedan dan</option>
-                  <option value="range">Interval od više dana</option>
-                </select>
-              </label>
-              <label className={labelClass()}>Datum
-                <input className={fieldClass()} type="date" value={block.date} onChange={(event) => setBlock((current) => ({ ...current, date: event.target.value, endDate: current.rangeMode === "single" ? event.target.value : current.endDate }))} />
-              </label>
-              {block.rangeMode === "range" ? (
-                <label className={labelClass()}>Do datuma
-                  <input className={fieldClass()} type="date" value={block.endDate} onChange={(event) => setBlock((current) => ({ ...current, endDate: event.target.value }))} />
-                </label>
-              ) : null}
-              <label className={`${labelClass()} sm:col-span-2`}>Razlog
-                <input className={fieldClass()} value={block.reason} onChange={(event) => setBlock((current) => ({ ...current, reason: event.target.value }))} />
-              </label>
-            </div>
-            <button className="mt-4 bg-[#6f1d2a] px-5 py-3 text-xs font-bold tracking-[0.18em] text-white">SAČUVAJ DOSTUPNOST</button>
-          </form>
-        </section>
-      </div>
-    </main>
+        {page === "timeoff" ? <div className={styles.formLayout}><div><form className={styles.formPanel} onSubmit={createBlock}><p className={styles.eyebrow}>VREME ZA TEBE</p><h2>Dodaj slobodne dane</h2><p className={styles.muted}>Za ove datume neće biti moguće novo zakazivanje.</p><div className={styles.formFields}><label className={`${styles.label} ${styles.fullWidth}`}>Koliko dana?<select className={styles.input} value={block.rangeMode} onChange={(e) => setBlock((current) => ({ ...current, rangeMode: e.target.value, endDate: current.date }))}><option value="single">Jedan dan</option><option value="range">Više dana</option></select></label><label className={styles.label}>{block.rangeMode === "range" ? "Od datuma" : "Datum"}<input className={styles.input} type="date" min={today} required value={block.date} onChange={(e) => setBlock((current) => ({ ...current, date: e.target.value, endDate: current.endDate < e.target.value || current.rangeMode === "single" ? e.target.value : current.endDate }))} /></label>{block.rangeMode === "range" ? <label className={styles.label}>Do datuma<input className={styles.input} type="date" min={block.date} required value={block.endDate} onChange={(e) => setBlock((current) => ({ ...current, endDate: e.target.value }))} /></label> : null}<label className={`${styles.label} ${styles.fullWidth}`}>Beleška <small>nije obavezno</small><input className={styles.input} maxLength={200} placeholder="Npr. odmor, putovanje…" value={block.reason} onChange={(e) => setBlock((current) => ({ ...current, reason: e.target.value }))} /></label></div><div className={styles.formFooter}><button className={styles.primary} disabled={saving} type="submit">{saving ? "Čuvanje…" : "Sačuvaj slobodne dane"}</button></div></form>
+          <section className={styles.panel}><div className={styles.panelHeading}><h2>Planirani slobodni dani</h2></div>{exceptions.filter((item) => item.type === "blocked_day" && item.date >= today).length === 0 ? <p className={styles.muted}>Još nema dodatih slobodnih dana.</p> : <ul className={styles.timeoffList}>{exceptions.filter((item) => item.type === "blocked_day" && item.date >= today).map((item) => <li key={item.id}><strong>{formatTableDate(item.date)}</strong><span>{item.reason || "Slobodan dan"}</span></li>)}</ul>}</section>
+        </div><aside className={styles.helpCard}><span>☼</span><h3>Odmor bez novih zakazivanja.</h3><p>Izaberi jedan datum ili ceo period, uključujući početni i poslednji dan.</p><p>Postojeći termini ostaju zakazani. Ako je potrebno, otkaži ih posebno u odeljku „Termini i upiti“.</p><button className={styles.textButton} onClick={() => openBookings()}>Pogledaj postojeće termine →</button></aside></div> : null}
+        <footer className={styles.footer}>YUUMI ART <span>Tvoj prostor za organizovan dan.</span></footer>
+      </main>
+    </div>
   );
 }
